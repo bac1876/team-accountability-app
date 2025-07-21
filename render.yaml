@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: aistager
+    runtime: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: REIMAGINEHOME_API_KEY
+        sync: false
