@@ -541,6 +541,10 @@ def deploy_check():
     app.logger.error("[DEPLOYMENT CHECK] This is the unique deployment check message: 20240722-XYZ")
     return jsonify({'success': True, 'message': 'Deployment check endpoint hit. If you see the log message, this is the latest code.'})
 
+@app.route('/api/unique-test-abc123')
+def unique_test_abc123():
+    return jsonify({'success': True, 'message': 'This is the unique test route abc123.'})
+
 # Serve temporary images
 @app.route('/temp-image/<image_id>')
 def serve_temp_image(image_id):
