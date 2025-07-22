@@ -521,6 +521,16 @@ def recent_stagings():
     
     return jsonify({'stagings': recent})
 
+@app.route('/api/debug-payload')
+def debug_payload():
+    try:
+        with open('/tmp/stage_debug.json', 'r') as f:
+            import json
+            data = json.load(f)
+        return jsonify({'success': True, 'payload': data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 # Serve temporary images
 @app.route('/temp-image/<image_id>')
 def serve_temp_image(image_id):
