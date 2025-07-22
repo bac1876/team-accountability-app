@@ -24,6 +24,7 @@ STAGING_JOBS = {}
 COMPLETED_STAGINGS = {}
 TEMP_IMAGES = {}  # Store images temporarily
 
+print("=== UNIQUE DEPLOYMENT TEST: 12345 ===")
 print(f"ReimagineHome API configured: {'Yes' if REIMAGINEHOME_API_KEY else 'No'}")
 print(f"App version: Production v2.0 - {datetime.now().isoformat()}")
 
