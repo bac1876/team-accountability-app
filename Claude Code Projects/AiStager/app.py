@@ -531,6 +531,10 @@ def debug_payload():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/api/test-alive')
+def test_alive():
+    return jsonify({'success': True, 'message': 'Test endpoint is alive and serving latest code.'})
+
 # Serve temporary images
 @app.route('/temp-image/<image_id>')
 def serve_temp_image(image_id):
