@@ -310,6 +310,7 @@ def index():
 def stage():
     """Complete staging endpoint with all fixes"""
     data = request.json
+    print("[DEBUG] Received payload at /api/stage:", data)
     image_data = data.get('image')
     space_type = data.get('space_type')
     design_theme = data.get('design_theme')
