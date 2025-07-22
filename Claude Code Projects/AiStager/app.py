@@ -536,6 +536,11 @@ def debug_payload():
 def test_alive():
     return jsonify({'success': True, 'message': 'Test endpoint is alive and serving latest code.'})
 
+@app.route('/api/deploy-check')
+def deploy_check():
+    app.logger.error("[DEPLOYMENT CHECK] This is the unique deployment check message: 20240722-XYZ")
+    return jsonify({'success': True, 'message': 'Deployment check endpoint hit. If you see the log message, this is the latest code.'})
+
 # Serve temporary images
 @app.route('/temp-image/<image_id>')
 def serve_temp_image(image_id):
