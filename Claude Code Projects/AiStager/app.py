@@ -25,6 +25,7 @@ COMPLETED_STAGINGS = {}
 TEMP_IMAGES = {}  # Store images temporarily
 
 print(f"ReimagineHome API configured: {'Yes' if REIMAGINEHOME_API_KEY else 'No'}")
+print(f"App version: Production v2.0 - {datetime.now().isoformat()}")
 
 # HTML template with results display
 HTML_TEMPLATE = '''
@@ -38,6 +39,7 @@ HTML_TEMPLATE = '''
     <div class="min-h-screen bg-gray-100 p-8">
         <h1 class="text-4xl font-bold text-center mb-2">AI Room Stager</h1>
         <p class="text-center text-gray-600 mb-8">Transform Your Rooms with AI</p>
+        <!-- Version: 2.0 Fixed -->
         
         <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
             <div class="mb-6">
