@@ -91,31 +91,29 @@ module.exports = async function handler(req, res) {
       webhook_url: webhookUrl
     };
     
-    // Add parameters based on transformation type
-    if (['furnish', 'redesign', 'outdoor'].includes(transformation_type)) {
-      payload.room_type = room_type;
-      payload.design = design_style;
-      
-      // Build block_element list
-      const blockElements = ['wall', 'ceiling', 'windowpane', 'door'];
-      
-      // Add floor to block list if not updating flooring
-      if (!update_flooring && transformation_type !== 'outdoor') {
-        blockElements.push('floor');
-      }
-      
-      // Add decorative elements to block list if requested
-      if (block_decorative) {
-        blockElements.push('animal', 'plant', 'vase', 'basket');
-      }
-      
-      // For outdoor, add outdoor-specific blocks
-      if (transformation_type === 'outdoor') {
-        blockElements.push('sky', 'house', 'building', 'tree', 'car');
-      }
-      
-      payload.block_element = blockElements.join(',');
+    // Always add room_type and design for all transformation types
+    payload.room_type = room_type || 'living_room';
+    payload.design = design_style || 'modern';
+    
+    // Build block_element list
+    const blockElements = ['wall', 'ceiling', 'windowpane', 'door'];
+    
+    // Add floor to block list if not updating flooring
+    if (!update_flooring && transformation_type !== 'outdoor') {
+      blockElements.push('floor');
     }
+    
+    // Add decorative elements to block list if requested
+    if (block_decorative) {
+      blockElements.push('animal', 'plant', 'vase', 'basket');
+    }
+    
+    // For outdoor, add outdoor-specific blocks
+    if (transformation_type === 'outdoor') {
+      blockElements.push('sky', 'house', 'building', 'tree', 'car');
+    }
+    
+    payload.block_element = blockElements.join(',');
     
     // Call InstantDecoAI
     console.log('Calling InstantDeco API with payload:', JSON.stringify(payload, null, 2));
