@@ -119,6 +119,8 @@ module.exports = async function handler(req, res) {
     }
     
     // Call InstantDecoAI
+    console.log('Calling InstantDeco API with payload:', JSON.stringify(payload, null, 2));
+    
     const response = await fetch(INSTANTDECO_API_URL, {
       method: 'POST',
       headers: {
@@ -127,8 +129,19 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify(payload)
     });
     
+    console.log('InstantDeco API response status:', response.status);
+    const responseText = await response.text();
+    console.log('InstantDeco API response:', responseText);
+    
     if (response.ok) {
-      const result = await response.json();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        throw new Error('Invalid response from InstantDeco API');
+      }
+      
       if (result.status === 'success') {
         const requestId = result.response?.request_id;
         
@@ -161,10 +174,14 @@ module.exports = async function handler(req, res) {
           webhook_url: webhookUrl,
           message: 'Staging request submitted successfully!'
         });
+      } else {
+        console.error('InstantDeco API returned non-success status:', result);
+        throw new Error(result.message || 'InstantDeco API request failed');
       }
+    } else {
+      console.error('InstantDeco API HTTP error:', response.status, responseText);
+      throw new Error(`InstantDeco API error: ${response.status} - ${responseText}`);
     }
-    
-    throw new Error('InstantDecoAI API error');
     
   } catch (error) {
     console.error('Stage room error:', error);
