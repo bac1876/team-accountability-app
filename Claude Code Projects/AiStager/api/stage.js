@@ -88,8 +88,7 @@ module.exports = async function handler(req, res) {
       transformation_type,
       img_url: imageUrl,
       num_images: 1,
-      webhook_url: webhookUrl,
-      api_key: process.env.INSTANTDECO_API_KEY
+      webhook_url: webhookUrl
     };
     
     // Add parameters based on transformation type
@@ -124,7 +123,8 @@ module.exports = async function handler(req, res) {
     const response = await fetch(INSTANTDECO_API_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.INSTANTDECO_API_KEY}`
       },
       body: JSON.stringify(payload)
     });
