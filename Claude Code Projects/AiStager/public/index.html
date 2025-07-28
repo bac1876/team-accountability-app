@@ -1,345 +1,806 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Interior Designer - Transform Your Space</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <title>AI Room Stager - Professional</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    <div id="root"></div>
-    
-    <script type="text/babel">
-        const { useState, useRef } = React;
-        const { Upload, Home, Palette, Sparkles, Download, Share2, Loader2, Image as ImageIcon, Check, X } = lucide;
-
-        const InteriorDesignApp = () => {
-            const [uploadedImage, setUploadedImage] = useState(null);
-            const [selectedStyle, setSelectedStyle] = useState('');
-            const [additionalRequirements, setAdditionalRequirements] = useState('');
-            const [isProcessing, setIsProcessing] = useState(false);
-            const [results, setResults] = useState(null);
-            const [error, setError] = useState(null);
-            const [apiKey, setApiKey] = useState('');
-            const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-            const fileInputRef = useRef(null);
-
-            const designStyles = [
-                { id: 'modern', name: 'Modern', icon: Home, description: 'Clean lines, minimal decor' },
-                { id: 'scandinavian', name: 'Scandinavian', icon: Home, description: 'Light, cozy, functional' },
-                { id: 'industrial', name: 'Industrial', icon: Home, description: 'Raw materials, urban feel' },
-                { id: 'minimalist', name: 'Minimalist', icon: Home, description: 'Simple, uncluttered spaces' },
-                { id: 'traditional', name: 'Traditional', icon: Home, description: 'Classic, timeless elegance' },
-                { id: 'bohemian', name: 'Bohemian', icon: Home, description: 'Eclectic, artistic, colorful' }
-            ];
-
-            const stylePrompts = {
-                modern: "Modern interior design transformation: Keep exact room structure, windows, walls unchanged. Add sleek modern furniture, minimalist decor, geometric patterns, neutral color palette with cool grays, contemporary lighting, clean lines. Transform into sophisticated modern living space while preserving all architectural elements.",
-                scandinavian: "Scandinavian interior design transformation: Keep exact room structure, windows, walls unchanged. Add light wood furniture, cozy textiles, hygge elements, white and natural color palette, plants, functional minimalist decor. Create bright airy Scandinavian atmosphere while preserving all architectural elements.",
-                industrial: "Industrial interior design transformation: Keep exact room structure, windows, walls unchanged. Add metal and wood furniture, exposed elements, concrete textures, dark color palette, vintage industrial lighting, urban loft feel. Transform into edgy industrial space while preserving all architectural elements.",
-                minimalist: "Minimalist interior design transformation: Keep exact room structure, windows, walls unchanged. Add essential furniture only, remove clutter, monochromatic colors, hidden storage, clean surfaces, zen atmosphere. Create serene minimalist sanctuary while preserving all architectural elements.",
-                traditional: "Traditional interior design transformation: Keep exact room structure, windows, walls unchanged. Add classic wooden furniture, elegant fabrics, ornate details, warm color palette, traditional patterns, timeless accessories. Transform into sophisticated traditional home while preserving all architectural elements.",
-                bohemian: "Bohemian interior design transformation: Keep exact room structure, windows, walls unchanged. Add eclectic furniture mix, colorful textiles, plants, global decor, layered rugs, artistic elements, warm lighting. Create vibrant boho paradise while preserving all architectural elements."
-            };
-
-            const handleImageUpload = (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        setUploadedImage(e.target.result);
-                        setResults(null);
-                        setError(null);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            const handleDrop = (event) => {
-                event.preventDefault();
-                const file = event.dataTransfer.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        setUploadedImage(e.target.result);
-                        setResults(null);
-                        setError(null);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            const handleDragOver = (event) => {
-                event.preventDefault();
-            };
-
-            const generateDesign = async () => {
-                if (!uploadedImage || !selectedStyle) {
-                    setError('Please upload an image and select a style');
-                    return;
-                }
-
-                setIsProcessing(true);
-                setError(null);
-
-                try {
-                    if (!apiKey) {
-                        // Mock results for demo
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        setResults({
-                            images: [
-                                { id: 1, url: uploadedImage, title: `${selectedStyle} Variation 1`, description: 'AI-generated transformation' },
-                                { id: 2, url: uploadedImage, title: `${selectedStyle} Variation 2`, description: 'AI-generated transformation' },
-                                { id: 3, url: uploadedImage, title: `${selectedStyle} Variation 3`, description: 'AI-generated transformation' }
-                            ]
-                        });
-                    } else {
-                        // Call the API endpoint
-                        const response = await fetch('/api/generate', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                image: uploadedImage,
-                                style: selectedStyle,
-                                requirements: additionalRequirements,
-                                apiKey: apiKey
-                            })
-                        });
-
-                        const data = await response.json();
+    <div class="min-h-screen bg-gray-100 p-8">
+        <h1 class="text-4xl font-bold text-center mb-2">AI Room Stager</h1>
+        <p class="text-center text-gray-600 mb-2">Powered by InstantDecoAI</p>
+        <p class="text-center text-sm text-gray-500 mb-8">Professional Version - No Pets, Better Control</p>
+        
+        <div class="max-w-6xl mx-auto">
+            <!-- Webhook Status -->
+            <div id="webhookStatus" class="mb-6 p-4 rounded bg-gray-50">
+                <p class="text-sm">Cloud Version - Ready</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left Column: Upload and Stage -->
+                <div>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold">Stage a Room</h2>
+                            <button onclick="clearForm()" class="text-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded">
+                                Clear Form
+                            </button>
+                        </div>
                         
-                        if (!response.ok) {
-                            throw new Error(data.error || 'Failed to generate images');
-                        }
-
-                        if (data.images && data.images.length > 0) {
-                            setResults({
-                                images: data.images.map((url, index) => ({
-                                    id: index + 1,
-                                    url: url,
-                                    title: `${selectedStyle} Variation ${index + 1}`,
-                                    description: 'AI-generated transformation'
-                                }))
-                            });
-                        } else {
-                            throw new Error('No images generated');
-                        }
-                    }
-                } catch (err) {
-                    setError(err.message || 'Failed to generate design. Please try again.');
-                } finally {
-                    setIsProcessing(false);
-                }
-            };
-
-            const downloadImage = (imageUrl, title) => {
-                const link = document.createElement('a');
-                link.href = imageUrl;
-                link.download = `${title.replace(/\s+/g, '_')}.png`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            };
-
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-                    <div className="container mx-auto px-4 py-8">
-                        <header className="text-center mb-12">
-                            <h1 className="text-5xl font-bold text-gray-800 mb-4">AI Interior Designer</h1>
-                            <p className="text-xl text-gray-600">Transform your space with AI-powered design suggestions</p>
-                        </header>
-
-                        {!results && (
-                            <>
-                                <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 mb-8">
-                                    <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-                                        <Upload className="w-6 h-6" />
-                                        Upload Your Room Photo
-                                    </h2>
-                                    
-                                    <div
-                                        className="border-3 border-dashed border-gray-300 rounded-xl p-12 text-center cursor-pointer hover:border-blue-500 transition-colors"
-                                        onDrop={handleDrop}
-                                        onDragOver={handleDragOver}
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        <input
-                                            ref={fileInputRef}
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageUpload}
-                                            className="hidden"
-                                        />
-                                        
-                                        {uploadedImage ? (
-                                            <div>
-                                                <img src={uploadedImage} alt="Uploaded room" className="max-h-96 mx-auto rounded-lg shadow-lg" />
-                                                <p className="mt-4 text-gray-600">Click to change image</p>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <ImageIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                                                <p className="text-xl text-gray-600 mb-2">Drag & drop your room photo here</p>
-                                                <p className="text-gray-500">or click to browse</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {uploadedImage && (
-                                    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 mb-8">
-                                        <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-                                            <Palette className="w-6 h-6" />
-                                            Choose Your Style
-                                        </h2>
-                                        
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                                            {designStyles.map((style) => (
-                                                <button
-                                                    key={style.id}
-                                                    onClick={() => setSelectedStyle(style.id)}
-                                                    className={`p-6 rounded-xl border-2 transition-all ${
-                                                        selectedStyle === style.id
-                                                            ? 'border-blue-500 bg-blue-50 scale-105'
-                                                            : 'border-gray-200 hover:border-gray-300'
-                                                    }`}
-                                                >
-                                                    <style.icon className="w-8 h-8 mx-auto mb-2 text-gray-700" />
-                                                    <h3 className="font-semibold text-gray-800">{style.name}</h3>
-                                                    <p className="text-sm text-gray-600 mt-1">{style.description}</p>
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        <div className="mb-8">
-                                            <h3 className="text-lg font-semibold mb-3">Additional Requirements (Optional)</h3>
-                                            <textarea
-                                                value={additionalRequirements}
-                                                onChange={(e) => setAdditionalRequirements(e.target.value)}
-                                                placeholder="E.g., 'Add more natural light', 'Include plants', 'Use warm colors'..."
-                                                className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                rows="3"
-                                            />
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <button
-                                                onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-                                                className="text-sm text-blue-600 hover:text-blue-700 underline"
-                                            >
-                                                {showApiKeyInput ? 'Hide' : 'Add'} Replicate API Key (Optional)
-                                            </button>
-                                            
-                                            {showApiKeyInput && (
-                                                <div className="mt-4">
-                                                    <input
-                                                        type="password"
-                                                        value={apiKey}
-                                                        onChange={(e) => setApiKey(e.target.value)}
-                                                        placeholder="sk-xxxxxxxxxxxxx"
-                                                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    />
-                                                    <p className="text-xs text-gray-500 mt-2">
-                                                        Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">OpenAI</a>
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {error && (
-                                            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                                                {error}
-                                            </div>
-                                        )}
-
-                                        <button
-                                            onClick={generateDesign}
-                                            disabled={isProcessing || !uploadedImage || !selectedStyle}
-                                            className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                                        >
-                                            {isProcessing ? (
-                                                <>
-                                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                                    Generating Your Design...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Sparkles className="w-5 h-5" />
-                                                    Generate Design
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {results && (
-                            <div className="max-w-6xl mx-auto">
-                                <div className="text-center mb-8">
-                                    <h2 className="text-3xl font-bold text-gray-800 mb-4">Your AI-Generated Designs</h2>
-                                    <p className="text-gray-600">Here are your personalized {selectedStyle} interior design variations</p>
-                                    <button
-                                        onClick={() => {
-                                            setResults(null);
-                                            setUploadedImage(null);
-                                            setSelectedStyle('');
-                                            setAdditionalRequirements('');
-                                        }}
-                                        className="mt-4 text-blue-600 hover:text-blue-700 underline"
-                                    >
-                                        Start Over
-                                    </button>
-                                </div>
-
-                                <div className="grid md:grid-cols-3 gap-6">
-                                    {results.images.map((image) => (
-                                        <div key={image.id} className="bg-white rounded-xl shadow-lg overflow-hidden group">
-                                            <div className="relative">
-                                                <img 
-                                                    src={image.url} 
-                                                    alt={image.title}
-                                                    className="w-full h-64 object-cover"
-                                                />
-                                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                                    <button
-                                                        onClick={() => downloadImage(image.url, image.title)}
-                                                        className="bg-white text-gray-800 px-4 py-2 rounded-lg mx-2 hover:bg-gray-100 transition-colors"
-                                                    >
-                                                        <Download className="w-5 h-5" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div className="p-4">
-                                                <h3 className="font-semibold text-lg text-gray-800">{image.title}</h3>
-                                                <p className="text-gray-600 text-sm mt-1">{image.description}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="mt-12 text-center">
-                                    <p className="text-gray-600 mb-4">Love your new design?</p>
-                                    <div className="flex justify-center gap-4">
-                                        <button className="px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors flex items-center gap-2">
-                                            <Share2 className="w-5 h-5" />
-                                            Share Results
-                                        </button>
-                                    </div>
-                                </div>
+                        <!-- Upload Section -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium mb-2">Upload Photo</label>
+                            <input type="file" id="fileInput" accept="image/*" class="hidden">
+                            <label for="fileInput" class="cursor-pointer bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg p-6 block text-center hover:bg-blue-100 transition-colors">
+                                <svg class="w-10 h-10 mx-auto mb-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                <p class="text-gray-700">Click to upload a photo</p>
+                                <p class="text-xs text-gray-500 mt-1">Interior or Exterior</p>
+                            </label>
+                            <!-- URL Input Option -->
+                            <div class="mt-3">
+                                <p class="text-xs text-gray-500 mb-1">Or paste an image URL for faster processing:</p>
+                                <input type="url" id="imageUrlInput" placeholder="https://example.com/room.jpg" class="w-full p-2 border rounded text-sm">
                             </div>
-                        )}
+                        </div>
+                        
+                        <!-- Current Image Preview -->
+                        <div id="currentImagePreview" class="hidden mb-6">
+                            <p class="text-sm font-medium mb-2">Selected Image:</p>
+                            <img id="previewImage" class="w-full h-48 object-cover rounded">
+                        </div>
+                        
+                        <!-- Space Type (Interior/Exterior) -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Space Type</label>
+                            <select id="spaceType" class="w-full p-3 border rounded" onchange="handleSpaceTypeChange()">
+                                <option value="interior">Interior Room</option>
+                                <option value="exterior">Exterior/Outdoor</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Transformation Type -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Transformation Type</label>
+                            <select id="transformationType" class="w-full p-3 border rounded" onchange="handleTransformationChange()">
+                                <option value="furnish">Add Furniture (Virtual Staging) - ~2-3 min</option>
+                                <option value="empty">Remove All Furniture - ~1-2 min</option>
+                                <option value="enhance">Enhance Photo Only - ~30-60 sec</option>
+                                <option value="redesign">Redesign Existing Furniture - ~2-3 min</option>
+                                <option value="day_to_dusk">Convert to Evening/Dusk - ~1 min</option>
+                            </select>
+                            <p id="timeEstimate" class="text-xs text-gray-500 mt-1">Estimated processing time: 2-3 minutes</p>
+                        </div>
+                        
+                        <!-- Room Type (for interior) -->
+                        <div id="roomTypeSection" class="mb-4">
+                            <label class="block text-sm font-medium mb-2">Room Type</label>
+                            <select id="roomType" class="w-full p-3 border rounded">
+                                <option value="living_room">Living Room</option>
+                                <option value="bedroom">Bedroom</option>
+                                <option value="kitchen">Kitchen</option>
+                                <option value="bathroom">Bathroom</option>
+                                <option value="dining_room">Dining Room</option>
+                                <option value="home_office">Home Office</option>
+                                <option value="kid_bedroom">Kid's Bedroom</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Outdoor Type (for exterior) -->
+                        <div id="outdoorTypeSection" class="mb-4 hidden">
+                            <label class="block text-sm font-medium mb-2">Outdoor Type</label>
+                            <select id="outdoorType" class="w-full p-3 border rounded">
+                                <option value="terrace">Terrace/Patio</option>
+                                <option value="pool">Pool Area</option>
+                                <option value="pergola">Pergola</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Design Styles -->
+                        <div id="designStyleSection" class="mb-6">
+                            <label class="block text-sm font-medium mb-2">Select Design Style</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="designStyle" value="modern" class="design-radio" checked>
+                                    <span class="text-sm">Contemporary</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="designStyle" value="traditional" class="design-radio">
+                                    <span class="text-sm">Traditional</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="designStyle" value="midcentury" class="design-radio">
+                                    <span class="text-sm">Mid-Century Modern</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="designStyle" value="rustic" class="design-radio">
+                                    <span class="text-sm">Farmhouse</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="designStyle" value="artdeco" class="design-radio">
+                                    <span class="text-sm">Vintage/Art Deco</span>
+                                </label>
+                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="designStyle" value="french" class="design-radio">
+                                    <span class="text-sm">Colonial/French</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Custom Instructions -->
+                        <div id="customInstructionsSection" class="mb-6">
+                            <label class="block text-sm font-medium mb-2">Special Instructions (Optional)</label>
+                            <textarea id="customInstructions" rows="3" class="w-full p-3 border rounded resize-none" 
+                                placeholder="e.g., 'Just add a couch and coffee table', 'Change carpet to hardwood floors', 'Make it bright and airy'"></textarea>
+                            <p class="text-xs text-gray-500 mt-1">We'll interpret your instructions and apply the appropriate settings</p>
+                        </div>
+                        
+                        <!-- Advanced Options -->
+                        <div id="advancedOptions" class="mb-6 border-t pt-4">
+                            <p class="text-sm font-medium mb-3">Advanced Options</p>
+                            
+                            <!-- Flooring Option -->
+                            <div id="flooringSection" class="mb-3">
+                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" id="updateFlooring" class="w-4 h-4">
+                                    <span class="text-sm">Update flooring</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Block Decorative Elements -->
+                            <div id="blockDecorSection" class="mb-3">
+                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" id="blockDecorative" class="w-4 h-4" checked>
+                                    <span class="text-sm">Block decorative items (plants, vases, animals)</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Stage Button -->
+                        <button onclick="stageCurrentRoom()" id="stageBtn" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            Stage This Room
+                        </button>
+                        
+                        <!-- Status -->
+                        <div id="status" class="mt-4"></div>
+                        
+                        <!-- Progress Bar -->
+                        <div id="progressBar" class="hidden mt-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="progressFill" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                            <p id="progressText" class="text-sm text-gray-600 mt-1 text-center">Processing...</p>
+                        </div>
                     </div>
                 </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<InteriorDesignApp />);
+                
+                <!-- Right Column: Results -->
+                <div>
+                    <div class="bg-white rounded-lg shadow-lg p-6">
+                        <h2 class="text-xl font-semibold mb-4">Staging Results</h2>
+                        <div id="resultsContainer" class="space-y-4">
+                            <p class="text-gray-500 text-center py-8">No rooms staged yet. Upload a photo to get started!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- All Staged Rooms Section -->
+            <div id="allRoomsSection" class="mt-8 hidden">
+                <h2 class="text-2xl font-semibold mb-4">All Staged Rooms</h2>
+                <div id="allRoomsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentImageData = null;
+        let stagingJobs = [];
+        let currentRequestId = null;
+        let pollingInterval = null;
+        let lastRequestData = null;
+        
+        // Check API status - try config.json first as fallback
+        fetch('/config.json')
+            .then(res => res.json())
+            .then(config => {
+                const statusEl = document.getElementById('webhookStatus');
+                if (config.api_status === 'ready') {
+                    statusEl.innerHTML = '<p class="text-green-700">✓ Cloud Version - Ready (Static Config)</p>';
+                    statusEl.classList.add('bg-green-50');
+                    
+                    // Try API health check anyway
+                    fetch('/api/health')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.instantdeco_configured && data.imgbb_configured) {
+                                statusEl.innerHTML = '<p class="text-green-700">✓ Cloud Version - All Systems Ready</p>';
+                            }
+                        })
+                        .catch(() => {
+                            // API blocked by auth, but config says ready, so continue
+                            console.log('API requires authentication, using static config');
+                        });
+                }
+            })
+            .catch(err => {
+                const statusEl = document.getElementById('webhookStatus');
+                statusEl.innerHTML = '<p class="text-amber-700">⚠ Configuration loading...</p>';
+                statusEl.classList.add('bg-amber-50');
+            });
+        
+        // Clear form function
+        function clearForm() {
+            currentImageData = null;
+            currentRequestId = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('currentImagePreview').classList.add('hidden');
+            document.getElementById('status').innerHTML = '';
+            document.getElementById('progressBar').classList.add('hidden');
+            document.getElementById('stageBtn').disabled = false;
+            document.getElementById('stageBtn').textContent = 'Stage This Room';
+            
+            // Stop any polling
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+        
+        // Handle space type change
+        function handleSpaceTypeChange() {
+            const spaceType = document.getElementById('spaceType').value;
+            const roomTypeSection = document.getElementById('roomTypeSection');
+            const outdoorTypeSection = document.getElementById('outdoorTypeSection');
+            const transformationType = document.getElementById('transformationType');
+            
+            if (spaceType === 'exterior') {
+                roomTypeSection.classList.add('hidden');
+                outdoorTypeSection.classList.remove('hidden');
+                
+                // Update transformation options for exterior
+                transformationType.innerHTML = `
+                    <option value="outdoor">Add Outdoor Furniture - ~2-3 min</option>
+                    <option value="enhance">Enhance Photo Only - ~30-60 sec</option>
+                    <option value="blue_sky">Add Blue Sky Effect - ~30-60 sec</option>
+                    <option value="day_to_dusk">Convert to Evening/Dusk - ~1 min</option>
+                `;
+            } else {
+                roomTypeSection.classList.remove('hidden');
+                outdoorTypeSection.classList.add('hidden');
+                
+                // Restore interior transformation options
+                transformationType.innerHTML = `
+                    <option value="furnish">Add Furniture (Virtual Staging) - ~2-3 min</option>
+                    <option value="empty">Remove All Furniture - ~1-2 min</option>
+                    <option value="enhance">Enhance Photo Only - ~30-60 sec</option>
+                    <option value="redesign">Redesign Existing Furniture - ~2-3 min</option>
+                    <option value="day_to_dusk">Convert to Evening/Dusk - ~1 min</option>
+                `;
+            }
+            
+            handleTransformationChange();
+        }
+        
+        // Handle transformation type change
+        function handleTransformationChange() {
+            const transformType = document.getElementById('transformationType').value;
+            const spaceType = document.getElementById('spaceType').value;
+            const designStyleSection = document.getElementById('designStyleSection');
+            const flooringSection = document.getElementById('flooringSection');
+            const blockDecorSection = document.getElementById('blockDecorSection');
+            const advancedOptions = document.getElementById('advancedOptions');
+            const timeEstimate = document.getElementById('timeEstimate');
+            
+            // Update time estimate
+            const timeEstimates = {
+                'furnish': '2-3 minutes',
+                'empty': '1-2 minutes',
+                'enhance': '30-60 seconds',
+                'redesign': '2-3 minutes',
+                'day_to_dusk': '1 minute',
+                'outdoor': '2-3 minutes',
+                'blue_sky': '30-60 seconds'
+            };
+            
+            timeEstimate.textContent = `Estimated processing time: ${timeEstimates[transformType] || '1-2 minutes'}`;
+            
+            // Show/hide sections based on transformation type
+            const needsDesign = ['furnish', 'redesign', 'outdoor'].includes(transformType);
+            const needsFlooring = ['furnish', 'redesign'].includes(transformType) && spaceType === 'interior';
+            const needsBlockDecor = ['furnish', 'redesign', 'outdoor'].includes(transformType);
+            
+            designStyleSection.style.display = needsDesign ? 'block' : 'none';
+            flooringSection.style.display = needsFlooring ? 'block' : 'none';
+            blockDecorSection.style.display = needsBlockDecor ? 'block' : 'none';
+            advancedOptions.style.display = (needsFlooring || needsBlockDecor) ? 'block' : 'none';
+        }
+        
+        // Handle file upload
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Clear any previous errors
+            document.getElementById('status').innerHTML = '';
+            document.getElementById('imageUrlInput').value = ''; // Clear URL input
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                currentImageData = event.target.result;
+                document.getElementById('previewImage').src = currentImageData;
+                document.getElementById('currentImagePreview').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        // Handle URL input for faster processing
+        document.getElementById('imageUrlInput').addEventListener('input', function(e) {
+            const url = e.target.value.trim();
+            if (url) {
+                // Clear file input
+                document.getElementById('fileInput').value = '';
+                document.getElementById('status').innerHTML = '';
+                
+                // For URLs, we'll use them directly (faster than base64)
+                currentImageData = url;
+                document.getElementById('previewImage').src = url;
+                document.getElementById('currentImagePreview').classList.remove('hidden');
+            }
+        });
+        
+        async function stageCurrentRoom() {
+            if (!currentImageData) {
+                alert('Please upload a photo first');
+                return;
+            }
+            
+            const spaceType = document.getElementById('spaceType').value;
+            const transformationType = document.getElementById('transformationType').value;
+            const roomType = spaceType === 'interior' ? 
+                document.getElementById('roomType').value : 
+                document.getElementById('outdoorType').value;
+            let selectedDesign = document.querySelector('input[name="designStyle"]:checked')?.value || 'modern';
+            let updateFlooring = document.getElementById('updateFlooring').checked;
+            let blockDecorative = document.getElementById('blockDecorative').checked;
+            const customInstructions = document.getElementById('customInstructions').value.trim();
+            
+            // Process custom instructions
+            if (customInstructions) {
+                const processed = processCustomInstructions(customInstructions);
+                if (processed.updateFlooring !== undefined) updateFlooring = processed.updateFlooring;
+                if (processed.blockDecorative !== undefined) blockDecorative = processed.blockDecorative;
+                if (processed.design) selectedDesign = processed.design;
+                
+                // Update UI to reflect interpreted settings
+                document.getElementById('updateFlooring').checked = updateFlooring;
+                document.getElementById('blockDecorative').checked = blockDecorative;
+            }
+            
+            const btn = document.getElementById('stageBtn');
+            const status = document.getElementById('status');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            // Disable button and show progress
+            btn.disabled = true;
+            btn.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> Processing...';
+            progressBar.classList.remove('hidden');
+            progressFill.style.width = '5%';
+            progressText.textContent = 'Preparing image...';
+            
+            // Show cancel button in status
+            status.innerHTML = `
+                <div class="bg-blue-50 p-3 rounded mt-2 flex justify-between items-center">
+                    <p class="text-blue-700">Uploading to server...</p>
+                    <button onclick="cancelRequest()" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-sm">
+                        Cancel
+                    </button>
+                </div>
+            `;
+            
+            // Update progress after a short delay
+            setTimeout(() => {
+                progressFill.style.width = '15%';
+                progressText.textContent = 'Uploading image...';
+            }, 500);
+            
+            // Prepare request data
+            const requestData = {
+                image: currentImageData,
+                transformation_type: transformationType,
+                space_type: spaceType,
+                room_type: roomType,
+                design_style: selectedDesign,
+                update_flooring: updateFlooring,
+                block_decorative: blockDecorative
+            };
+            
+            // Store for retry
+            lastRequestData = requestData;
+            
+            try {
+                const response = await fetch('/api/stage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData),
+                    timeout: 30000 // 30 second timeout
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentRequestId = data.request_id;
+                    
+                    const job = {
+                        requestId: data.request_id,
+                        transformationType: transformationType,
+                        spaceType: spaceType,
+                        design: selectedDesign,
+                        roomType: roomType,
+                        status: 'processing',
+                        originalImage: currentImageData,
+                        timestamp: Date.now()
+                    };
+                    
+                    stagingJobs.push(job);
+                    
+                    progressFill.style.width = '25%';
+                    progressText.textContent = 'Analyzing room structure...';
+                    status.innerHTML = `
+                        <div class="bg-green-50 p-3 rounded mt-2 flex justify-between items-center">
+                            <p class="text-green-700">✓ Image uploaded. AI is analyzing your room...</p>
+                            <button onclick="cancelRequest()" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Start polling for results
+                    startPolling();
+                    
+                } else {
+                    throw new Error(data.error || 'Failed to submit request');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                status.innerHTML = `<div class="bg-red-50 p-3 rounded mt-2"><p class="text-red-700">Error: ${error.message}</p></div>`;
+                btn.disabled = false;
+                btn.textContent = 'Stage This Room';
+                progressBar.classList.add('hidden');
+            }
+        }
+        
+        function startPolling() {
+            let pollCount = 0;
+            const maxPolls = 120; // 4 minutes max - give more time
+            
+            pollingInterval = setInterval(async () => {
+                pollCount++;
+                
+                // More detailed progress stages
+                let progressPercent, progressMessage;
+                const elapsed = pollCount * 2; // seconds
+                
+                if (elapsed < 10) {
+                    progressPercent = 25 + (elapsed * 2);
+                    progressMessage = 'Analyzing room structure...';
+                } else if (elapsed < 30) {
+                    progressPercent = 45 + ((elapsed - 10) * 1.5);
+                    progressMessage = 'Applying AI transformation...';
+                } else if (elapsed < 60) {
+                    progressPercent = 75 + ((elapsed - 30) * 0.5);
+                    progressMessage = 'Generating final image...';
+                } else {
+                    progressPercent = Math.min(90, 90 + ((elapsed - 60) * 0.1));
+                    progressMessage = `Almost done... ${elapsed}s`;
+                }
+                
+                document.getElementById('progressFill').style.width = progressPercent + '%';
+                document.getElementById('progressText').textContent = progressMessage;
+                
+                try {
+                    // Check for results using the new endpoint
+                    const response = await fetch('/api/check-result', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ request_id: currentRequestId })
+                    });
+                    const data = await response.json();
+                    
+                    let hasUpdates = false;
+                    
+                    stagingJobs.forEach(job => {
+                        if (job.status === 'processing' && job.requestId === currentRequestId) {
+                            if (data.status === 'completed' && data.images && data.images.length > 0) {
+                                job.status = 'completed';
+                                job.outputImages = data.images;
+                                hasUpdates = true;
+                                
+                                // Complete progress
+                                document.getElementById('progressFill').style.width = '100%';
+                                document.getElementById('progressText').textContent = 'Complete!';
+                                
+                                // Clear current request
+                                currentRequestId = null;
+                                
+                                // Reset form after delay
+                                setTimeout(() => {
+                                    clearForm();
+                                }, 2000);
+                            }
+                        }
+                    });
+                    
+                    if (hasUpdates) {
+                        updateResults();
+                        clearInterval(pollingInterval);
+                        pollingInterval = null;
+                    }
+                    
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+                
+                // Stop polling after max attempts
+                if (pollCount >= maxPolls) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                    
+                    // Hide progress bar
+                    document.getElementById('progressBar').classList.add('hidden');
+                    
+                    // Show timeout message with options
+                    document.getElementById('status').innerHTML = `
+                        <div class="bg-amber-50 p-3 rounded mt-2">
+                            <p class="text-amber-700 font-medium">Request timed out after 4 minutes</p>
+                            <p class="text-sm text-amber-600 mt-1">The image may still be processing. You can:</p>
+                            <div class="flex gap-2 mt-3">
+                                <button onclick="retryLastRequest()" class="px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-sm">
+                                    Try Again
+                                </button>
+                                <button onclick="checkForResults()" class="px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded text-sm">
+                                    Check for Results
+                                </button>
+                                <button onclick="clearForm()" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded text-sm">
+                                    Start Over
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Re-enable stage button
+                    document.getElementById('stageBtn').disabled = false;
+                    document.getElementById('stageBtn').textContent = 'Stage This Room';
+                }
+            }, 2000);
+        }
+        
+        function getTransformationLabel(type) {
+            const labels = {
+                'furnish': 'Virtual Staging',
+                'empty': 'Furniture Removed',
+                'enhance': 'Enhanced',
+                'redesign': 'Redesigned',
+                'day_to_dusk': 'Evening View',
+                'outdoor': 'Outdoor Staging',
+                'blue_sky': 'Blue Sky Effect'
+            };
+            return labels[type] || type;
+        }
+        
+        function updateResults() {
+            const container = document.getElementById('resultsContainer');
+            const allRoomsSection = document.getElementById('allRoomsSection');
+            const allRoomsGrid = document.getElementById('allRoomsGrid');
+            
+            // Update recent results
+            container.innerHTML = '';
+            const recentJobs = stagingJobs.slice(-3).reverse();
+            
+            recentJobs.forEach(job => {
+                if (job.status === 'completed' && job.outputImages.length > 0) {
+                    const jobDiv = document.createElement('div');
+                    jobDiv.className = 'border rounded-lg p-3 mb-3';
+                    const label = getTransformationLabel(job.transformationType);
+                    
+                    jobDiv.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-medium">${label}</h3>
+                            <button onclick="downloadImage('${job.outputImages[0]}')" class="text-sm px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded">
+                                Download
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            ${job.outputImages.map((img, idx) => `
+                                <img src="${img}" class="w-full h-48 object-cover rounded cursor-pointer hover:opacity-90" 
+                                     onclick="window.open('${img}', '_blank')" 
+                                     title="Click to view full size">
+                            `).join('')}
+                        </div>
+                    `;
+                    container.appendChild(jobDiv);
+                } else if (job.status === 'processing') {
+                    const jobDiv = document.createElement('div');
+                    jobDiv.className = 'border rounded-lg p-3 mb-3 bg-gray-50';
+                    jobDiv.innerHTML = `
+                        <h3 class="font-medium mb-2">Processing...</h3>
+                        <div class="animate-pulse bg-gray-200 h-48 rounded"></div>
+                    `;
+                    container.appendChild(jobDiv);
+                }
+            });
+            
+            // Update all rooms section
+            if (stagingJobs.filter(j => j.status === 'completed').length > 0) {
+                allRoomsSection.classList.remove('hidden');
+                allRoomsGrid.innerHTML = '';
+                
+                stagingJobs.filter(j => j.status === 'completed').reverse().forEach(job => {
+                    const roomDiv = document.createElement('div');
+                    roomDiv.className = 'bg-white rounded-lg shadow-lg p-4';
+                    
+                    const date = new Date(job.timestamp);
+                    const timeStr = date.toLocaleTimeString();
+                    const label = getTransformationLabel(job.transformationType);
+                    
+                    roomDiv.innerHTML = `
+                        <div class="flex items-start gap-4 mb-3">
+                            <img src="${job.originalImage}" class="w-24 h-24 object-cover rounded">
+                            <div class="flex-1">
+                                <h3 class="font-semibold">${label}</h3>
+                                <p class="text-sm text-gray-600">Staged at ${timeStr}</p>
+                                <button onclick="downloadImage('${job.outputImages[0]}')" class="mt-2 text-sm px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded">
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            ${job.outputImages.map((img, idx) => `
+                                <img src="${img}" class="w-full h-32 object-cover rounded cursor-pointer hover:opacity-90 mb-2" 
+                                     onclick="window.open('${img}', '_blank')">
+                            `).join('')}
+                        </div>
+                    `;
+                    
+                    allRoomsGrid.appendChild(roomDiv);
+                });
+            }
+        }
+        
+        // Download image function
+        function downloadImage(url) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'staged-room-' + Date.now() + '.jpg';
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Process custom instructions text
+        function processCustomInstructions(text) {
+            const lower = text.toLowerCase();
+            const result = {};
+            
+            // Floor-related instructions
+            if (lower.includes('hardwood') || lower.includes('change floor') || lower.includes('new floor') || 
+                lower.includes('update floor') || lower.includes('wood floor') || lower.includes('laminate')) {
+                result.updateFlooring = true;
+            }
+            if (lower.includes('keep floor') || lower.includes('existing floor') || lower.includes('same floor')) {
+                result.updateFlooring = false;
+            }
+            
+            // Furniture-specific instructions
+            if (lower.includes('just') || lower.includes('only') || lower.includes('minimal')) {
+                result.blockDecorative = true;
+                
+                // If they want specific items only, we might switch to minimalist design
+                if (lower.includes('couch') || lower.includes('sofa')) {
+                    result.design = 'minimalist';
+                }
+            }
+            
+            // Style keywords
+            if (lower.includes('bright') || lower.includes('airy') || lower.includes('light')) {
+                result.design = 'scandinavian';
+            }
+            if (lower.includes('modern') || lower.includes('contemporary')) {
+                result.design = 'modern';
+            }
+            if (lower.includes('farmhouse') || lower.includes('rustic') || lower.includes('country')) {
+                result.design = 'rustic';
+            }
+            if (lower.includes('traditional') || lower.includes('classic')) {
+                result.design = 'traditional';
+            }
+            if (lower.includes('vintage') || lower.includes('retro') || lower.includes('antique')) {
+                result.design = 'artdeco';
+            }
+            
+            // Decoration preferences
+            if (lower.includes('no plants') || lower.includes('no decor') || lower.includes('no decoration')) {
+                result.blockDecorative = true;
+            }
+            if (lower.includes('add plants') || lower.includes('with plants') || lower.includes('decorations')) {
+                result.blockDecorative = false;
+            }
+            
+            return result;
+        }
+        
+        // Initialize form state
+        handleSpaceTypeChange();
+        
+        // Cancel current request
+        function cancelRequest() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+            
+            currentRequestId = null;
+            document.getElementById('progressBar').classList.add('hidden');
+            document.getElementById('status').innerHTML = '<div class="bg-gray-50 p-3 rounded mt-2"><p class="text-gray-700">Request cancelled</p></div>';
+            document.getElementById('stageBtn').disabled = false;
+            document.getElementById('stageBtn').textContent = 'Stage This Room';
+        }
+        
+        // Retry last request
+        async function retryLastRequest() {
+            if (lastRequestData) {
+                // Clear status
+                document.getElementById('status').innerHTML = '';
+                
+                // Re-submit with same data
+                await stageCurrentRoom();
+            }
+        }
+        
+        // Check for results manually
+        async function checkForResults() {
+            if (!currentRequestId) {
+                alert('No active request to check');
+                return;
+            }
+            
+            document.getElementById('status').innerHTML = '<div class="bg-blue-50 p-3 rounded mt-2"><p class="text-blue-700">Checking for results...</p></div>';
+            
+            try {
+                const response = await fetch('/api/check-result', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ request_id: currentRequestId })
+                });
+                const data = await response.json();
+                
+                if (data.status === 'completed' && data.images && data.images.length > 0) {
+                    // Found results!
+                    stagingJobs.forEach(job => {
+                        if (job.requestId === currentRequestId) {
+                            job.status = 'completed';
+                            job.outputImages = data.images;
+                        }
+                    });
+                    
+                    updateResults();
+                    document.getElementById('status').innerHTML = '<div class="bg-green-50 p-3 rounded mt-2"><p class="text-green-700">✓ Results found!</p></div>';
+                    clearForm();
+                } else if (data.status === 'processing') {
+                    document.getElementById('status').innerHTML = '<div class="bg-amber-50 p-3 rounded mt-2"><p class="text-amber-700">Still processing. Check again in a few moments.</p></div>';
+                } else {
+                    document.getElementById('status').innerHTML = '<div class="bg-amber-50 p-3 rounded mt-2"><p class="text-amber-700">No results yet. Try again later.</p></div>';
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = '<div class="bg-red-50 p-3 rounded mt-2"><p class="text-red-700">Error checking results</p></div>';
+            }
+        }
     </script>
 </body>
 </html>
+    
