@@ -19,69 +19,40 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    // First check webhook receiver for results
+    const webhookCheck = await fetch(`${req.headers['x-forwarded-proto'] || 'https'}://${req.headers['x-forwarded-host'] || req.headers.host}/api/webhook-receiver?request_id=${request_id}`);
+    
+    if (webhookCheck.ok) {
+      const webhookData = await webhookCheck.json();
+      if (webhookData.status === 'completed' && webhookData.images && webhookData.images.length > 0) {
+        return res.status(200).json({
+          success: true,
+          status: 'completed',
+          images: webhookData.images,
+          source: 'webhook'
+        });
+      }
+    }
+
     // Check if we have stored results for this request
     const staging = global.stagingHistory?.find(s => s.request_id === request_id);
     
-    if (staging) {
-      if (staging.output_images && staging.output_images.length > 0) {
-        // We have results!
-        return res.status(200).json({
-          success: true,
-          status: 'completed',
-          images: staging.output_images,
-          staging_data: staging
-        });
-      } else if (staging.status === 'processing') {
-        // Still processing
-        return res.status(200).json({
-          success: true,
-          status: 'processing',
-          message: 'Still processing, please check again in a few seconds'
-        });
-      } else if (staging.status === 'failed') {
-        // Processing failed
-        return res.status(200).json({
-          success: false,
-          status: 'failed',
-          error: staging.error || 'Processing failed'
-        });
-      }
+    if (staging && staging.output_images && staging.output_images.length > 0) {
+      return res.status(200).json({
+        success: true,
+        status: 'completed',
+        images: staging.output_images,
+        source: 'memory'
+      });
     }
 
-    // Try to check InstantDeco API directly for status
-    const checkUrl = `https://app.instantdeco.ai/api/1.1/wf/check_status?request_id=${request_id}`;
-    
-    const response = await fetch(checkUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${process.env.INSTANTDECO_API_KEY}`
-      }
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      
-      // Update our stored data if we have results
-      if (data.status === 'success' && data.output) {
-        if (staging) {
-          staging.status = 'completed';
-          staging.output_images = data.output.split(',').map(url => url.trim());
-        }
-        
-        return res.status(200).json({
-          success: true,
-          status: 'completed',
-          images: data.output.split(',').map(url => url.trim()),
-          raw_response: data
-        });
-      }
-    }
-
-    // Default response - no results yet
+    // Since InstantDeco doesn't support status checking, we can only wait for webhook
+    // Return processing status
     return res.status(200).json({
       success: true,
       status: 'processing',
-      message: 'Request is still being processed'
+      message: 'Request is still being processed. InstantDeco will send results via webhook when ready.',
+      note: 'InstantDeco typically takes 30-60 seconds to process images'
     });
 
   } catch (error) {

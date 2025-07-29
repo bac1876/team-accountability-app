@@ -81,7 +81,7 @@ module.exports = async function handler(req, res) {
     // Get webhook URL (using Vercel function URL)
     const host = req.headers['x-forwarded-host'] || req.headers.host;
     const protocol = req.headers['x-forwarded-proto'] || 'https';
-    const webhookUrl = `${protocol}://${host}/api/webhook`;
+    const webhookUrl = `${protocol}://${host}/api/webhook-receiver`;
     
     // Prepare InstantDecoAI payload
     const payload = {
