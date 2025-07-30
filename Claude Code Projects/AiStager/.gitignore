@@ -111,6 +111,9 @@ QUICK_*.md
 # Backup directories
 BACKUP_*/
 backup/
+workingaistager*/
+darkmode_aistager*/
+beta_aistager*/
 
 # Alternative implementations
 main_*.py

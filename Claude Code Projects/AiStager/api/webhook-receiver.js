@@ -1,23 +1,67 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
+const sharp = require('sharp');
 
 // Global storage for webhook results
 if (!global.webhookResults) {
   global.webhookResults = new Map();
 }
 
-// Helper function to download image and convert to base64
-async function downloadImageAsBase64(url) {
+// Helper function to download image as buffer
+async function downloadImageAsBuffer(url) {
   try {
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to download image: ${response.status}`);
     }
     const buffer = await response.buffer();
-    return buffer.toString('base64');
+    return buffer;
   } catch (error) {
     console.error('Error downloading image:', error);
     throw error;
+  }
+}
+
+// Helper function to compress image
+async function compressImage(buffer, quality = 85, maxWidth = 2048) {
+  try {
+    // Get image metadata
+    const metadata = await sharp(buffer).metadata();
+    
+    console.log(`Original image: ${metadata.width}x${metadata.height}, format: ${metadata.format}`);
+    
+    // Prepare sharp instance
+    let sharpInstance = sharp(buffer);
+    
+    // Resize if wider than maxWidth while maintaining aspect ratio
+    if (metadata.width > maxWidth) {
+      sharpInstance = sharpInstance.resize(maxWidth, null, {
+        withoutEnlargement: true,
+        fit: 'inside'
+      });
+      console.log(`Resizing to max width: ${maxWidth}px`);
+    }
+    
+    // Compress to JPEG with specified quality
+    const compressedBuffer = await sharpInstance
+      .jpeg({
+        quality: quality,
+        progressive: true, // Progressive JPEG for better loading
+        mozjpeg: true // Use mozjpeg encoder for better compression
+      })
+      .toBuffer();
+    
+    // Log compression results
+    const originalSize = buffer.length;
+    const compressedSize = compressedBuffer.length;
+    const reduction = Math.round((1 - compressedSize / originalSize) * 100);
+    console.log(`Compression: ${Math.round(originalSize/1024)}KB → ${Math.round(compressedSize/1024)}KB (${reduction}% reduction)`);
+    
+    return compressedBuffer;
+  } catch (error) {
+    console.error('Error compressing image:', error);
+    // Return original buffer if compression fails
+    return buffer;
   }
 }
 
@@ -70,10 +114,17 @@ module.exports = async function handler(req, res) {
       try {
         // Download the image from InstantDeco's temporary URL
         console.log('Downloading image from InstantDeco URL:', output);
-        const base64Image = await downloadImageAsBase64(output);
+        const imageBuffer = await downloadImageAsBuffer(output);
+        
+        // Compress the image before uploading
+        console.log('Compressing image to reduce file size...');
+        const compressedBuffer = await compressImage(imageBuffer, 85, 2048);
+        
+        // Convert compressed image to base64
+        const base64Image = compressedBuffer.toString('base64');
         
         // Re-upload to ImgBB for permanent storage
-        console.log('Re-uploading image to ImgBB for permanent storage...');
+        console.log('Uploading compressed image to ImgBB for permanent storage...');
         const permanentUrl = await uploadToImgBB(base64Image);
         console.log('Image permanently stored at:', permanentUrl);
         

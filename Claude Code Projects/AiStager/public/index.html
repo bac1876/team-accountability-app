@@ -3,24 +3,193 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AI Room Stager - Professional</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+    <title>AiStager - AI Interior Design</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AiStager">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="Transform your spaces with AI-powered interior design and virtual staging">
+    
+    <!-- PWA Links -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Base responsive styles for mobile compatibility */
+        /* Dark mode base styles */
+        body {
+            background: linear-gradient(to bottom right, #0f0f0f, #1a1a1a);
+            color: #e5e5e5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Floating card styles */
+        .floating-card {
+            background: rgba(31, 31, 31, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .floating-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Modern input styles */
+        input[type="text"], input[type="file"], select, textarea {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e5e5e5;
+            transition: all 0.3s ease;
+            font-size: 16px; /* Prevent iOS zoom */
+        }
+        
+        input[type="text"]:focus, select:focus, textarea:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Modern button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            border: none;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            background: #374151;
+            opacity: 0.5;
+        }
+        
+        /* Modern checkbox/radio styles */
+        input[type="checkbox"], input[type="radio"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            min-width: 20px;
+            min-height: 20px;
+        }
+        
+        input[type="checkbox"] {
+            border-radius: 6px;
+        }
+        
+        input[type="radio"] {
+            border-radius: 50%;
+        }
+        
+        input[type="checkbox"]:checked, input[type="radio"]:checked {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            border-color: transparent;
+        }
+        
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+        }
+        
+        input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+        
+        /* Label hover effects */
+        label:hover input[type="checkbox"], label:hover input[type="radio"] {
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Upload area styles */
+        .upload-area {
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .upload-area.drag-over {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+        
+        /* Dark mode text colors */
+        .text-gray-500 { color: #9ca3af !important; }
+        .text-gray-600 { color: #9ca3af !important; }
+        .text-gray-700 { color: #d1d5db !important; }
+        .text-gray-800 { color: #e5e7eb !important; }
+        
+        /* Dark mode backgrounds */
+        .bg-gray-50 { background-color: rgba(255, 255, 255, 0.05) !important; }
+        .bg-gray-100 { background-color: rgba(255, 255, 255, 0.08) !important; }
+        .bg-white { background-color: transparent !important; }
+        
+        /* Progress bar dark mode */
+        .bg-gray-200 { background-color: rgba(255, 255, 255, 0.05) !important; }
+        
+        /* Status colors */
+        .bg-green-50 { background-color: rgba(34, 197, 94, 0.1) !important; }
+        .text-green-700 { color: #4ade80 !important; }
+        .bg-red-50 { background-color: rgba(239, 68, 68, 0.1) !important; }
+        .text-red-700 { color: #f87171 !important; }
+        .bg-blue-50 { background-color: rgba(59, 130, 246, 0.1) !important; }
+        .text-blue-700 { color: #60a5fa !important; }
+        
+        /* Border colors */
+        .border { border-color: rgba(255, 255, 255, 0.1) !important; }
+        .border-gray-300 { border-color: rgba(255, 255, 255, 0.1) !important; }
+        
+        /* Hover states */
+        .hover\:bg-gray-50:hover { background-color: rgba(255, 255, 255, 0.08) !important; }
+        
+        /* Base responsive styles */
         img, video {
             max-width: 100%;
             height: auto;
         }
         
-        /* Ensure minimum tap target size for mobile */
-        button, label, input[type="checkbox"], input[type="radio"] {
+        /* Ensure minimum tap target size */
+        button, label {
             min-height: 44px;
-        }
-        
-        /* Prevent iOS zoom on input focus */
-        input, textarea, select {
-            font-size: 16px;
         }
         
         /* Better touch scrolling */
@@ -28,64 +197,71 @@
             -webkit-overflow-scrolling: touch;
         }
         
-        /* Prevent horizontal overflow */
-        body {
-            overflow-x: hidden;
+        /* Responsive styles */
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+            }
+            .floating-card {
+                margin: 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-8">
-        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-2">AI Room Stager</h1>
-        <p class="text-center text-gray-600 mb-2 text-sm sm:text-base">Powered by InstantDecoAI</p>
-        <p class="text-center text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6 md:mb-8">Professional Version - No Pets, Better Control</p>
+    <div class="min-h-screen p-4 sm:p-6 md:p-8">
+        <div class="text-center mb-8 sm:mb-10">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold mb-3 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">AI Room Stager</h1>
+            <p class="text-gray-400 text-lg sm:text-xl mb-2">Transform your spaces with AI magic</p>
+            <p class="text-xs sm:text-sm text-gray-500">Powered by InstantDecoAI • Professional Version</p>
+        </div>
         
         <div class="max-w-6xl mx-auto">
             <!-- Webhook Status -->
-            <div id="webhookStatus" class="mb-6 p-4 rounded bg-gray-50">
+            <div id="webhookStatus" class="mb-6 p-4 rounded floating-card hidden">
                 <p class="text-sm">Cloud Version - Ready</p>
             </div>
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 <!-- Left Column: Upload and Stage -->
                 <div>
-                    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-semibold">Stage a Room</h2>
-                            <button onclick="clearForm()" class="text-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded">
+                    <div class="floating-card p-6 sm:p-8">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-semibold text-gray-100">Stage a Room</h2>
+                            <button onclick="clearForm()" class="text-sm px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
                                 Clear Form
                             </button>
                         </div>
                         
                         <!-- Upload Section -->
                         <div class="mb-6">
-                            <label class="block text-sm font-medium mb-2">Upload Photo</label>
+                            <label class="block text-sm font-medium mb-3 text-gray-300">Upload Photo</label>
                             <input type="file" id="fileInput" accept="image/*" class="hidden">
-                            <label for="fileInput" class="cursor-pointer bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg p-6 block text-center hover:bg-blue-100 transition-colors">
-                                <svg class="w-10 h-10 mx-auto mb-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            <label for="fileInput" class="cursor-pointer upload-area rounded-lg p-8 block text-center">
+                                <svg class="w-12 h-12 mx-auto mb-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>
-                                <p class="text-gray-700">Click to upload a photo</p>
-                                <p class="text-xs text-gray-500 mt-1">Interior or Exterior</p>
+                                <p class="text-gray-300 font-medium">Drop your image here or click to browse</p>
+                                <p class="text-xs text-gray-500 mt-2">Supports JPG, PNG • Max 10MB</p>
                             </label>
                             <!-- URL Input Option -->
-                            <div class="mt-3">
-                                <p class="text-xs text-gray-500 mb-1">Or paste an image URL for faster processing:</p>
-                                <input type="url" id="imageUrlInput" placeholder="https://example.com/room.jpg" class="w-full p-2 border rounded text-sm">
-                                <p class="text-xs text-blue-600 mt-1 mobile-tip hidden">💡 Tip: Using URLs is much faster on mobile networks!</p>
+                            <div class="mt-4">
+                                <p class="text-xs text-gray-500 mb-2">Or paste an image URL:</p>
+                                <input type="url" id="imageUrlInput" placeholder="https://example.com/room.jpg" class="w-full p-3 rounded-lg text-sm">
+                                <p class="text-xs text-blue-400 mt-1 mobile-tip hidden">💡 Tip: Using URLs is much faster on mobile networks!</p>
                             </div>
                         </div>
                         
                         <!-- Current Image Preview -->
                         <div id="currentImagePreview" class="hidden mb-6">
-                            <p class="text-sm font-medium mb-2">Selected Image:</p>
-                            <img id="previewImage" class="w-full h-48 object-cover rounded">
+                            <p class="text-sm font-medium mb-3 text-gray-300">Selected Image:</p>
+                            <img id="previewImage" class="w-full h-48 object-cover rounded-lg">
                         </div>
                         
                         <!-- Space Type (Interior/Exterior) -->
                         <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Space Type</label>
-                            <select id="spaceType" class="w-full p-3 border rounded" onchange="handleSpaceTypeChange()">
+                            <label class="block text-sm font-medium mb-3 text-gray-300">Space Type</label>
+                            <select id="spaceType" class="w-full p-3 rounded-lg" onchange="handleSpaceTypeChange()">
                                 <option value="interior">Interior Room</option>
                                 <option value="exterior">Exterior/Outdoor</option>
                             </select>
@@ -93,8 +269,8 @@
                         
                         <!-- Transformation Type -->
                         <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Transformation Type</label>
-                            <select id="transformationType" class="w-full p-3 border rounded" onchange="handleTransformationChange()">
+                            <label class="block text-sm font-medium mb-3 text-gray-300">Transformation Type</label>
+                            <select id="transformationType" class="w-full p-3 rounded-lg" onchange="handleTransformationChange()">
                                 <option value="furnish">Add Furniture (Virtual Staging) - ~2-3 min</option>
                                 <option value="empty">Remove All Furniture - ~1-2 min</option>
                                 <option value="enhance">Enhance Photo Only - ~30-60 sec</option>
@@ -106,8 +282,8 @@
                         
                         <!-- Room Type (for interior) -->
                         <div id="roomTypeSection" class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Room Type</label>
-                            <select id="roomType" class="w-full p-3 border rounded">
+                            <label class="block text-sm font-medium mb-3 text-gray-300">Room Type</label>
+                            <select id="roomType" class="w-full p-3 rounded-lg">
                                 <option value="living_room">Living Room</option>
                                 <option value="bedroom">Bedroom</option>
                                 <option value="kitchen">Kitchen</option>
@@ -120,8 +296,8 @@
                         
                         <!-- Outdoor Type (for exterior) -->
                         <div id="outdoorTypeSection" class="mb-4 hidden">
-                            <label class="block text-sm font-medium mb-2">Outdoor Type</label>
-                            <select id="outdoorType" class="w-full p-3 border rounded">
+                            <label class="block text-sm font-medium mb-3 text-gray-300">Outdoor Type</label>
+                            <select id="outdoorType" class="w-full p-3 rounded-lg">
                                 <option value="terrace">Terrace/Patio</option>
                                 <option value="pool">Pool Area</option>
                                 <option value="pergola">Pergola</option>
@@ -130,59 +306,68 @@
                         
                         <!-- Design Styles -->
                         <div id="designStyleSection" class="mb-6">
-                            <label class="block text-sm font-medium mb-2">Select Design Style</label>
+                            <label class="block text-sm font-medium mb-3 text-gray-300">Select Design Style</label>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                <label class="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
                                     <input type="radio" name="designStyle" value="modern" class="design-radio" checked>
-                                    <span class="text-sm">Modern</span>
+                                    <span class="text-sm text-gray-300">Modern</span>
                                 </label>
-                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                                    <input type="radio" name="designStyle" value="scandinavian" class="design-radio">
-                                    <span class="text-sm">Scandinavian</span>
+                                <label class="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="designStyle" value="coastal" class="design-radio">
+                                    <span class="text-sm text-gray-300">Coastal</span>
                                 </label>
-                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                <label class="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
                                     <input type="radio" name="designStyle" value="midcentury" class="design-radio">
-                                    <span class="text-sm">Mid-Century</span>
+                                    <span class="text-sm text-gray-300">Mid-Century</span>
                                 </label>
-                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                <label class="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
                                     <input type="radio" name="designStyle" value="rustic" class="design-radio">
-                                    <span class="text-sm">Rustic</span>
+                                    <span class="text-sm text-gray-300">Rustic</span>
                                 </label>
-                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                                    <input type="radio" name="designStyle" value="artdeco" class="design-radio">
-                                    <span class="text-sm">Art Deco</span>
+                                <label class="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="designStyle" value="minimalist" class="design-radio">
+                                    <span class="text-sm text-gray-300">Minimalist</span>
                                 </label>
-                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                <label class="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
                                     <input type="radio" name="designStyle" value="french" class="design-radio">
-                                    <span class="text-sm">French</span>
+                                    <span class="text-sm text-gray-300">French</span>
                                 </label>
                             </div>
                         </div>
                         
                         
                         <!-- Advanced Options -->
-                        <div id="advancedOptions" class="mb-6 border-t pt-4">
-                            <p class="text-sm font-medium mb-3">Advanced Options</p>
+                        <div id="advancedOptions" class="mb-6 border-t border-gray-700 pt-4">
+                            <p class="text-sm font-medium mb-3 text-gray-300">Advanced Options</p>
                             
                             <!-- Flooring Option -->
                             <div id="flooringSection" class="mb-3">
-                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                                    <input type="checkbox" id="updateFlooring" class="w-4 h-4">
-                                    <span class="text-sm">Update flooring</span>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="checkbox" id="updateFlooring">
+                                    <span class="text-sm text-gray-300">Update flooring</span>
                                 </label>
                             </div>
                             
                             <!-- Block Decorative Elements -->
                             <div id="blockDecorSection" class="mb-3">
-                                <label class="flex items-center space-x-2 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                                    <input type="checkbox" id="blockDecorative" class="w-4 h-4" checked>
-                                    <span class="text-sm">Block decorative items (plants, vases, animals)</span>
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="checkbox" id="blockDecorative" checked>
+                                    <span class="text-sm text-gray-300">Block decorative items (plants, vases, animals)</span>
                                 </label>
+                            </div>
+                            
+                            <!-- Renovate Mode -->
+                            <div id="renovateModeSection" class="mb-3">
+                                <label class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="checkbox" id="renovateMode" onchange="handleRenovateModeChange()">
+                                    <span class="text-sm text-gray-300">Renovate Mode (enhanced AI for dramatic changes)</span>
+                                </label>
+                                <p class="text-xs text-gray-500 ml-9 mt-1">Uses extra AI processing for more creative results</p>
                             </div>
                         </div>
                         
                         <!-- Stage Button -->
-                        <button onclick="stageCurrentRoom()" id="stageBtn" class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed text-base">
+                        <button onclick="stageCurrentRoom()" id="stageBtn" class="w-full btn-primary text-white py-4 px-6 rounded-lg font-medium disabled:cursor-not-allowed text-base">
                             Stage This Room
                         </button>
                         
@@ -191,20 +376,20 @@
                         
                         <!-- Progress Bar -->
                         <div id="progressBar" class="hidden mt-4">
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div id="progressFill" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                            <div class="w-full progress-bg rounded-full h-2">
+                                <div id="progressFill" class="progress-fill h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
                             </div>
-                            <p id="progressText" class="text-sm text-gray-600 mt-1 text-center">Processing...</p>
+                            <p id="progressText" class="text-sm text-gray-400 mt-2 text-center">Processing...</p>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Right Column: Results -->
                 <div>
-                    <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-                        <h2 class="text-xl font-semibold mb-4">Staging Results</h2>
+                    <div class="floating-card p-6 sm:p-8">
+                        <h2 class="text-2xl font-semibold mb-6 text-gray-100">Staging Results</h2>
                         <div id="resultsContainer" class="space-y-4">
-                            <p class="text-gray-500 text-center py-8">No rooms staged yet. Upload a photo to get started!</p>
+                            <p class="text-gray-400 text-center py-12">No rooms staged yet. Upload a photo to get started!</p>
                         </div>
                     </div>
                 </div>
@@ -212,8 +397,10 @@
             
             <!-- All Staged Rooms Section -->
             <div id="allRoomsSection" class="mt-8 hidden">
-                <h2 class="text-2xl font-semibold mb-4">All Staged Rooms</h2>
-                <div id="allRoomsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                <div class="floating-card p-6 sm:p-8">
+                    <h2 class="text-2xl font-semibold mb-6 text-gray-100">All Staged Rooms</h2>
+                    <div id="allRoomsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -362,8 +549,10 @@
             const designStyleSection = document.getElementById('designStyleSection');
             const flooringSection = document.getElementById('flooringSection');
             const blockDecorSection = document.getElementById('blockDecorSection');
+            const renovateModeSection = document.getElementById('renovateModeSection');
             const advancedOptions = document.getElementById('advancedOptions');
             const timeEstimate = document.getElementById('timeEstimate');
+            const renovateMode = document.getElementById('renovateMode').checked;
             
             // Update time estimate
             const timeEstimates = {
@@ -373,20 +562,42 @@
                 'redesign': '2-3 minutes',
                 'day_to_dusk': '1 minute',
                 'outdoor': '2-3 minutes',
-                'blue_sky': '30-60 seconds'
+                'blue_sky': '30-60 seconds',
+                'renovate': '2-3 minutes'
             };
             
-            timeEstimate.textContent = `Estimated processing time: ${timeEstimates[transformType] || '1-2 minutes'}`;
+            // If renovate mode is on and using furnish, show renovate time
+            const actualTransformation = (renovateMode && transformType === 'furnish') ? 'renovate' : transformType;
+            timeEstimate.textContent = `Estimated processing time: ${timeEstimates[actualTransformation] || '1-2 minutes'}`;
             
             // Show/hide sections based on transformation type
             const needsDesign = ['furnish', 'redesign', 'outdoor'].includes(transformType);
             const needsFlooring = ['furnish', 'redesign'].includes(transformType) && spaceType === 'interior';
             const needsBlockDecor = ['furnish', 'redesign', 'outdoor'].includes(transformType);
+            const showRenovateMode = transformType === 'furnish' && spaceType === 'interior';
             
             designStyleSection.style.display = needsDesign ? 'block' : 'none';
             flooringSection.style.display = needsFlooring ? 'block' : 'none';
             blockDecorSection.style.display = needsBlockDecor ? 'block' : 'none';
-            advancedOptions.style.display = (needsFlooring || needsBlockDecor) ? 'block' : 'none';
+            renovateModeSection.style.display = showRenovateMode ? 'block' : 'none';
+            advancedOptions.style.display = (needsFlooring || needsBlockDecor || showRenovateMode) ? 'block' : 'none';
+        }
+        
+        // Handle renovate mode toggle
+        function handleRenovateModeChange() {
+            const renovateMode = document.getElementById('renovateMode').checked;
+            const transformation = document.getElementById('transformationType').value;
+            const status = document.getElementById('status');
+            
+            if (renovateMode && transformation === 'furnish') {
+                status.innerHTML = '<div class="bg-blue-50 p-2 rounded text-sm"><p class="text-blue-700">Renovate Mode: Will apply enhanced AI processing for more dramatic results</p></div>';
+            } else if (renovateMode) {
+                status.innerHTML = '<div class="bg-gray-50 p-2 rounded text-sm"><p class="text-gray-600">Renovate Mode only works with "Add Furniture" option</p></div>';
+            } else {
+                status.innerHTML = '';
+            }
+            
+            handleTransformationChange();
         }
         
         // Handle file upload
@@ -452,6 +663,10 @@
             let selectedDesign = document.querySelector('input[name="designStyle"]:checked')?.value || 'modern';
             let updateFlooring = document.getElementById('updateFlooring').checked;
             let blockDecorative = document.getElementById('blockDecorative').checked;
+            const renovateMode = document.getElementById('renovateMode').checked;
+            
+            // If renovate mode is on and transformation type is furnish, override to renovate
+            const actualTransformationType = (renovateMode && transformationType === 'furnish') ? 'renovate' : transformationType;
             
             const btn = document.getElementById('stageBtn');
             const status = document.getElementById('status');
@@ -489,7 +704,7 @@
             // Prepare request data
             const requestData = {
                 image: currentImageData,
-                transformation_type: transformationType,
+                transformation_type: actualTransformationType,
                 space_type: spaceType,
                 room_type: roomType,
                 design_style: selectedDesign,
@@ -844,6 +1059,35 @@
             } catch (error) {
                 document.getElementById('status').innerHTML = '<div class="bg-red-50 p-3 rounded mt-2"><p class="text-red-700">Error checking results</p></div>';
             }
+        }
+        
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+
+        // Handle PWA install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Update UI to notify the user they can add to home screen
+            showInstallPromotion();
+        });
+
+        function showInstallPromotion() {
+            // You can add a custom install button/banner here if desired
+            console.log('App can be installed');
         }
     </script>
 </body>

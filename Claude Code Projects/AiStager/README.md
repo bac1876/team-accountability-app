@@ -1,203 +1,207 @@
-# AiStager - AI Interior Design Application
+# AiStager - AI-Powered Interior Design & Virtual Staging
 
-Transform your living spaces with AI-powered interior design suggestions. Upload a photo of any room and get instant AI-staged variations with beautiful furniture and decor while preserving the exact room structure.
+Transform any room with AI-powered interior design. Add furniture to empty spaces, redesign existing rooms, or enhance your photos with professional staging.
 
-![AI Interior Designer](https://img.shields.io/badge/AI-Powered-blue)
-![Render](https://img.shields.io/badge/Deploy-Render-green)
-![Flask](https://img.shields.io/badge/Backend-Flask-black)
+![AiStager Demo](https://aistager.vercel.app/icon-512.png)
 
-## Features
+## 🚀 Features
 
-- 🏠 **Room Types**: Living Room, Bedroom, Kitchen, Bathroom, Dining Room
-- 🎨 **Design Styles**: Modern, Contemporary, Scandinavian, Minimal (AI auto-detects if not specified)
-- 🖼️ **Structure Preservation**: Keeps walls, windows, and room layout intact
-- 🚀 **AI Staging**: Powered by ReimagineHome AI for professional virtual staging
-- 📷 **Smart Image Hosting**: Automatic upload to Cloudinary (with fallback options)
-- ⚡ **Webhook Integration**: Real-time results via webhooks
-- 📱 **Responsive Design**: Works on desktop and mobile devices
+### Core Capabilities
+- **Virtual Staging**: Add furniture to empty rooms
+- **Room Redesign**: Transform existing furnished spaces
+- **Photo Enhancement**: Improve lighting and quality
+- **Empty Rooms**: Remove all furniture from spaces
+- **Style Transfer**: Apply different design aesthetics
 
-## Quick Start
+### Supported Room Types
+- Living Room
+- Bedroom
+- Kitchen
+- Bathroom
+- Dining Room
+- Home Office
+- Kid's Bedroom
 
-### 1. Clone the Repository
+### Design Styles
+- Modern
+- Coastal
+- Mid-Century
+- Rustic
+- Minimalist
+- French
+
+### Advanced Features
+- 🌙 Dark mode UI with glass-morphism design
+- 📱 Progressive Web App (installable on mobile)
+- 🗜️ Automatic image compression
+- ⚡ Real-time processing status
+- 🔄 Webhook-based asynchronous processing
+- 🚫 Rate limiting for API protection
+
+## 🛠️ Technology Stack
+
+- **Frontend**: React (single-file component)
+- **Styling**: Tailwind CSS
+- **Backend**: Vercel Serverless Functions
+- **AI Service**: InstantDeco API
+- **Image Storage**: ImgBB
+- **Deployment**: Vercel
+
+## 📱 Installation
+
+### As a Web App
+Visit [https://aistager.vercel.app](https://aistager.vercel.app)
+
+### As a Mobile App (PWA)
+
+**iPhone/iPad:**
+1. Open in Safari
+2. Tap Share → "Add to Home Screen"
+3. Name it and tap "Add"
+
+**Android:**
+1. Open in Chrome
+2. Tap menu → "Install app"
+3. Confirm installation
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Vercel CLI
+- InstantDeco API key
+- ImgBB API key
+
+### Local Development
+
+1. Clone the repository:
 ```bash
-git clone <your-repo-url>
-cd AiStager
+git clone https://github.com/yourusername/aistager.git
+cd aistager
 ```
 
-### 2. Install Dependencies
-
-Python dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-Node.js dependencies (for Vercel deployment):
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-### 3. Set Up Environment Variables
-Copy the example environment file and add your API keys:
+3. Create `.env.local` file:
+```
+INSTANTDECO_API_KEY=your_instantdeco_key
+IMGBB_API_KEY=your_imgbb_key
+```
+
+4. Run development server:
 ```bash
-cp .env.local.example .env.local
+npm run dev
+# or
+vercel dev
 ```
 
-Edit `.env.local` and add your keys:
-```
-# Required for AI staging
-REIMAGINEHOME_API_KEY=your-reimaginehome-api-key
+5. Open [http://localhost:3000](http://localhost:3000)
 
-# Recommended for reliable image hosting
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
+### Deployment
 
-# Alternative image hosting
-IMGBB_API_KEY=your-imgbb-key
-```
-
-Get your API keys at:
-- ReimagineHome: https://www.reimaginehome.ai (7-day free trial)
-- Cloudinary: https://cloudinary.com (free tier available)
-- ImgBB: https://api.imgbb.com (free tier available)
-
-### 4. Run Development Server
-
-Flask backend:
+Deploy to Vercel:
 ```bash
-python app.py
+vercel --prod
 ```
 
-Visit http://localhost:5000 to see the app.
+Set environment variables in Vercel dashboard:
+- `INSTANTDECO_API_KEY`
+- `IMGBB_API_KEY`
 
-## Deployment
+## 📖 API Documentation
 
-### Deploy to Render (Recommended)
+### POST /api/stage
 
-1. Push your code to GitHub
-2. Visit [render.com](https://render.com) and create a new Web Service
-3. Connect your GitHub repository
-4. Configure the service:
-   - Runtime: Python 3
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `gunicorn app:app`
-5. Add environment variables in Render dashboard:
-   - `REIMAGINEHOME_API_KEY`
-   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-6. Deploy!
+Generate a staged image.
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
-
-## How It Works
-
-1. **Upload**: Drag and drop or click to upload a room photo
-2. **Select Room Type**: Choose from Living Room, Bedroom, Kitchen, etc.
-3. **Choose Style**: Select a design theme or let AI decide
-4. **Generate**: AI stages your room with appropriate furniture and decor
-5. **View Results**: Get your professionally staged room image
-
-## Technology Stack
-
-- **Frontend**: Embedded HTML with Tailwind CSS
-- **Backend**: Flask (Python) with gunicorn
-- **AI Service**: ReimagineHome API for virtual staging
-- **Image Hosting**: Cloudinary (primary), 0x0.st (fallback)
-- **Deployment**: Render.com
-
-## Project Structure
-
-```
-AiStager/
-├── app.py                # Main Flask backend with ReimagineHome integration
-├── requirements.txt      # Python dependencies
-├── render.yaml          # Render deployment config
-├── public/              # Frontend variations
-│   └── *.html          # Different UI implementations
-├── pages/api/           # Vercel API endpoints (alternative)
-├── app_*.py             # Various backend implementations
-├── test_*.py            # Test scripts
-└── .env.local           # Environment variables (create from .env.local.example)
+**Request Body:**
+```json
+{
+  "image": "base64_encoded_image",
+  "transformation_type": "furnish|empty|enhance|redesign|renovate",
+  "room_type": "living_room|bedroom|kitchen|etc",
+  "design_style": "modern|coastal|minimalist|etc",
+  "update_flooring": true|false,
+  "block_decorative": true|false
+}
 ```
 
-## Development
+**Response:**
+```json
+{
+  "success": true,
+  "request_id": "unique_id",
+  "message": "Processing started"
+}
+```
 
-### Current Implementation (app.py)
-- Uses ReimagineHome API for professional virtual staging
-- Implements webhook-based asynchronous processing
-- Automatic image hosting with Cloudinary (falls back to 0x0.st)
-- Stores recent stagings for user convenience
+### GET /api/webhook-receiver
 
-### Alternative Implementations
-- `app_dalle.py`: Uses OpenAI DALL-E for image generation
-- `app_controlnet.py`: Uses Replicate's ControlNet
-- `app_reimaginehome_*.py`: Various ReimagineHome integration approaches
-- `main.py`: Simple local-only implementation
+Check staging results.
 
-## Troubleshooting
+**Query Parameters:**
+- `request_id`: The ID returned from /api/stage
 
-### Image Upload Issues
-- Ensure Cloudinary is configured in `.env.local`
-- Check that your image is under 10MB
-- Verify the ReimagineHome API accepts the image URL
+**Response:**
+```json
+{
+  "success": true,
+  "status": "completed",
+  "images": ["https://image-url.jpg"]
+}
+```
 
-### Staging Not Completing
-- Check webhook URL is accessible (not localhost when deployed)
-- Verify ReimagineHome API key is valid
-- Check browser console for errors
+## 🎨 Customization
 
-### API Key Issues
-- ReimagineHome offers a 7-day free trial
-- Ensure API key is properly set in environment variables
-- Test API connection with `python test_api_status.py`
+### Modifying Styles
+Edit the design styles in `public/index.html`:
+```javascript
+const designStyles = [
+  { id: 'modern', name: 'Modern' },
+  // Add your custom styles here
+];
+```
 
-## Contributing
+### Adding Room Types
+Update the room types array:
+```javascript
+const roomTypes = [
+  { id: 'living_room', name: 'Living Room' },
+  // Add new room types
+];
+```
 
-Feel free to open issues or submit pull requests to improve the application!
+## 🐛 Known Issues
 
-## License
+1. **Bedroom Empty**: Uses "office" room type for better furniture removal
+2. **Rate Limiting**: 45-second cooldown between requests
+3. **Mobile Timeouts**: Extended to 90 seconds for slower connections
 
-MIT
+## 🤝 Contributing
 
-## Current Status (July 29, 2025)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### Recent Changes
-- **Fixed Environment Variables**: Resolved issue where environment variables weren't loading in Vercel due to ES modules configuration
-  - Removed `"type": "module"` from package.json
-  - Converted all API files from ES modules to CommonJS
-  - Downgraded node-fetch from v3 to v2.7.0 for CommonJS compatibility
+## 📄 License
 
-- **API Integration**: Successfully integrated InstantDecoAI for virtual staging
-  - Fixed authentication issues with Bearer token format
-  - Ensured all required parameters (room_type, design, block_element) are included in requests
-  - Current API key: bhqAdea6X9lehYWyi5HzZ9Z5gobNhm00
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-- **Webhook & Polling System**: Implemented dual approach for receiving results
-  - Created `/api/webhook-receiver` endpoint to receive results from InstantDeco
-  - Created `/api/check-result` endpoint for polling results
-  - Frontend polls check-result endpoint which checks both webhook storage and memory
-  - Removed test endpoints to stay under Vercel's 12 function limit
+## 🙏 Acknowledgments
 
-### Architecture Notes
-- **Current Endpoints**:
-  - `/api/stage.js` - Main staging endpoint that uploads images to ImgBB and calls InstantDeco
-  - `/api/webhook-receiver.js` - Receives and stores results from InstantDeco webhooks
-  - `/api/check-result.js` - Polling endpoint that checks for completed results
-  - `/api/health.js` - Health check endpoint
-  - `/api/recent-stagings.js` - Returns recent staging history
+- InstantDeco AI for the powerful staging API
+- Vercel for seamless deployment
+- The open-source community
 
-- **Image Flow**:
-  1. User uploads image → Base64 encoded
-  2. Backend uploads to ImgBB → Gets URL
-  3. Sends URL to InstantDeco with webhook URL
-  4. InstantDeco processes and sends results to webhook
-  5. Frontend polls check-result until completion
+## 📞 Support
 
-### Known Issues & Solutions
-- **Timeouts**: InstantDeco can take 30-60 seconds, implemented polling with 180s timeout
-- **Vercel Function Limit**: Limited to 12 functions on hobby plan, removed test endpoints
-- **CORS**: All endpoints properly configured with CORS headers
+For issues and feature requests, please use the [GitHub Issues](https://github.com/yourusername/aistager/issues) page.
 
-### Next Steps
-- Deploy current webhook implementation
-- Monitor webhook reliability in production
-- Consider database for persistent storage instead of in-memory
+---
+
+Made with ❤️ by [Your Name]
