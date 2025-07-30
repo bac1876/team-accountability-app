@@ -10,6 +10,8 @@ from datetime import datetime
 import uuid
 import hashlib
 import io
+import cloudinary
+import cloudinary.uploader
 
 load_dotenv('.env.local')  # Explicitly load .env.local
 
@@ -19,6 +21,24 @@ CORS(app)
 # Get API key from environment
 REIMAGINEHOME_API_KEY = os.getenv('REIMAGINEHOME_API_KEY')
 
+# ImgBB configuration (primary upload service)
+IMGBB_API_KEY = os.getenv('IMGBB_API_KEY')
+
+# Cloudinary configuration (backup)
+CLOUDINARY_CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME')
+CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY')
+CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET')
+
+if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET
+    )
+    CLOUDINARY_CONFIGURED = True
+else:
+    CLOUDINARY_CONFIGURED = False
+
 # Store staging results in memory
 STAGING_JOBS = {}
 COMPLETED_STAGINGS = {}
@@ -26,6 +46,8 @@ TEMP_IMAGES = {}  # Store images temporarily
 
 print("=== UNIQUE DEPLOYMENT TEST: 12345 ===")
 print(f"ReimagineHome API configured: {'Yes' if REIMAGINEHOME_API_KEY else 'No'}")
+print(f"ImgBB configured: {'Yes' if IMGBB_API_KEY else 'No'}")
+print(f"Cloudinary configured: {'Yes' if CLOUDINARY_CONFIGURED else 'No'}")
 print(f"App version: Production v2.0 - {datetime.now().isoformat()}")
 
 # HTML template with results display
@@ -311,17 +333,14 @@ def index():
 def stage():
     """Complete staging endpoint with all fixes"""
     data = request.json
-    try:
-        with open('/tmp/stage_debug.json', 'w') as f:
-            import json
-            f.write(json.dumps(data))
-    except Exception as e:
-        app.logger.error("[DEBUG] Failed to write debug payload: %s", e)
+    print(f"\n=== New staging request at {datetime.now().isoformat()} ===")
+    
     image_data = data.get('image')
     space_type = data.get('space_type')
     design_theme = data.get('design_theme')
     
     if not image_data or not space_type:
+        print("[ERROR] Missing required fields")
         return jsonify({'success': False, 'error': 'Missing required fields'})
     
     headers = {'api-key': REIMAGINEHOME_API_KEY}
@@ -334,21 +353,46 @@ def stage():
         # Try to upload to external service first
         image_url = None
         
-        # Try 0x0.st with proper user agent
-        try:
-            upload_headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-            upload_response = requests.post(
-                'https://0x0.st',
-                files={'file': ('room.jpg', image_bytes, 'image/jpeg')},
-                headers=upload_headers,
-                timeout=30
-            )
-            
-            if upload_response.status_code == 200:
-                image_url = upload_response.text.strip()
-                print(f"Image uploaded to 0x0.st: {image_url}")
-        except Exception as e:
-            print(f"0x0.st upload failed: {e}")
+        # Try ImgBB first (most reliable)
+        if IMGBB_API_KEY:
+            try:
+                print("Uploading to ImgBB...")
+                imgbb_response = requests.post(
+                    'https://api.imgbb.com/1/upload',
+                    data={
+                        'key': IMGBB_API_KEY,
+                        'image': base64_data,  # ImgBB accepts base64 directly
+                        'name': f'room_{int(time.time())}'
+                    },
+                    timeout=30
+                )
+                
+                if imgbb_response.status_code == 200:
+                    imgbb_data = imgbb_response.json()
+                    if imgbb_data.get('success'):
+                        image_url = imgbb_data['data']['url']
+                        print(f"Image uploaded to ImgBB: {image_url}")
+                    else:
+                        print(f"ImgBB error: {imgbb_data}")
+                else:
+                    print(f"ImgBB upload failed with status: {imgbb_response.status_code}")
+            except Exception as e:
+                print(f"ImgBB upload failed: {e}")
+        
+        # Try Cloudinary as backup
+        if not image_url and CLOUDINARY_CONFIGURED:
+            try:
+                print("Trying Cloudinary as backup...")
+                upload_result = cloudinary.uploader.upload(
+                    image_bytes,
+                    public_id=f"room_{int(time.time())}",
+                    folder="aistager",
+                    format="jpg"
+                )
+                image_url = upload_result.get('secure_url')
+                print(f"Image uploaded to Cloudinary: {image_url}")
+            except Exception as e:
+                print(f"Cloudinary upload failed: {e}")
         
         # If external upload failed, use local serving
         if not image_url:
@@ -376,12 +420,14 @@ def stage():
         webhook_url = f"{request.url_root.rstrip('/')}/webhook/reimaginehome/{internal_job_id}"
         
         # Step 1: Create masks
+        print(f"Sending image to ReimagineHome API: {image_url}")
         mask_response = requests.post(
             'https://api.reimaginehome.ai/v1/create_mask',
             headers=headers,
             json={'image_url': image_url}
         )
         
+        print(f"Mask API response status: {mask_response.status_code}")
         if mask_response.status_code == 200:
             mask_job_id = mask_response.json()['data']['job_id']
             
@@ -447,7 +493,10 @@ def stage():
                     'error': 'Failed to process room layout'
                 })
         else:
-            error_msg = mask_response.json().get('error_message', 'Image processing failed')
+            error_data = mask_response.json()
+            error_msg = error_data.get('error_message', 'Image processing failed')
+            print(f"[ERROR] ReimagineHome API error: {error_msg}")
+            print(f"Full error response: {error_data}")
             return jsonify({
                 'success': False,
                 'error': error_msg

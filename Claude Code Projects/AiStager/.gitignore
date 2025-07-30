@@ -60,3 +60,81 @@ temp/
 # Uploaded images (if running Flask locally)
 uploads/
 static/uploads/
+
+# Test files
+test_*.py
+test_*.js
+app_*.py
+*_test.py
+*_debug.py
+
+# Batch files
+*.bat
+
+# Log files
+*.log
+app.log
+
+# Backup files
+*.backup
+requirements.txt.backup
+
+# Ngrok
+ngrok.exe
+ngrok.zip
+
+# Documentation drafts (keep only essential docs)
+*_PROMPT.txt
+*_STATUS_*.md
+*_FIXES_*.md
+*_SUMMARY.md
+*_GUIDE.md
+*_DOCS.md
+RECOVERY_*.txt
+RESTART_*.txt
+RESUME_*.txt
+TOMORROW_*.md
+WEBHOOK_TEST_*.md
+WORKING_*.md
+SUCCESS_*.md
+PROJECT_STATUS_*.md
+FINAL_STATUS_*.md
+CURRENT_STATUS_*.md
+ENV_VARS_*.md
+API_KEY_*.md
+DEPLOY_*.md
+FORCE_*.md
+FIX_*.md
+MOBILE_*.md
+QUICK_*.md
+
+# Backup directories
+BACKUP_*/
+backup/
+
+# Alternative implementations
+main_*.py
+app_*.py
+index-*.html
+public/app*.html
+public/index-*.html
+public/test.html
+
+# Server files not needed
+server.js
+run_*.py
+debug_*.py
+check_*.py
+simple_*.py
+quick_*.py
+compare_*.py
+upload_*.py
+
+# Keep only production files
+!app.py
+!main.py
+!public/index.html
+
+# Misc files
+nul
+.vercel

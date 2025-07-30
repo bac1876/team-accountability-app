@@ -1,5 +1,6 @@
 const FormData = require('form-data');
 const fetch = require('node-fetch');
+const rateLimiter = require('./rate-limiter');
 
 const INSTANTDECO_API_URL = 'https://app.instantdeco.ai/api/1.1/wf/request_v2';
 const IMGBB_API_URL = 'https://api.imgbb.com/1/upload';
@@ -42,6 +43,16 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    // Check rate limit first
+    const rateCheck = rateLimiter.canMakeRequest();
+    if (!rateCheck.allowed) {
+      return res.status(429).json({ 
+        success: false, 
+        error: rateCheck.message,
+        retryAfter: rateCheck.waitTime
+      });
+    }
+    
     let imageUrl;
     
     // Check if image is already a URL (faster processing)
@@ -83,17 +94,18 @@ module.exports = async function handler(req, res) {
     const protocol = req.headers['x-forwarded-proto'] || 'https';
     const webhookUrl = `${protocol}://${host}/api/webhook-receiver`;
     
-    // Prepare InstantDecoAI payload
+    // Prepare InstantDecoAI payload - ORDER MATTERS per API docs
     const payload = {
+      design: design_style || 'modern',
+      room_type: room_type || 'living_room',
       transformation_type,
       img_url: imageUrl,
-      num_images: 1,
-      webhook_url: webhookUrl
+      webhook_url: webhookUrl,
+      num_images: 1
     };
     
-    // Always add room_type and design for all transformation types
-    payload.room_type = room_type || 'living_room';
-    payload.design = design_style || 'modern';
+    // Log the actual room type being used
+    console.log(`Using room_type: ${payload.room_type}, design: ${payload.design}`);
     
     // Build block_element list
     const blockElements = ['wall', 'ceiling', 'windowpane', 'door'];
@@ -113,10 +125,17 @@ module.exports = async function handler(req, res) {
       blockElements.push('sky', 'house', 'building', 'tree', 'car');
     }
     
+    // Add block_element after the main payload is constructed
     payload.block_element = blockElements.join(',');
+    
+    // Add high_details_resolution for better quality on low-res images
+    if (transformation_type === 'furnish' || transformation_type === 'renovate' || transformation_type === 'redesign') {
+      payload.high_details_resolution = true;
+    }
     
     // Call InstantDecoAI
     console.log('Calling InstantDeco API with payload:', JSON.stringify(payload, null, 2));
+    console.log('Using API Key:', process.env.INSTANTDECO_API_KEY ? `${process.env.INSTANTDECO_API_KEY.substring(0, 10)}...` : 'NOT SET');
     
     const response = await fetch(INSTANTDECO_API_URL, {
       method: 'POST',
@@ -128,8 +147,16 @@ module.exports = async function handler(req, res) {
     });
     
     console.log('InstantDeco API response status:', response.status);
-    const responseText = await response.text();
-    console.log('InstantDeco API response:', responseText);
+    console.log('Response headers:', response.headers);
+    
+    let responseText;
+    try {
+      responseText = await response.text();
+      console.log('InstantDeco API response:', responseText);
+    } catch (textError) {
+      console.error('Error reading response text:', textError);
+      throw new Error('Failed to read API response');
+    }
     
     if (response.ok) {
       let result;
@@ -137,10 +164,15 @@ module.exports = async function handler(req, res) {
         result = JSON.parse(responseText);
       } catch (e) {
         console.error('Failed to parse response as JSON:', e);
+        console.error('Raw response:', responseText);
+        // Return a more specific error message
+        if (responseText.includes('Request Ent')) {
+          throw new Error('InstantDeco API authentication failed. Please check API key.');
+        }
         throw new Error('Invalid response from InstantDeco API');
       }
       
-      if (result.status === 'success') {
+      if (result.status === 'success' && result.response?.status === 'success') {
         const requestId = result.response?.request_id;
         
         // Store in history
@@ -166,23 +198,50 @@ module.exports = async function handler(req, res) {
         }
         global.stagingHistory.push(staging);
         
+        // Record successful request for rate limiting
+        rateLimiter.recordRequest();
+        
         return res.status(200).json({
           success: true,
           request_id: requestId,
           webhook_url: webhookUrl,
           message: 'Staging request submitted successfully!'
         });
+      } else if (result.response?.message === 'Wrong request') {
+        console.error('InstantDeco API: Wrong request');
+        console.error('Full result:', JSON.stringify(result, null, 2));
+        throw new Error('Invalid request format. Please try again.');
+      } else if (result.response?.message === 'Wrong API Key') {
+        console.error('InstantDeco API: Wrong API Key');
+        throw new Error('API authentication failed. Please contact support.');
       } else {
         console.error('InstantDeco API returned non-success status:', result);
-        throw new Error(result.message || 'InstantDeco API request failed');
+        throw new Error(result.response?.message || result.message || 'InstantDeco API request failed');
       }
     } else {
       console.error('InstantDeco API HTTP error:', response.status, responseText);
-      throw new Error(`InstantDeco API error: ${response.status} - ${responseText}`);
+      // Check if response is HTML (authentication page)
+      if (responseText.includes('<!doctype html>') || responseText.includes('Request Ent')) {
+        throw new Error('InstantDeco API authentication failed. Please check API key.');
+      }
+      // Truncate long error messages
+      const errorMsg = responseText.length > 200 ? responseText.substring(0, 200) + '...' : responseText;
+      throw new Error(`InstantDeco API error: ${response.status} - ${errorMsg}`);
     }
     
   } catch (error) {
     console.error('Stage room error:', error);
+    console.error('Error stack:', error.stack);
+    
+    // If error message suggests JSON parsing issue, provide more context
+    if (error.message.includes('JSON') || error.message.includes('token')) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Service temporarily unavailable. Please try again in a moment.',
+        details: error.message
+      });
+    }
+    
     return res.status(500).json({ success: false, error: error.message });
   }
 }
