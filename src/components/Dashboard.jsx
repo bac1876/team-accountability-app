@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Progress } from '@/components/ui/progress.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp } from 'lucide-react'
+import { userDataStore } from '../utils/dataStore.js'
 
 const Dashboard = ({ user }) => {
   const [todayCommitment, setTodayCommitment] = useState('')
@@ -19,51 +20,109 @@ const Dashboard = ({ user }) => {
     needHelp: ''
   })
   const [recentCommitments, setRecentCommitments] = useState([])
+  const [userData, setUserData] = useState(null)
+  const [completionRate, setCompletionRate] = useState(0)
 
   const today = new Date()
+  const todayString = today.toISOString().split('T')[0]
   const weekStart = startOfWeek(today)
   const weekEnd = endOfWeek(today)
 
-  // Mock data initialization
+  // Load user data from persistent storage
   useEffect(() => {
-    // Load mock data
-    const mockCommitments = [
-      { date: '2024-09-12', text: 'Complete project proposal', status: 'completed' },
-      { date: '2024-09-11', text: 'Review team feedback', status: 'completed' },
-      { date: '2024-09-10', text: 'Prepare presentation slides', status: 'not_completed' },
-      { date: '2024-09-09', text: 'Update project timeline', status: 'completed' },
-      { date: '2024-09-08', text: 'Client meeting preparation', status: 'completed' }
-    ]
+    if (user?.id) {
+      const data = userDataStore.getUserData(user.id)
+      setUserData(data)
+      
+      // Load today's commitment
+      const todayCommit = data.commitments.find(c => c.date === todayString)
+      if (todayCommit) {
+        setTodayCommitment(todayCommit.text)
+        setCommitmentStatus(todayCommit.status)
+      }
 
-    const mockGoals = [
-      { id: 1, text: 'Complete quarterly review', status: 'in_progress' },
-      { id: 2, text: 'Improve team communication', status: 'completed' },
-      { id: 3, text: 'Learn new project management tool', status: 'in_progress' }
-    ]
+      // Load weekly goals
+      const currentWeekGoals = data.goals.filter(g => {
+        const goalDate = new Date(g.createdAt)
+        return goalDate >= weekStart && goalDate <= weekEnd
+      })
+      setWeeklyGoals(currentWeekGoals)
 
-    setRecentCommitments(mockCommitments)
-    setWeeklyGoals(mockGoals)
-  }, [])
+      // Load recent commitments (last 7 days)
+      const recentCommits = data.commitments
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 7)
+      setRecentCommitments(recentCommits)
+
+      // Set completion rate
+      setCompletionRate(data.stats?.completionRate || 0)
+    }
+  }, [user, todayString, weekStart, weekEnd])
 
   const handleCommitmentSave = () => {
-    // In a real app, this would save to the backend
-    console.log('Saving commitment:', todayCommitment)
+    if (todayCommitment.trim() && user?.id) {
+      // Check if today's commitment already exists
+      const existingCommit = userData?.commitments.find(c => c.date === todayString)
+      
+      if (existingCommit) {
+        // Update existing commitment
+        existingCommit.text = todayCommitment.trim()
+        existingCommit.updatedAt = new Date().toISOString()
+        userDataStore.saveUserData(user.id, userData)
+      } else {
+        // Add new commitment
+        userDataStore.addCommitment(user.id, todayCommitment.trim())
+      }
+      
+      // Refresh data
+      const updatedData = userDataStore.getUserData(user.id)
+      setUserData(updatedData)
+      setCompletionRate(updatedData.stats?.completionRate || 0)
+    }
   }
 
   const handleStatusUpdate = (status) => {
     setCommitmentStatus(status)
-    // In a real app, this would update the backend
+    
+    if (user?.id && userData) {
+      const todayCommit = userData.commitments.find(c => c.date === todayString)
+      if (todayCommit) {
+        userDataStore.updateCommitmentStatus(user.id, todayCommit.id, status)
+        
+        // Refresh data
+        const updatedData = userDataStore.getUserData(user.id)
+        setUserData(updatedData)
+        setCompletionRate(updatedData.stats?.completionRate || 0)
+      }
+    }
   }
 
   const handleAddGoal = () => {
-    if (newGoal.trim()) {
-      const goal = {
-        id: Date.now(),
-        text: newGoal,
-        status: 'in_progress'
-      }
-      setWeeklyGoals([...weeklyGoals, goal])
+    if (newGoal.trim() && user?.id) {
+      const newGoalObj = userDataStore.addGoal(user.id, newGoal.trim())
+      
+      // Refresh weekly goals
+      const updatedData = userDataStore.getUserData(user.id)
+      const currentWeekGoals = updatedData.goals.filter(g => {
+        const goalDate = new Date(g.createdAt)
+        return goalDate >= weekStart && goalDate <= weekEnd
+      })
+      setWeeklyGoals(currentWeekGoals)
       setNewGoal('')
+    }
+  }
+
+  const handleGoalProgressUpdate = (goalId, progress) => {
+    if (user?.id) {
+      userDataStore.updateGoalProgress(user.id, goalId, progress)
+      
+      // Refresh weekly goals
+      const updatedData = userDataStore.getUserData(user.id)
+      const currentWeekGoals = updatedData.goals.filter(g => {
+        const goalDate = new Date(g.createdAt)
+        return goalDate >= weekStart && goalDate <= weekEnd
+      })
+      setWeeklyGoals(currentWeekGoals)
     }
   }
 

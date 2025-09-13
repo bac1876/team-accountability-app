@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.j
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react'
+import UserManagement from './UserManagement.jsx'
+import { analyticsStore } from '../utils/dataStore.js'
 
 const AdminDashboard = ({ user }) => {
   const [teamData, setTeamData] = useState([])
@@ -18,76 +20,15 @@ const AdminDashboard = ({ user }) => {
     weeklyGoalsCompletion: 0
   })
 
-  // Mock team data
+  // Load real team data from analytics store
   useEffect(() => {
-    const mockTeamData = [
-      {
-        id: 2,
-        name: 'John Doe',
-        email: 'john@example.com',
-        todayCommitment: 'Complete project proposal',
-        commitmentStatus: 'completed',
-        weeklyGoals: 3,
-        completedGoals: 2,
-        lastReflection: '2024-09-13',
-        lastLogin: '2024-09-13',
-        completionRate: 85
-      },
-      {
-        id: 3,
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        todayCommitment: 'Review client feedback',
-        commitmentStatus: 'in_progress',
-        weeklyGoals: 4,
-        completedGoals: 3,
-        lastReflection: '2024-09-12',
-        lastLogin: '2024-09-13',
-        completionRate: 92
-      },
-      {
-        id: 4,
-        name: 'Mike Johnson',
-        email: 'mike@example.com',
-        todayCommitment: '',
-        commitmentStatus: 'pending',
-        weeklyGoals: 2,
-        completedGoals: 1,
-        lastReflection: '2024-09-11',
-        lastLogin: '2024-09-12',
-        completionRate: 67
-      },
-      {
-        id: 5,
-        name: 'Sarah Wilson',
-        email: 'sarah@example.com',
-        todayCommitment: 'Prepare presentation slides',
-        commitmentStatus: 'completed',
-        weeklyGoals: 5,
-        completedGoals: 4,
-        lastReflection: '2024-09-13',
-        lastLogin: '2024-09-13',
-        completionRate: 88
-      }
-    ]
-
-    setTeamData(mockTeamData)
-
-    // Calculate team statistics
-    const totalUsers = mockTeamData.length
-    const activeToday = mockTeamData.filter(member => 
-      member.lastLogin === format(new Date(), 'yyyy-MM-dd')
-    ).length
-    const overallCompletion = mockTeamData.reduce((sum, member) => 
-      sum + member.completionRate, 0) / totalUsers
-    const weeklyGoalsCompletion = mockTeamData.reduce((sum, member) => 
-      sum + (member.completedGoals / member.weeklyGoals * 100), 0) / totalUsers
-
+    const stats = analyticsStore.getTeamStats()
+    setTeamData(stats.teamData)
     setTeamStats({
-      totalUsers,
-      activeToday,
-      overallCompletion: Math.round(overallCompletion),
-      weeklyGoalsCompletion: Math.round(weeklyGoalsCompletion)
+      totalUsers: stats.totalUsers,
+      activeToday: stats.activeToday,
+      overallCompletion: stats.overallCompletion,
+      weeklyGoalsCompletion: stats.weeklyGoalsCompletion
     })
   }, [])
 
@@ -197,10 +138,11 @@ const AdminDashboard = ({ user }) => {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Team Overview</TabsTrigger>
           <TabsTrigger value="detailed">Detailed View</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="users">User Management</TabsTrigger>
         </TabsList>
 
         {/* Team Overview */}
@@ -424,6 +366,11 @@ const AdminDashboard = ({ user }) => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* User Management */}
+        <TabsContent value="users" className="space-y-6">
+          <UserManagement />
         </TabsContent>
       </Tabs>
     </div>

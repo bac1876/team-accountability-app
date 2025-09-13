@@ -15,12 +15,22 @@ const LoginPage = ({ onLogin }) => {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
-  // Mock users for demo purposes
-  const mockUsers = [
-    { id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User', email: 'admin@example.com' },
-    { id: 2, username: 'john', password: 'john123', role: 'member', name: 'John Doe', email: 'john@example.com' },
-    { id: 3, username: 'jane', password: 'jane123', role: 'member', name: 'Jane Smith', email: 'jane@example.com' }
-  ]
+  // Get users from localStorage or use default users
+  const getUsers = () => {
+    const savedUsers = localStorage.getItem('teamUsers')
+    if (savedUsers) {
+      return JSON.parse(savedUsers)
+    } else {
+      // Default users if none exist
+      const defaultUsers = [
+        { id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User', email: 'admin@example.com' },
+        { id: 2, username: 'john', password: 'john123', role: 'member', name: 'John Doe', email: 'john@example.com' },
+        { id: 3, username: 'jane', password: 'jane123', role: 'member', name: 'Jane Smith', email: 'jane@example.com' }
+      ]
+      localStorage.setItem('teamUsers', JSON.stringify(defaultUsers))
+      return defaultUsers
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -30,8 +40,9 @@ const LoginPage = ({ onLogin }) => {
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000))
 
-    // Mock authentication
-    const user = mockUsers.find(
+    // Dynamic authentication using current users
+    const currentUsers = getUsers()
+    const user = currentUsers.find(
       u => u.username === formData.username && u.password === formData.password
     )
 
