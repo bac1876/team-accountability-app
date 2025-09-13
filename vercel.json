@@ -22,7 +22,6 @@
     }
   ],
   "env": {
-    "CALLACTION_API_KEY": "@callaction_api_key",
     "MESSAGING_API_TOKEN": "@messaging_api_token"
   }
 }

@@ -10,8 +10,9 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Alert, AlertDescription } from '@/components/ui/alert.jsx'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
-import { MessageSquare, Send, Users, Clock, CheckCircle, AlertCircle, Settings, Zap } from 'lucide-react'
+import { MessageSquare, Send, Users, Clock, CheckCircle, AlertCircle, Settings, Zap, ExternalLink, TestTube } from 'lucide-react'
 import { getUsers, getAnalytics } from '../utils/dataStore.js'
+import messagingService from '../services/messagingService.js'
 
 const MessagingCenter = () => {
   const [users, setUsers] = useState([])
@@ -23,8 +24,14 @@ const MessagingCenter = () => {
   const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [callActionApiKey, setCallActionApiKey] = useState('')
-  const [isConfigured, setIsConfigured] = useState(false)
+  const [webhookUrls, setWebhookUrls] = useState({
+    dailyReminders: '',
+    weeklyGoals: '',
+    encouragement: '',
+    reengagement: '',
+    custom: ''
+  })
+  const [configurationStatus, setConfigurationStatus] = useState({})
 
   // Message templates
   const templates = {
@@ -45,45 +52,28 @@ const MessagingCenter = () => {
     const allUsers = getUsers().filter(user => user.role !== 'admin')
     setUsers(allUsers)
     
-    // Load message history from localStorage
-    const history = localStorage.getItem('team_accountability_message_history')
-    if (history) {
-      const parsedHistory = JSON.parse(history)
-      setMessageHistory(parsedHistory.slice(-50)) // Show last 50 messages
-      
-      // Calculate stats
-      const stats = calculateMessageStats(parsedHistory)
-      setMessageStats(stats)
-    }
+    // Load message history and stats
+    const history = messagingService.getRecentMessages(50)
+    setMessageHistory(history)
+    
+    const stats = messagingService.getMessageStats(30)
+    setMessageStats(stats)
   }
 
   const loadConfiguration = () => {
-    const apiKey = localStorage.getItem('callaction_api_key')
-    if (apiKey) {
-      setCallActionApiKey(apiKey)
-      setIsConfigured(true)
+    // Load webhook URLs
+    const urls = {
+      dailyReminders: messagingService.getWebhookUrl('dailyReminders'),
+      weeklyGoals: messagingService.getWebhookUrl('weeklyGoals'),
+      encouragement: messagingService.getWebhookUrl('encouragement'),
+      reengagement: messagingService.getWebhookUrl('reengagement'),
+      custom: messagingService.getWebhookUrl('custom')
     }
-  }
-
-  const calculateMessageStats = (history) => {
-    const last30Days = history.filter(msg => {
-      const msgDate = new Date(msg.timestamp)
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      return msgDate > thirtyDaysAgo
-    })
-
-    return {
-      total: last30Days.length,
-      successful: last30Days.filter(msg => msg.success).length,
-      failed: last30Days.filter(msg => !msg.success).length,
-      thisWeek: last30Days.filter(msg => {
-        const msgDate = new Date(msg.timestamp)
-        const weekAgo = new Date()
-        weekAgo.setDate(weekAgo.getDate() - 7)
-        return msgDate > weekAgo
-      }).length
-    }
+    setWebhookUrls(urls)
+    
+    // Load configuration status
+    const status = messagingService.getConfigurationStatus()
+    setConfigurationStatus(status)
   }
 
   const getInitials = (name) => {
@@ -111,24 +101,44 @@ const MessagingCenter = () => {
     setMessage(templates[templateKey])
   }
 
-  const saveConfiguration = () => {
-    if (!callActionApiKey.trim()) {
-      setError('Please enter your CallAction API key')
-      return
-    }
-
-    localStorage.setItem('callaction_api_key', callActionApiKey)
-    setIsConfigured(true)
-    setSuccess('CallAction API key saved successfully!')
+  const saveWebhookUrl = (type, url) => {
+    messagingService.setWebhookUrl(type, url)
+    setWebhookUrls(prev => ({ ...prev, [type]: url }))
+    
+    // Update configuration status
+    const status = messagingService.getConfigurationStatus()
+    setConfigurationStatus(status)
+    
+    setSuccess(`${type} webhook URL saved successfully!`)
     setTimeout(() => setSuccess(''), 3000)
   }
 
-  const sendMessage = async () => {
-    if (!isConfigured) {
-      setError('Please configure CallAction API key first')
+  const testWebhook = async (type) => {
+    if (!webhookUrls[type]) {
+      setError(`Please configure ${type} webhook URL first`)
       return
     }
 
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const result = await messagingService.testWebhook(type)
+      
+      if (result.success) {
+        setSuccess(`${type} webhook test successful!`)
+      } else {
+        setError(`${type} webhook test failed: ${result.error}`)
+      }
+    } catch (err) {
+      setError(`Webhook test failed: ${err.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const sendMessage = async () => {
     if (selectedUsers.length === 0) {
       setError('Please select at least one user')
       return
@@ -139,51 +149,25 @@ const MessagingCenter = () => {
       return
     }
 
+    if (!configurationStatus.custom) {
+      setError('Please configure the custom message webhook URL first')
+      return
+    }
+
     setLoading(true)
     setError('')
     setSuccess('')
 
     try {
-      // Simulate API call to send messages
-      const selectedUserData = users.filter(user => selectedUsers.includes(user.id))
-      const results = []
-
-      for (const user of selectedUserData) {
-        const personalizedMessage = message.replace(/{name}/g, user.name.split(' ')[0])
-        
-        // Simulate message sending (replace with actual CallAction API call)
-        const result = {
-          userId: user.id,
-          phone: user.phone,
-          message: personalizedMessage,
-          success: Math.random() > 0.1, // 90% success rate simulation
-          messageId: `msg_${Date.now()}_${user.id}`,
-          timestamp: new Date().toISOString()
-        }
-
-        if (!result.success) {
-          result.error = 'Failed to deliver message'
-        }
-
-        results.push(result)
-      }
-
-      // Update message history
-      const updatedHistory = [...messageHistory, ...results].slice(-100)
-      setMessageHistory(updatedHistory)
-      localStorage.setItem('team_accountability_message_history', JSON.stringify(updatedHistory))
-
-      // Update stats
-      const stats = calculateMessageStats(updatedHistory)
-      setMessageStats(stats)
-
-      const successful = results.filter(r => r.success).length
-      const failed = results.filter(r => !r.success).length
-
-      setSuccess(`Messages sent! ${successful} successful, ${failed} failed`)
+      const results = await messagingService.sendCustomMessage(selectedUsers, message)
+      
+      setSuccess(`Messages sent! ${results.successful} successful, ${results.failed} failed`)
       setMessage('')
       setSelectedUsers([])
       setMessageTemplate('')
+      
+      // Refresh data
+      loadData()
 
     } catch (err) {
       setError(`Failed to send messages: ${err.message}`)
@@ -193,8 +177,12 @@ const MessagingCenter = () => {
   }
 
   const sendAutomatedReminders = async (type) => {
-    if (!isConfigured) {
-      setError('Please configure CallAction API key first')
+    const webhookType = type === 'daily' ? 'dailyReminders' : 
+                       type === 'weekly' ? 'weeklyGoals' :
+                       type === 'encouragement' ? 'encouragement' : 'reengagement'
+    
+    if (!configurationStatus[webhookType]) {
+      setError(`Please configure ${type} reminders webhook URL first`)
       return
     }
 
@@ -203,40 +191,39 @@ const MessagingCenter = () => {
     setSuccess('')
 
     try {
-      // Call the API endpoint for automated reminders
-      const response = await fetch('/api/messaging/daily-reminders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('messaging_api_token') || 'demo-token'}`
-        },
-        body: JSON.stringify({
-          type: type,
-          force: false,
-          dryRun: false
-        })
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        setSuccess(`${type} reminders sent! ${result.results.successful} successful, ${result.results.failed} failed`)
-        loadData() // Refresh data
-      } else {
-        setError(`Failed to send ${type} reminders: ${result.error}`)
+      let results
+      switch (type) {
+        case 'daily':
+          results = await messagingService.sendDailyReminders()
+          break
+        case 'weekly':
+          results = await messagingService.sendWeeklyGoalReminders()
+          break
+        case 'encouragement':
+          results = await messagingService.sendEncouragementMessages()
+          break
+        case 'reengagement':
+          results = await messagingService.sendReEngagementMessages()
+          break
       }
 
+      if (results.total === 0) {
+        setSuccess(results.message || `No users need ${type} reminders right now`)
+      } else {
+        setSuccess(`${type} reminders sent! ${results.successful} successful, ${results.failed} failed`)
+      }
+      
+      loadData() // Refresh data
+
     } catch (err) {
-      setError(`Failed to send automated reminders: ${err.message}`)
+      setError(`Failed to send ${type} reminders: ${err.message}`)
     } finally {
       setLoading(false)
     }
   }
 
   const getUsersNeedingReminders = () => {
-    const today = new Date().toISOString().split('T')[0]
     const analytics = getAnalytics()
-    
     return users.filter(user => {
       const userAnalytics = analytics.users.find(u => u.id === user.id)
       return !userAnalytics || userAnalytics.completionRate < 50
@@ -251,62 +238,8 @@ const MessagingCenter = () => {
     })
   }
 
-  if (!isConfigured) {
-    return (
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              CallAction Configuration
-            </CardTitle>
-            <CardDescription>
-              Configure your CallAction API key to enable SMS messaging
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="apiKey">CallAction API Key</Label>
-              <Input
-                id="apiKey"
-                type="password"
-                value={callActionApiKey}
-                onChange={(e) => setCallActionApiKey(e.target.value)}
-                placeholder="Enter your CallAction API key"
-              />
-            </div>
-            
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {success && (
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription>{success}</AlertDescription>
-              </Alert>
-            )}
-
-            <Button onClick={saveConfiguration} className="w-full">
-              Save Configuration
-            </Button>
-
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">How to get your CallAction API Key:</h4>
-              <ol className="text-sm text-blue-800 space-y-1">
-                <li>1. Login to your CallAction account</li>
-                <li>2. Go to Profile → Settings → Integrations</li>
-                <li>3. Find the API section and generate your key</li>
-                <li>4. Copy and paste the key above</li>
-              </ol>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
+  const getConfiguredWebhooksCount = () => {
+    return Object.values(configurationStatus).filter(Boolean).length
   }
 
   return (
@@ -330,7 +263,7 @@ const MessagingCenter = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Success Rate</p>
                 <p className="text-2xl font-bold">
-                  {messageStats ? Math.round((messageStats.successful / messageStats.total) * 100) || 0 : 0}%
+                  {messageStats && messageStats.total > 0 ? Math.round((messageStats.successful / messageStats.total) * 100) : 0}%
                 </p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
@@ -342,10 +275,10 @@ const MessagingCenter = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Need Reminders</p>
-                <p className="text-2xl font-bold">{getUsersNeedingReminders().length}</p>
+                <p className="text-sm font-medium text-gray-600">Webhooks Configured</p>
+                <p className="text-2xl font-bold">{getConfiguredWebhooksCount()}/5</p>
               </div>
-              <AlertCircle className="h-8 w-8 text-orange-500" />
+              <Settings className="h-8 w-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
@@ -357,19 +290,127 @@ const MessagingCenter = () => {
                 <p className="text-sm font-medium text-gray-600">High Performers</p>
                 <p className="text-2xl font-bold">{getHighPerformers().length}</p>
               </div>
-              <Users className="h-8 w-8 text-purple-500" />
+              <Users className="h-8 w-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="send" className="space-y-4">
+      <Tabs defaultValue="configure" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="configure">Configure Zapier</TabsTrigger>
           <TabsTrigger value="send">Send Messages</TabsTrigger>
           <TabsTrigger value="automated">Automated Reminders</TabsTrigger>
           <TabsTrigger value="history">Message History</TabsTrigger>
           <TabsTrigger value="insights">Team Insights</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="configure" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                Zapier Webhook Configuration
+              </CardTitle>
+              <CardDescription>
+                Configure Zapier webhook URLs to enable SMS messaging through CallAction
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {success && (
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="grid grid-cols-1 gap-6">
+                {Object.entries(webhookUrls).map(([type, url]) => (
+                  <div key={type} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={type} className="capitalize">
+                        {type.replace(/([A-Z])/g, ' $1').trim()} Webhook
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={configurationStatus[type] ? "default" : "secondary"}>
+                          {configurationStatus[type] ? 'Configured' : 'Not Configured'}
+                        </Badge>
+                        {url && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => testWebhook(type)}
+                            disabled={loading}
+                          >
+                            <TestTube className="h-3 w-3 mr-1" />
+                            Test
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        id={type}
+                        value={url}
+                        onChange={(e) => setWebhookUrls(prev => ({ ...prev, [type]: e.target.value }))}
+                        placeholder="https://hooks.zapier.com/hooks/catch/..."
+                        className="flex-1"
+                      />
+                      <Button
+                        onClick={() => saveWebhookUrl(type, webhookUrls[type])}
+                        disabled={!webhookUrls[type] || webhookUrls[type] === messagingService.getWebhookUrl(type)}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  How to set up Zapier webhooks:
+                </h4>
+                <ol className="text-sm text-blue-800 space-y-1">
+                  <li>1. Go to <a href="https://zapier.com" target="_blank" rel="noopener noreferrer" className="underline">zapier.com</a> and create a new Zap</li>
+                  <li>2. Choose "Webhooks by Zapier" as the trigger</li>
+                  <li>3. Select "Catch Hook" and copy the webhook URL</li>
+                  <li>4. Paste the URL above and save</li>
+                  <li>5. Set up CallAction as the action to send SMS</li>
+                  <li>6. Map the user data fields (name, phone, message)</li>
+                  <li>7. Test and activate your Zap</li>
+                </ol>
+              </div>
+
+              <div className="p-4 bg-green-50 rounded-lg">
+                <h4 className="font-medium text-green-900 mb-2">Webhook Data Format:</h4>
+                <p className="text-sm text-green-800 mb-2">Each webhook sends this data structure:</p>
+                <pre className="text-xs bg-white p-2 rounded border overflow-x-auto">
+{`{
+  "type": "daily_reminder",
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com", 
+    "phone": "+1234567890",
+    "firstName": "John"
+  },
+  "message": "Hi John! Don't forget...",
+  "timestamp": "2024-01-01T18:00:00Z"
+}`}
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="send" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -473,7 +514,7 @@ const MessagingCenter = () => {
 
                 <Button 
                   onClick={sendMessage} 
-                  disabled={loading || selectedUsers.length === 0 || !message.trim()}
+                  disabled={loading || selectedUsers.length === 0 || !message.trim() || !configurationStatus.custom}
                   className="w-full"
                 >
                   {loading ? (
@@ -488,6 +529,12 @@ const MessagingCenter = () => {
                     </>
                   )}
                 </Button>
+
+                {!configurationStatus.custom && (
+                  <p className="text-sm text-orange-600">
+                    Configure the custom message webhook first to send messages
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -506,42 +553,54 @@ const MessagingCenter = () => {
               <CardContent className="space-y-3">
                 <Button 
                   onClick={() => sendAutomatedReminders('daily')}
-                  disabled={loading}
+                  disabled={loading || !configurationStatus.dailyReminders}
                   className="w-full justify-start"
                   variant="outline"
                 >
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Send Daily Reminders
+                  {!configurationStatus.dailyReminders && (
+                    <Badge variant="secondary" className="ml-auto">Not Configured</Badge>
+                  )}
                 </Button>
                 
                 <Button 
                   onClick={() => sendAutomatedReminders('weekly')}
-                  disabled={loading}
+                  disabled={loading || !configurationStatus.weeklyGoals}
                   className="w-full justify-start"
                   variant="outline"
                 >
                   <Clock className="mr-2 h-4 w-4" />
                   Send Weekly Goal Reminders
+                  {!configurationStatus.weeklyGoals && (
+                    <Badge variant="secondary" className="ml-auto">Not Configured</Badge>
+                  )}
                 </Button>
                 
                 <Button 
                   onClick={() => sendAutomatedReminders('encouragement')}
-                  disabled={loading}
+                  disabled={loading || !configurationStatus.encouragement}
                   className="w-full justify-start"
                   variant="outline"
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Send Encouragement Messages
+                  {!configurationStatus.encouragement && (
+                    <Badge variant="secondary" className="ml-auto">Not Configured</Badge>
+                  )}
                 </Button>
                 
                 <Button 
                   onClick={() => sendAutomatedReminders('reengagement')}
-                  disabled={loading}
+                  disabled={loading || !configurationStatus.reengagement}
                   className="w-full justify-start"
                   variant="outline"
                 >
                   <Users className="mr-2 h-4 w-4" />
                   Send Re-engagement Messages
+                  {!configurationStatus.reengagement && (
+                    <Badge variant="secondary" className="ml-auto">Not Configured</Badge>
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -553,19 +612,27 @@ const MessagingCenter = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                  <div className={`flex items-center justify-between p-3 rounded-lg ${
+                    configurationStatus.dailyReminders ? 'bg-green-50' : 'bg-gray-50'
+                  }`}>
                     <div>
-                      <p className="font-medium text-green-900">Daily Reminders</p>
-                      <p className="text-sm text-green-700">Every day at 6:00 PM</p>
+                      <p className={`font-medium ${
+                        configurationStatus.dailyReminders ? 'text-green-900' : 'text-gray-700'
+                      }`}>Daily Reminders</p>
+                      <p className={`text-sm ${
+                        configurationStatus.dailyReminders ? 'text-green-700' : 'text-gray-600'
+                      }`}>Every day at 6:00 PM</p>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      Active
+                    <Badge variant={configurationStatus.dailyReminders ? "default" : "secondary"} 
+                           className={configurationStatus.dailyReminders ? "bg-green-100 text-green-800" : ""}>
+                      {configurationStatus.dailyReminders ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                   
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-600">
                       Automatic daily reminders are sent to team members who haven't set their daily commitments.
+                      Configure the daily reminders webhook to enable automation.
                     </p>
                   </div>
                 </div>
@@ -585,7 +652,7 @@ const MessagingCenter = () => {
                 <p className="text-center text-gray-500 py-8">No messages sent yet</p>
               ) : (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {messageHistory.slice().reverse().map((msg, index) => {
+                  {messageHistory.map((msg, index) => {
                     const user = users.find(u => u.id === msg.userId)
                     return (
                       <div key={index} className="flex items-start space-x-3 p-3 border rounded-lg">
