@@ -236,9 +236,9 @@ export const initializeDefaultData = () => {
   const users = userStore.getAll()
   if (users.length === 0) {
     const defaultUsers = [
-      { id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User', email: 'admin@example.com' },
-      { id: 2, username: 'john', password: 'john123', role: 'member', name: 'John Doe', email: 'john@example.com' },
-      { id: 3, username: 'jane', password: 'jane123', role: 'member', name: 'Jane Smith', email: 'jane@example.com' }
+      { id: 1, username: 'brian@searchnwa.com', password: 'admin123', role: 'admin', name: 'Brian Curtis', email: 'brian@searchnwa.com', phone: '+1-555-0101' },
+      { id: 2, username: 'john@example.com', password: 'john123', role: 'member', name: 'John Doe', email: 'john@example.com', phone: '+1-555-0102' },
+      { id: 3, username: 'jane@example.com', password: 'jane123', role: 'member', name: 'Jane Smith', email: 'jane@example.com', phone: '+1-555-0103' }
     ]
     userStore.save(defaultUsers)
   }

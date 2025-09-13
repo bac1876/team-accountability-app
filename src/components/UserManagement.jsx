@@ -22,6 +22,7 @@ const UserManagement = () => {
     password: '',
     name: '',
     email: '',
+    phone: '',
     role: 'member'
   })
   const [error, setError] = useState('')
@@ -35,9 +36,9 @@ const UserManagement = () => {
     } else {
       // Initialize with default users if none exist
       const defaultUsers = [
-        { id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User', email: 'admin@example.com' },
-        { id: 2, username: 'john', password: 'john123', role: 'member', name: 'John Doe', email: 'john@example.com' },
-        { id: 3, username: 'jane', password: 'jane123', role: 'member', name: 'Jane Smith', email: 'jane@example.com' }
+        { id: 1, username: 'brian@searchnwa.com', password: 'admin123', role: 'admin', name: 'Brian Curtis', email: 'brian@searchnwa.com', phone: '+1-555-0101' },
+        { id: 2, username: 'john@example.com', password: 'john123', role: 'member', name: 'John Doe', email: 'john@example.com', phone: '+1-555-0102' },
+        { id: 3, username: 'jane@example.com', password: 'jane123', role: 'member', name: 'Jane Smith', email: 'jane@example.com', phone: '+1-555-0103' }
       ]
       setUsers(defaultUsers)
       localStorage.setItem('teamUsers', JSON.stringify(defaultUsers))
@@ -57,6 +58,7 @@ const UserManagement = () => {
       password: '',
       name: '',
       email: '',
+      phone: '',
       role: 'member'
     })
     setError('')
@@ -69,18 +71,15 @@ const UserManagement = () => {
     setError('')
 
     // Validation
-    if (!formData.username || !formData.password || !formData.name || !formData.email) {
+    if (!formData.password || !formData.name || !formData.email || !formData.phone) {
       setError('All fields are required')
       return
     }
 
-    // Check if username already exists
-    if (users.some(user => user.username === formData.username)) {
-      setError('Username already exists')
-      return
-    }
+    // Auto-set username to email
+    const userData = { ...formData, username: formData.email }
 
-    // Check if email already exists
+    // Check if email already exists (email is now the username)
     if (users.some(user => user.email === formData.email)) {
       setError('Email already exists')
       return
@@ -89,7 +88,7 @@ const UserManagement = () => {
     // Create new user
     const newUser = {
       id: Math.max(...users.map(u => u.id), 0) + 1,
-      ...formData
+      ...userData
     }
 
     setUsers([...users, newUser])
@@ -106,16 +105,13 @@ const UserManagement = () => {
     setError('')
 
     // Validation
-    if (!formData.username || !formData.name || !formData.email) {
-      setError('Username, name, and email are required')
+    if (!formData.name || !formData.email || !formData.phone) {
+      setError('Name, email, and phone are required')
       return
     }
 
-    // Check if username already exists (excluding current user)
-    if (users.some(user => user.username === formData.username && user.id !== editingUser.id)) {
-      setError('Username already exists')
-      return
-    }
+    // Auto-set username to email
+    const userData = { ...formData, username: formData.email }
 
     // Check if email already exists (excluding current user)
     if (users.some(user => user.email === formData.email && user.id !== editingUser.id)) {
@@ -126,7 +122,7 @@ const UserManagement = () => {
     // Update user
     const updatedUsers = users.map(user => 
       user.id === editingUser.id 
-        ? { ...user, ...formData, password: formData.password || user.password }
+        ? { ...user, ...userData, password: formData.password || user.password }
         : user
     )
 
@@ -155,6 +151,7 @@ const UserManagement = () => {
       password: '', // Don't pre-fill password for security
       name: user.name,
       email: user.email,
+      phone: user.phone || '',
       role: user.role
     })
     setIsEditDialogOpen(true)
@@ -197,18 +194,6 @@ const UserManagement = () => {
             </DialogHeader>
             <form onSubmit={handleAddUser} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder="Enter username"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input
@@ -248,14 +233,27 @@ const UserManagement = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email (Login Username)</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Enter email address"
+                  placeholder="Enter email address (used for login)"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="Enter phone number (e.g., +1-555-0123)"
                   required
                 />
               </div>
@@ -316,9 +314,9 @@ const UserManagement = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
-                <TableHead>Username</TableHead>
+                <TableHead>Email (Login)</TableHead>
+                <TableHead>Phone</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Email</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -337,15 +335,17 @@ const UserManagement = () => {
                   </TableCell>
                   <TableCell>
                     <code className="text-sm bg-muted px-2 py-1 rounded">
-                      {user.username}
+                      {user.email}
                     </code>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm">{user.phone || 'No phone'}</span>
                   </TableCell>
                   <TableCell>
                     <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                       {user.role}
                     </Badge>
                   </TableCell>
-                  <TableCell>{user.email}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end space-x-2">
                       <Button
@@ -382,18 +382,6 @@ const UserManagement = () => {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleEditUser} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-username">Username</Label>
-              <Input
-                id="edit-username"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="Enter username"
-                required
-              />
-            </div>
-            
             <div className="space-y-2">
               <Label htmlFor="edit-password">Password</Label>
               <div className="relative">
@@ -433,14 +421,27 @@ const UserManagement = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-email">Email</Label>
+              <Label htmlFor="edit-email">Email (Login Username)</Label>
               <Input
                 id="edit-email"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter email address"
+                placeholder="Enter email address (used for login)"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-phone">Phone Number</Label>
+              <Input
+                id="edit-phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Enter phone number (e.g., +1-555-0123)"
                 required
               />
             </div>

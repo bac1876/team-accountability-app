@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react'
 import UserManagement from './UserManagement.jsx'
+import MessagingCenter from './MessagingCenter.jsx'
 import { analyticsStore } from '../utils/dataStore.js'
 
 const AdminDashboard = ({ user }) => {
@@ -138,11 +139,12 @@ const AdminDashboard = ({ user }) => {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Team Overview</TabsTrigger>
           <TabsTrigger value="detailed">Detailed View</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="messaging">Messaging</TabsTrigger>
         </TabsList>
 
         {/* Team Overview */}
@@ -371,6 +373,11 @@ const AdminDashboard = ({ user }) => {
         {/* User Management */}
         <TabsContent value="users" className="space-y-6">
           <UserManagement />
+        </TabsContent>
+
+        {/* Messaging Center */}
+        <TabsContent value="messaging" className="space-y-6">
+          <MessagingCenter />
         </TabsContent>
       </Tabs>
     </div>

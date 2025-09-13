@@ -23,9 +23,9 @@ const LoginPage = ({ onLogin }) => {
     } else {
       // Default users if none exist
       const defaultUsers = [
-        { id: 1, username: 'admin', password: 'admin123', role: 'admin', name: 'Admin User', email: 'admin@example.com' },
-        { id: 2, username: 'john', password: 'john123', role: 'member', name: 'John Doe', email: 'john@example.com' },
-        { id: 3, username: 'jane', password: 'jane123', role: 'member', name: 'Jane Smith', email: 'jane@example.com' }
+        { id: 1, username: 'brian@searchnwa.com', password: 'admin123', role: 'admin', name: 'Brian Curtis', email: 'brian@searchnwa.com', phone: '+1-555-0101' },
+        { id: 2, username: 'john@example.com', password: 'john123', role: 'member', name: 'John Doe', email: 'john@example.com', phone: '+1-555-0102' },
+        { id: 3, username: 'jane@example.com', password: 'jane123', role: 'member', name: 'Jane Smith', email: 'jane@example.com', phone: '+1-555-0103' }
       ]
       localStorage.setItem('teamUsers', JSON.stringify(defaultUsers))
       return defaultUsers
@@ -75,16 +75,16 @@ const LoginPage = ({ onLogin }) => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                name="username"
-                type="text"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                placeholder="Enter your username"
-              />
+                       <Label htmlFor="username">Email</Label>
+                <Input
+                  id="username"
+                  name="username"
+                  type="email"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="Enter your email address"
+                  required
+                />
             </div>
             
             <div className="space-y-2">
@@ -132,9 +132,9 @@ const LoginPage = ({ onLogin }) => {
           <div className="mt-6 p-4 bg-muted rounded-lg">
             <p className="text-sm font-medium mb-2">Demo Accounts:</p>
             <div className="text-xs space-y-1">
-              <div><strong>Admin:</strong> admin / admin123</div>
-              <div><strong>Member:</strong> john / john123</div>
-              <div><strong>Member:</strong> jane / jane123</div>
+              <div><strong>Admin:</strong> brian@searchnwa.com / admin123</div>
+              <div><strong>Member:</strong> john@example.com / john123</div>
+              <div><strong>Member:</strong> jane@example.com / jane123</div>
             </div>
           </div>
         </CardContent>
