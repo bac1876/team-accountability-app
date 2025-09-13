@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { Label } from '@/components/ui/label.jsx'
+import { Button } from '@/components/ui/button.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import { Alert, AlertDescription } from '@/components/ui/alert.jsx'
-import { UserPlus, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
+import { UserPlus, Edit, Trash2, Eye, EyeOff, Upload } from 'lucide-react'
+import UserImport from './UserImport.jsx'
 
 const UserManagement = () => {
   const [users, setUsers] = useState([])
@@ -301,7 +303,16 @@ const UserManagement = () => {
         </Alert>
       )}
 
-      {/* Users Table */}
+      {/* Tabs for User Management */}
+      <Tabs defaultValue="manage" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="manage">Manage Users</TabsTrigger>
+          <TabsTrigger value="import">Import Users</TabsTrigger>
+        </TabsList>
+
+        {/* Manage Users Tab */}
+        <TabsContent value="manage" className="space-y-6">
+          {/* Users Table */}
       <Card>
         <CardHeader>
           <CardTitle>Team Members ({users.length})</CardTitle>
@@ -480,6 +491,13 @@ const UserManagement = () => {
           </form>
         </DialogContent>
       </Dialog>
+        </TabsContent>
+
+        {/* Import Users Tab */}
+        <TabsContent value="import" className="space-y-6">
+          <UserImport />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
