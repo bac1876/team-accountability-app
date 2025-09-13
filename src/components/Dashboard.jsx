@@ -139,10 +139,6 @@ const Dashboard = ({ user }) => {
     console.log('Saving reflection:', reflection)
   }
 
-  const completionRate = recentCommitments.length > 0 
-    ? (recentCommitments.filter(c => c.status === 'completed').length / recentCommitments.length) * 100 
-    : 0
-
   const completedGoals = weeklyGoals.filter(g => g.status === 'completed').length
   const goalProgress = weeklyGoals.length > 0 ? (completedGoals / weeklyGoals.length) * 100 : 0
 
