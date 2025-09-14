@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert.jsx'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog.jsx'
 import { Upload, Users, CheckCircle, AlertCircle, Download } from 'lucide-react'
-import { importAllUsers, getImportPreview } from '../utils/importUsers.js'
+import { userService } from '../services/databaseService.js'
 
 const UserImport = () => {
   const [importResults, setImportResults] = useState(null)
@@ -14,27 +14,108 @@ const UserImport = () => {
   const [showPreview, setShowPreview] = useState(false)
   const [previewData, setPreviewData] = useState([])
 
-  const handlePreview = () => {
-    const preview = getImportPreview()
-    setPreviewData(preview)
-    setShowPreview(true)
+  // Predefined SearchNWA team data
+  const searchNWATeam = [
+    { email: 'brian@searchnwa.com', name: 'Brian Curtis', phone: '+1-555-0101', role: 'admin' },
+    { email: 'brandon@searchnwa.com', name: 'Brandon Hollis', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'ccarl@searchnwa.com', name: 'Carl DeBose', phone: '+1-479-461-1333', role: 'member' },
+    { email: 'chris@searchnwa.com', name: 'Chris Adams', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'chrislee@searchnwa.com', name: 'Christopher Lee', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'cindy@searchnwa.com', name: 'Cindy Schell', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'eujeanie@searchnwa.com', name: 'Eujeanie Luker', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'frank@searchnwa.com', name: 'Frank Cardinale', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'grayson@searchnwa.com', name: 'Grayson Geurin', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'jacob@searchnwa.com', name: 'Jacob Fitzgerald', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'kim@searchnwa.com', name: 'Kimberly Carter', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'landon@searchnwa.com', name: 'Landon Burkett', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'luis@searchnwa.com', name: 'Luis Jimenez', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'michael@searchnwa.com', name: 'Michael Lyman', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'michelle@searchnwa.com', name: 'Michelle Harrison', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'mitch@searchnwa.com', name: 'Mitch Sluyter', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'lyndsi@searchnwa.com', name: 'Lyndsi Sluyter', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'patrick@searchnwa.com', name: 'Patrick Foresee', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'bill@searchnwa.com', name: 'William Burchit', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'natalie@searchnwa.com', name: 'Natalie Burchit', phone: '+1-479-685-8754', role: 'member' },
+    { email: 'thomas@searchnwa.com', name: 'Thomas Francis', phone: '+1-479-685-8754', role: 'member' },
+    // Demo users
+    { email: 'john@example.com', name: 'John Doe', phone: '+1-555-0102', role: 'member' },
+    { email: 'jane@example.com', name: 'Jane Smith', phone: '+1-555-0103', role: 'member' }
+  ]
+
+  const handlePreview = async () => {
+    try {
+      // Get existing users from database
+      const existingUsers = await userService.getAll()
+      const existingEmails = new Set(existingUsers.map(u => u.email))
+      
+      // Mark which users will be added vs already exist
+      const preview = searchNWATeam.map(user => ({
+        ...user,
+        exists: existingEmails.has(user.email),
+        willBeAdded: !existingEmails.has(user.email)
+      }))
+      
+      setPreviewData(preview)
+      setShowPreview(true)
+    } catch (error) {
+      console.error('Failed to load preview:', error)
+      // Fallback to showing all users as new
+      const preview = searchNWATeam.map(user => ({
+        ...user,
+        exists: false,
+        willBeAdded: true
+      }))
+      setPreviewData(preview)
+      setShowPreview(true)
+    }
   }
 
   const handleImport = async () => {
     setIsImporting(true)
     
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    const results = importAllUsers()
-    setImportResults(results)
-    setIsImporting(false)
-    setShowPreview(false)
-    
-    // Refresh the page to show new users
-    setTimeout(() => {
-      window.location.reload()
-    }, 3000)
+    try {
+      const results = []
+      let added = 0
+      let skipped = 0
+      
+      for (const user of previewData) {
+        if (user.willBeAdded) {
+          try {
+            const userData = {
+              ...user,
+              password: 'temp123' // Default password
+            }
+            await userService.create(userData)
+            results.push({ ...user, status: 'added' })
+            added++
+          } catch (error) {
+            if (error.message.includes('already exists') || error.message.includes('duplicate')) {
+              results.push({ ...user, status: 'skipped' })
+              skipped++
+            } else {
+              throw error
+            }
+          }
+        } else {
+          results.push({ ...user, status: 'skipped' })
+          skipped++
+        }
+      }
+      
+      setImportResults({ added, skipped, results })
+      setIsImporting(false)
+      setShowPreview(false)
+      
+      // Refresh the page to show new users
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000)
+      
+    } catch (error) {
+      console.error('Import failed:', error)
+      setIsImporting(false)
+      // You might want to show an error message here
+    }
   }
 
   const newUsersToAdd = previewData.filter(user => user.willBeAdded).length

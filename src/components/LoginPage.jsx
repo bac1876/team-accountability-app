@@ -4,7 +4,9 @@ import { Input } from '@/components/ui/input.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Label } from '@/components/ui/label.jsx'
 import { Alert, AlertDescription } from '@/components/ui/alert.jsx'
-import { Eye, EyeOff } from 'lucide-react'
+import { Badge } from '@/components/ui/badge.jsx'
+import { Eye, EyeOff, Database, HardDrive } from 'lucide-react'
+import { authService } from '../services/databaseService.js'
 
 const LoginPage = ({ onLogin }) => {
   const [formData, setFormData] = useState({
@@ -14,6 +16,7 @@ const LoginPage = ({ onLogin }) => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [authMethod, setAuthMethod] = useState('auto') // auto, database, localStorage
 
   // Get users from localStorage or use default users
   const getUsers = () => {
@@ -32,28 +35,80 @@ const LoginPage = ({ onLogin }) => {
     }
   }
 
+  const authenticateWithDatabase = async (email, password) => {
+    try {
+      const result = await authService.login(email, password)
+      return result.user
+    } catch (error) {
+      console.error('Database authentication failed:', error)
+      throw error
+    }
+  }
+
+  const authenticateWithLocalStorage = (email, password) => {
+    const currentUsers = getUsers()
+    const user = currentUsers.find(
+      u => u.username === email && u.password === password
+    )
+    if (!user) {
+      throw new Error('Invalid username or password')
+    }
+    return user
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      let user = null
+      let usedMethod = 'localStorage'
 
-    // Dynamic authentication using current users
-    const currentUsers = getUsers()
-    const user = currentUsers.find(
-      u => u.username === formData.username && u.password === formData.password
-    )
+      // Try database authentication first (if auto or database mode)
+      if (authMethod === 'auto' || authMethod === 'database') {
+        try {
+          user = await authenticateWithDatabase(formData.username, formData.password)
+          usedMethod = 'database'
+        } catch (dbError) {
+          console.log('Database auth failed, trying localStorage...', dbError.message)
+          
+          // If auto mode and database fails, try localStorage
+          if (authMethod === 'auto') {
+            try {
+              user = authenticateWithLocalStorage(formData.username, formData.password)
+              usedMethod = 'localStorage'
+            } catch (localError) {
+              throw new Error('Authentication failed with both database and localStorage')
+            }
+          } else {
+            throw dbError
+          }
+        }
+      } else {
+        // localStorage only mode
+        user = authenticateWithLocalStorage(formData.username, formData.password)
+        usedMethod = 'localStorage'
+      }
 
-    if (user) {
-      const { password, ...userWithoutPassword } = user
-      onLogin(userWithoutPassword)
-    } else {
-      setError('Invalid username or password')
+      if (user) {
+        // Remove password from user object before storing
+        const { password, ...userWithoutPassword } = user
+        
+        // Add auth method info for debugging
+        userWithoutPassword.authMethod = usedMethod
+        
+        onLogin(userWithoutPassword)
+      } else {
+        setError('Authentication failed')
+      }
+
+    } catch (error) {
+      console.error('Authentication error:', error)
+      setError(error.message || 'Invalid username or password')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   const handleChange = (e) => {
@@ -73,18 +128,59 @@ const LoginPage = ({ onLogin }) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Authentication Method Selector */}
+          <div className="mb-4 p-3 bg-muted rounded-lg">
+            <Label className="text-sm font-medium mb-2 block">Authentication Method</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={authMethod === 'auto' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setAuthMethod('auto')}
+                className="flex-1"
+              >
+                Auto
+              </Button>
+              <Button
+                type="button"
+                variant={authMethod === 'database' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setAuthMethod('database')}
+                className="flex-1"
+              >
+                <Database className="w-3 h-3 mr-1" />
+                Database
+              </Button>
+              <Button
+                type="button"
+                variant={authMethod === 'localStorage' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setAuthMethod('localStorage')}
+                className="flex-1"
+              >
+                <HardDrive className="w-3 h-3 mr-1" />
+                Local
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {authMethod === 'auto' && 'Try database first, fallback to localStorage'}
+              {authMethod === 'database' && 'Use database authentication only'}
+              {authMethod === 'localStorage' && 'Use localStorage authentication only'}
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-                       <Label htmlFor="username">Email</Label>
-                <Input
-                  id="username"
-                  name="username"
-                  type="email"
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder="Enter your email address"
-                  required
-                />
+              <Label htmlFor="username">Email</Label>
+              <Input
+                id="username"
+                name="username"
+                type="email"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Enter your email address"
+                required
+              />
             </div>
             
             <div className="space-y-2">
@@ -135,6 +231,9 @@ const LoginPage = ({ onLogin }) => {
               <div><strong>Admin:</strong> brian@searchnwa.com / admin123</div>
               <div><strong>Member:</strong> john@example.com / john123</div>
               <div><strong>Member:</strong> jane@example.com / jane123</div>
+            </div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              <p>Database users: Use temp123 as password for SearchNWA team members</p>
             </div>
           </div>
         </CardContent>

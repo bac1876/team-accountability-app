@@ -10,6 +10,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle, Database, AlertCircle } from 'lucide-react'
 import UserManagement from './UserManagement.jsx'
 import MessagingCenter from './MessagingCenter.jsx'
+import DataMigration from './DataMigration.jsx'
+import LoginTest from './LoginTest.jsx'
+import PersistenceTest from './PersistenceTest.jsx'
+import SystemStatus from './SystemStatus.jsx'
 import { analyticsStore } from '../utils/dataStore.js'
 import { analyticsService, databaseService } from '../services/databaseService.js'
 
@@ -254,6 +258,10 @@ const AdminDashboard = ({ user }) => {
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="messaging">Messaging</TabsTrigger>
+          <TabsTrigger value="migration">Data Migration</TabsTrigger>
+          <TabsTrigger value="testing">Login Testing</TabsTrigger>
+          <TabsTrigger value="persistence">Data Persistence</TabsTrigger>
+          <TabsTrigger value="status">System Status</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -361,6 +369,22 @@ const AdminDashboard = ({ user }) => {
 
         <TabsContent value="messaging" className="space-y-4">
           <MessagingCenter />
+        </TabsContent>
+
+        <TabsContent value="migration" className="space-y-4">
+          <DataMigration onMigrationComplete={loadData} />
+        </TabsContent>
+
+        <TabsContent value="testing" className="space-y-4">
+          <LoginTest />
+        </TabsContent>
+
+        <TabsContent value="persistence" className="space-y-4">
+          <PersistenceTest />
+        </TabsContent>
+
+        <TabsContent value="status" className="space-y-4">
+          <SystemStatus />
         </TabsContent>
       </Tabs>
     </div>
