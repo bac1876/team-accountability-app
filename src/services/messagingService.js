@@ -2,7 +2,7 @@
 // Handles daily reminders and team communication via Zapier webhooks
 
 import zapierIntegration from './zapierIntegration.js'
-import { getUsers, getUserCommitments, getUserGoals, getAnalytics } from '../utils/dataStore.js'
+import { userStore, userDataStore, analyticsStore } from '../utils/dataStore.js'
 
 class MessagingService {
   constructor() {
@@ -12,12 +12,13 @@ class MessagingService {
   // Send daily reminders to users who haven't set commitments
   async sendDailyReminders(options = {}) {
     const today = new Date().toISOString().split('T')[0]
-    const users = getUsers().filter(user => user.role === 'member')
+    const users = userStore.getAll().filter(user => user.role === 'member')
     const remindersToSend = []
 
     // Identify users who need reminders
     for (const user of users) {
-      const commitments = getUserCommitments(user.id)
+      const userData = userDataStore.getUserData(user.id)
+      const commitments = userData.commitments
       const todayCommitment = commitments.find(c => c.date === today)
       
       // Skip if user already has a commitment for today
@@ -61,11 +62,12 @@ class MessagingService {
 
   // Send weekly goal reminders
   async sendWeeklyGoalReminders(options = {}) {
-    const users = getUsers().filter(user => user.role === 'member')
+    const users = userStore.getAll().filter(user => user.role === 'member')
     const remindersToSend = []
 
     for (const user of users) {
-      const goals = getUserGoals(user.id)
+      const userData = userDataStore.getUserData(user.id)
+      const goals = userData.goals
       const activeGoals = goals.filter(g => g.status !== 'completed')
       
       // Send reminder if user has no active goals or hasn't updated in a while
@@ -103,8 +105,8 @@ class MessagingService {
 
   // Send encouragement messages to high performers
   async sendEncouragementMessages(options = {}) {
-    const analytics = getAnalytics()
-    const users = getUsers().filter(user => user.role === 'member')
+    const analytics = analyticsStore.getTeamStats()
+    const users = userStore.getAll().filter(user => user.role === 'member')
     const encouragementUsers = []
 
     for (const user of users) {
@@ -148,11 +150,12 @@ class MessagingService {
 
   // Send re-engagement messages to inactive users
   async sendReEngagementMessages(options = {}) {
-    const users = getUsers().filter(user => user.role === 'member')
+    const users = userStore.getAll().filter(user => user.role === 'member')
     const reEngagementUsers = []
 
     for (const user of users) {
-      const commitments = getUserCommitments(user.id)
+      const userData = userDataStore.getUserData(user.id)
+      const commitments = userData.commitments
       const lastCommitment = commitments
         .sort((a, b) => new Date(b.date) - new Date(a.date))[0]
 
@@ -195,7 +198,7 @@ class MessagingService {
 
   // Send custom message to specific users
   async sendCustomMessage(userIds, message, options = {}) {
-    const users = getUsers().filter(user => userIds.includes(user.id))
+    const users = userStore.getAll().filter(user => userIds.includes(user.id))
     
     if (users.length === 0) {
       return {
