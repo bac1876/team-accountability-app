@@ -10,27 +10,10 @@
       "destination": "/index.html"
     }
   ],
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x",
-      "maxDuration": 30
-    }
-  },
   "crons": [
     {
       "path": "/api/messaging/daily-reminders",
       "schedule": "0 18 * * *"
     }
-  ],
-  "env": {
-    "MESSAGING_API_TOKEN": "@messaging_api_token",
-    "DATABASE_INIT_TOKEN": "@database_init_token",
-    "POSTGRES_URL": "@postgres_url",
-    "POSTGRES_PRISMA_URL": "@postgres_prisma_url", 
-    "POSTGRES_URL_NON_POOLING": "@postgres_url_non_pooling",
-    "POSTGRES_USER": "@postgres_user",
-    "POSTGRES_HOST": "@postgres_host",
-    "POSTGRES_PASSWORD": "@postgres_password",
-    "POSTGRES_DATABASE": "@postgres_database"
-  }
+  ]
 }
