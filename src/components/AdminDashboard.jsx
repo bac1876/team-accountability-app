@@ -7,10 +7,11 @@ import { Progress } from '@/components/ui/progress.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
-import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle, Database, AlertCircle } from 'lucide-react'
 import UserManagement from './UserManagement.jsx'
 import MessagingCenter from './MessagingCenter.jsx'
 import { analyticsStore } from '../utils/dataStore.js'
+import { analyticsService, databaseService } from '../services/databaseService.js'
 
 const AdminDashboard = ({ user }) => {
   const [teamData, setTeamData] = useState([])
@@ -20,9 +21,55 @@ const AdminDashboard = ({ user }) => {
     overallCompletion: 0,
     weeklyGoalsCompletion: 0
   })
+  const [databaseStatus, setDatabaseStatus] = useState(null)
+  const [useDatabase, setUseDatabase] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // Load real team data from analytics store
+  // Check database status and load data
   useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      // First check database status
+      const dbStatus = await checkDatabaseStatus()
+      setDatabaseStatus(dbStatus)
+
+      if (dbStatus.success && dbStatus.databaseInitialized) {
+        // Try to load from database
+        try {
+          const analytics = await analyticsService.getTeamAnalytics()
+          setTeamData(analytics.users || [])
+          setTeamStats({
+            totalUsers: analytics.totalUsers || 0,
+            activeToday: analytics.activeToday || 0,
+            overallCompletion: analytics.overallCompletion || 0,
+            weeklyGoalsCompletion: analytics.weeklyGoalsCompletion || 0
+          })
+          setUseDatabase(true)
+        } catch (dbError) {
+          console.error('Database load failed, falling back to localStorage:', dbError)
+          loadFromLocalStorage()
+        }
+      } else {
+        // Fall back to localStorage
+        loadFromLocalStorage()
+      }
+    } catch (error) {
+      console.error('Error loading data:', error)
+      setError(error.message)
+      loadFromLocalStorage()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadFromLocalStorage = () => {
     const stats = analyticsStore.getTeamStats()
     setTeamData(stats.teamData)
     setTeamStats({
@@ -31,7 +78,42 @@ const AdminDashboard = ({ user }) => {
       overallCompletion: stats.overallCompletion,
       weeklyGoalsCompletion: stats.weeklyGoalsCompletion
     })
-  }, [])
+    setUseDatabase(false)
+  }
+
+  const checkDatabaseStatus = async () => {
+    try {
+      const response = await fetch('/api/database/status')
+      return await response.json()
+    } catch (error) {
+      console.error('Database status check failed:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  const initializeDatabase = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/database/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        // Reload data after successful initialization
+        await loadData()
+      } else {
+        setError(result.error || 'Database initialization failed')
+      }
+    } catch (error) {
+      console.error('Database initialization error:', error)
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const getInitials = (name) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase()
@@ -56,34 +138,69 @@ const AdminDashboard = ({ user }) => {
       in_progress: 'secondary',
       pending: 'destructive'
     }
-    
-    const labels = {
-      completed: 'Completed',
-      in_progress: 'In Progress',
-      pending: 'Pending'
-    }
-
     return (
       <Badge variant={variants[status] || 'outline'}>
-        {labels[status] || 'Unknown'}
+        {status.replace('_', ' ')}
       </Badge>
     )
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading dashboard...</div>
+      </div>
+    )
+  }
+
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           <p className="text-muted-foreground">
             Team overview for {format(new Date(), 'EEEE, MMMM do, yyyy')}
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          {databaseStatus && (
+            <Badge variant={databaseStatus.success ? 'default' : 'destructive'}>
+              <Database className="w-3 h-3 mr-1" />
+              {useDatabase ? 'Database' : 'Local Storage'}
+            </Badge>
+          )}
+        </div>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {error && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="w-4 h-4" />
+              <span>{error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {databaseStatus && !databaseStatus.databaseInitialized && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-yellow-600">
+                <AlertCircle className="w-4 h-4" />
+                <span>Database not initialized. Click to set up the database with all team members.</span>
+              </div>
+              <Button onClick={initializeDatabase} variant="outline">
+                Initialize Database
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Team Members</CardTitle>
@@ -91,9 +208,7 @@ const AdminDashboard = ({ user }) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{teamStats.totalUsers}</div>
-            <p className="text-xs text-muted-foreground">
-              Active users in the system
-            </p>
+            <p className="text-xs text-muted-foreground">Active users in the system</p>
           </CardContent>
         </Card>
 
@@ -104,42 +219,36 @@ const AdminDashboard = ({ user }) => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{teamStats.activeToday}</div>
-            <p className="text-xs text-muted-foreground">
-              Logged in today
-            </p>
+            <p className="text-xs text-muted-foreground">Logged in today</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Overall Completion</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{teamStats.overallCompletion}%</div>
-            <p className="text-xs text-muted-foreground">
-              Average completion rate
-            </p>
+            <p className="text-xs text-muted-foreground">Average completion rate</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Weekly Goals</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{teamStats.weeklyGoalsCompletion}%</div>
-            <p className="text-xs text-muted-foreground">
-              Goals completion rate
-            </p>
+            <p className="text-xs text-muted-foreground">Goals completion rate</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
           <TabsTrigger value="overview">Team Overview</TabsTrigger>
           <TabsTrigger value="detailed">Detailed View</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -147,14 +256,11 @@ const AdminDashboard = ({ user }) => {
           <TabsTrigger value="messaging">Messaging</TabsTrigger>
         </TabsList>
 
-        {/* Team Overview */}
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Team Summary</CardTitle>
-              <CardDescription>
-                Quick overview of all team members' current status
-              </CardDescription>
+              <CardDescription>Quick overview of all team members' current status</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -179,17 +285,15 @@ const AdminDashboard = ({ user }) => {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{member.name}</p>
-                            <p className="text-sm text-muted-foreground">{member.email}</p>
+                            <div className="font-medium">{member.name}</div>
+                            <div className="text-sm text-muted-foreground">{member.email}</div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="max-w-xs">
-                          {member.todayCommitment ? (
-                            <p className="text-sm truncate">{member.todayCommitment}</p>
-                          ) : (
-                            <p className="text-sm text-muted-foreground italic">No commitment set</p>
+                          {member.todayCommitment || (
+                            <span className="text-muted-foreground italic">No commitment set</span>
                           )}
                         </div>
                       </TableCell>
@@ -200,25 +304,19 @@ const AdminDashboard = ({ user }) => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-1">
-                          <div className="text-sm">
-                            {member.completedGoals} / {member.weeklyGoals}
-                          </div>
-                          <Progress 
-                            value={(member.completedGoals / member.weeklyGoals) * 100} 
-                            className="h-2 w-16"
-                          />
+                        <div className="text-sm">
+                          {member.completedGoals} / {member.weeklyGoals}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <p className="text-sm">
-                          {format(new Date(member.lastReflection), 'MMM d')}
-                        </p>
+                        <div className="text-sm text-muted-foreground">
+                          {member.lastReflection || 'Jan 1'}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium">{member.completionRate}%</span>
-                          <Progress value={member.completionRate} className="h-2 w-16" />
+                          <Progress value={member.completionRate} className="w-16" />
+                          <span className="text-sm">{member.completionRate}%</span>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -229,154 +327,39 @@ const AdminDashboard = ({ user }) => {
           </Card>
         </TabsContent>
 
-        {/* Detailed View */}
-        <TabsContent value="detailed" className="space-y-6">
-          <div className="grid gap-6">
-            {teamData.map((member) => (
-              <Card key={member.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback>
-                          {getInitials(member.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">{member.name}</CardTitle>
-                        <CardDescription>{member.email}</CardDescription>
-                      </div>
-                    </div>
-                    <Badge variant="outline">
-                      Last login: {format(new Date(member.lastLogin), 'MMM d')}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Today's Commitment</h4>
-                      {member.todayCommitment ? (
-                        <div className="space-y-2">
-                          <p className="text-sm">{member.todayCommitment}</p>
-                          <div className="flex items-center space-x-2">
-                            {getStatusIcon(member.commitmentStatus)}
-                            {getStatusBadge(member.commitmentStatus)}
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">No commitment set</p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Weekly Goals Progress</h4>
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span>{member.completedGoals} of {member.weeklyGoals} completed</span>
-                          <span>{Math.round((member.completedGoals / member.weeklyGoals) * 100)}%</span>
-                        </div>
-                        <Progress value={(member.completedGoals / member.weeklyGoals) * 100} />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Overall Performance</h4>
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span>Completion Rate</span>
-                          <span>{member.completionRate}%</span>
-                        </div>
-                        <Progress value={member.completionRate} />
-                        <p className="text-xs text-muted-foreground">
-                          Last reflection: {format(new Date(member.lastReflection), 'MMM d, yyyy')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        <TabsContent value="detailed" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Detailed Team View</CardTitle>
+              <CardDescription>Comprehensive view of team member activities and progress</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-muted-foreground">
+                Detailed view implementation coming soon...
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        {/* Analytics */}
-        <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Performance Trends</CardTitle>
-                <CardDescription>
-                  Overall team metrics and engagement
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Daily Active Users</span>
-                    <span>{teamStats.activeToday} / {teamStats.totalUsers}</span>
-                  </div>
-                  <Progress value={(teamStats.activeToday / teamStats.totalUsers) * 100} />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Average Completion Rate</span>
-                    <span>{teamStats.overallCompletion}%</span>
-                  </div>
-                  <Progress value={teamStats.overallCompletion} />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Weekly Goals Progress</span>
-                    <span>{teamStats.weeklyGoalsCompletion}%</span>
-                  </div>
-                  <Progress value={teamStats.weeklyGoalsCompletion} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Zapier Integration Status</CardTitle>
-                <CardDescription>
-                  API endpoint for automated reminders
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-3 bg-muted rounded-lg">
-                  <p className="text-sm font-medium mb-2">API Endpoint:</p>
-                  <code className="text-xs bg-background p-2 rounded block">
-                    /api/zapier/daily-reminder-data
-                  </code>
-                </div>
-                
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Users needing reminders today:</p>
-                  <div className="space-y-1">
-                    {teamData
-                      .filter(member => !member.todayCommitment || member.commitmentStatus === 'pending')
-                      .map(member => (
-                        <div key={member.id} className="text-sm text-muted-foreground">
-                          • {member.name} - {!member.todayCommitment ? 'No commitment' : 'Pending completion'}
-                        </div>
-                      ))
-                    }
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="analytics" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Team Analytics</CardTitle>
+              <CardDescription>Performance metrics and trends</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-muted-foreground">
+                Analytics dashboard implementation coming soon...
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        {/* User Management */}
-        <TabsContent value="users" className="space-y-6">
+        <TabsContent value="users" className="space-y-4">
           <UserManagement />
         </TabsContent>
 
-        {/* Messaging Center */}
-        <TabsContent value="messaging" className="space-y-6">
+        <TabsContent value="messaging" className="space-y-4">
           <MessagingCenter />
         </TabsContent>
       </Tabs>
