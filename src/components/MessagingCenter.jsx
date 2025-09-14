@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert.jsx'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import { MessageSquare, Send, Users, Clock, CheckCircle, AlertCircle, Settings, Zap, ExternalLink, TestTube } from 'lucide-react'
-import { getUsers, getAnalytics } from '../utils/dataStore.js'
+import { userStore, analyticsStore } from '../utils/dataStore.js'
 import messagingService from '../services/messagingService.js'
 
 const MessagingCenter = () => {
@@ -49,7 +49,7 @@ const MessagingCenter = () => {
   }, [])
 
   const loadData = () => {
-    const allUsers = getUsers().filter(user => user.role !== 'admin')
+    const allUsers = userStore.getAll().filter(user => user.role !== 'admin')
     setUsers(allUsers)
     
     // Load message history and stats
@@ -223,7 +223,7 @@ const MessagingCenter = () => {
   }
 
   const getUsersNeedingReminders = () => {
-    const analytics = getAnalytics()
+    const analytics = analyticsStore.getTeamStats()
     return users.filter(user => {
       const userAnalytics = analytics.users.find(u => u.id === user.id)
       return !userAnalytics || userAnalytics.completionRate < 50
@@ -231,7 +231,7 @@ const MessagingCenter = () => {
   }
 
   const getHighPerformers = () => {
-    const analytics = getAnalytics()
+    const analytics = analyticsStore.getTeamStats()
     return users.filter(user => {
       const userAnalytics = analytics.users.find(u => u.id === user.id)
       return userAnalytics && userAnalytics.completionRate >= 80
@@ -704,7 +704,7 @@ const MessagingCenter = () => {
                 ) : (
                   <div className="space-y-2">
                     {getUsersNeedingReminders().map(user => {
-                      const analytics = getAnalytics()
+                      const analytics = analyticsStore.getTeamStats()
                       const userAnalytics = analytics.users.find(u => u.id === user.id)
                       return (
                         <div key={user.id} className="flex items-center justify-between p-2 border rounded">
@@ -738,7 +738,7 @@ const MessagingCenter = () => {
                 ) : (
                   <div className="space-y-2">
                     {getHighPerformers().map(user => {
-                      const analytics = getAnalytics()
+                      const analytics = analyticsStore.getTeamStats()
                       const userAnalytics = analytics.users.find(u => u.id === user.id)
                       return (
                         <div key={user.id} className="flex items-center justify-between p-2 border rounded">
