@@ -226,14 +226,55 @@ const LoginPage = ({ onLogin }) => {
           </form>
 
           <div className="mt-6 p-4 bg-muted rounded-lg">
-            <p className="text-sm font-medium mb-2">Demo Accounts:</p>
-            <div className="text-xs space-y-1">
-              <div><strong>Admin:</strong> brian@searchnwa.com / admin123</div>
-              <div><strong>Member:</strong> john@example.com / john123</div>
-              <div><strong>Member:</strong> jane@example.com / jane123</div>
+            <p className="text-sm font-medium mb-2">Available Accounts (23 Total):</p>
+            
+            {/* Admin Account */}
+            <div className="mb-3">
+              <p className="text-xs font-medium text-blue-600 mb-1">Admin Account:</p>
+              <div className="text-xs space-y-1">
+                <div><strong>Brian Curtis:</strong> brian@searchnwa.com / admin123</div>
+              </div>
             </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              <p>Database users: Use temp123 as password for SearchNWA team members</p>
+
+            {/* Demo Accounts */}
+            <div className="mb-3">
+              <p className="text-xs font-medium text-green-600 mb-1">Demo Accounts:</p>
+              <div className="text-xs space-y-1">
+                <div><strong>John Doe:</strong> john@example.com / john123</div>
+                <div><strong>Jane Smith:</strong> jane@example.com / jane123</div>
+              </div>
+            </div>
+
+            {/* SearchNWA Team */}
+            <div className="mb-3">
+              <p className="text-xs font-medium text-purple-600 mb-1">SearchNWA Team (20 members):</p>
+              <div className="text-xs space-y-1 max-h-32 overflow-y-auto">
+                <div><strong>Brandon Hollis:</strong> brandon@searchnwa.com / temp123</div>
+                <div><strong>Carl DeBose:</strong> ccarl@searchnwa.com / temp123</div>
+                <div><strong>Chris Adams:</strong> chris@searchnwa.com / temp123</div>
+                <div><strong>Christopher Lee:</strong> chrislee@searchnwa.com / temp123</div>
+                <div><strong>Cindy Schell:</strong> cindy@searchnwa.com / temp123</div>
+                <div><strong>Eujeanie Luker:</strong> eujeanie@searchnwa.com / temp123</div>
+                <div><strong>Frank Cardinale:</strong> frank@searchnwa.com / temp123</div>
+                <div><strong>Grayson Geurin:</strong> grayson@searchnwa.com / temp123</div>
+                <div><strong>Jacob Fitzgerald:</strong> jacob@searchnwa.com / temp123</div>
+                <div><strong>Kimberly Carter:</strong> kim@searchnwa.com / temp123</div>
+                <div><strong>Landon Burkett:</strong> landon@searchnwa.com / temp123</div>
+                <div><strong>Luis Jimenez:</strong> luis@searchnwa.com / temp123</div>
+                <div><strong>Michael Lyman:</strong> michael@searchnwa.com / temp123</div>
+                <div><strong>Michelle Harrison:</strong> michelle@searchnwa.com / temp123</div>
+                <div><strong>Mitch Sluyter:</strong> mitch@searchnwa.com / temp123</div>
+                <div><strong>Lyndsi Sluyter:</strong> lyndsi@searchnwa.com / temp123</div>
+                <div><strong>Patrick Foresee:</strong> patrick@searchnwa.com / temp123</div>
+                <div><strong>William Burchit:</strong> bill@searchnwa.com / temp123</div>
+                <div><strong>Natalie Burchit:</strong> natalie@searchnwa.com / temp123</div>
+                <div><strong>Thomas Francis:</strong> thomas@searchnwa.com / temp123</div>
+              </div>
+            </div>
+
+            <div className="mt-2 text-xs text-muted-foreground border-t pt-2">
+              <p><strong>Total:</strong> 23 team members available for login</p>
+              <p><strong>Note:</strong> All SearchNWA team members use password: temp123</p>
             </div>
           </div>
         </CardContent>
