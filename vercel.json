@@ -1,13 +1,19 @@
 {
-  "buildCommand": "cd \"Claude Code Projects/accountability\" && npm run build",
-  "outputDirectory": "Claude Code Projects/accountability/dist",
-  "devCommand": "cd \"Claude Code Projects/accountability\" && npm run dev",
-  "installCommand": "cd \"Claude Code Projects/accountability\" && npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm ci",
   "framework": "vite",
   "rewrites": [
     {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/messaging/daily-reminders",
+      "schedule": "0 18 * * *"
     }
   ]
 }

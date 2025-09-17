@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Progress } from '@/components/ui/progress.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Label } from '@/components/ui/label.jsx'
-import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp, Edit, Trash2, X, Check, BarChart3, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
+import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp, Edit, Trash2, X, Check, BarChart3 } from 'lucide-react'
 import { userDataStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
 // import DailyFocus from './DailyFocus.jsx'
@@ -38,8 +38,6 @@ const Dashboard = ({ user }) => {
   const [editingGoal, setEditingGoal] = useState(null)
   const [editCommitmentText, setEditCommitmentText] = useState('')
   const [editGoalText, setEditGoalText] = useState('')
-  const [reflectionHistory, setReflectionHistory] = useState([])
-  const [expandedReflections, setExpandedReflections] = useState([])
 
   const today = new Date()
   const todayString = today.toISOString().split('T')[0]
@@ -107,12 +105,7 @@ const Dashboard = ({ user }) => {
     
     if (!todayCommitment.trim()) {
       console.log('No commitment text provided')
-      // Show error message without alert
-      const errorDiv = document.createElement('div')
-      errorDiv.className = 'fixed top-4 right-4 bg-yellow-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      errorDiv.textContent = 'Please enter a commitment before saving'
-      document.body.appendChild(errorDiv)
-      setTimeout(() => errorDiv.remove(), 3000)
+      alert('Please enter a commitment before saving')
       return
     }
 
@@ -120,12 +113,7 @@ const Dashboard = ({ user }) => {
     const existingData = userDataStore.getUserData(user.id)
     const existingCommitment = existingData.commitments.find(c => c.date === todayString)
     if (existingCommitment) {
-      // Show info message without alert
-      const infoDiv = document.createElement('div')
-      infoDiv.className = 'fixed top-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      infoDiv.textContent = 'You already have a commitment for today. You can edit it from the Recent Commitments section.'
-      document.body.appendChild(infoDiv)
-      setTimeout(() => infoDiv.remove(), 4000)
+      alert('You already have a commitment for today. You can edit it from the Recent Commitments section.')
       setTodayCommitment('')
       return
     }
@@ -166,22 +154,10 @@ const Dashboard = ({ user }) => {
       // Clear the form after successful save
       setTodayCommitment('')
       console.log('Commitment saved successfully')
-      
-      // Show success message without alert
-      const successDiv = document.createElement('div')
-      successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      successDiv.textContent = 'Commitment saved successfully!'
-      document.body.appendChild(successDiv)
-      setTimeout(() => successDiv.remove(), 3000)
+      alert('Commitment saved successfully!')
     } catch (error) {
       console.error('Error saving commitment:', error)
-      
-      // Show error message without alert
-      const errorDiv = document.createElement('div')
-      errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      errorDiv.textContent = 'Failed to save commitment. Please try again.'
-      document.body.appendChild(errorDiv)
-      setTimeout(() => errorDiv.remove(), 3000)
+      alert('Failed to save commitment. Please try again.')
     }
   }
 
@@ -217,42 +193,29 @@ const Dashboard = ({ user }) => {
     const userData = userDataStore.getUserData(user.id)
     const allReflections = userData.reflections || []
     
-    // Check if today's reflection exists but DON'T reload it into the form
+    // Check if today's reflection exists
     const todayReflection = allReflections.find(r => r.date === todayString)
     if (todayReflection) {
-      // Just mark that we've saved today's reflection, don't reload the text
+      setReflection({
+        wentWell: todayReflection.wentWell || '',
+        differently: todayReflection.differently || '',
+        needHelp: todayReflection.needHelp || ''
+      })
       setReflectionSaved(true)
     }
     
-    // Get all reflections including today's for history (last 30 days)
-    const recentReflections = allReflections
-      .filter(r => r.date !== todayString) // Exclude today's from history
+    // Get past reflections (last 7 days)
+    const pastWeek = allReflections
+      .filter(r => r.date !== todayString)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 30)
-    setPastReflections(recentReflections)
-    setReflectionHistory(recentReflections) // Set the history for display
-  }
-  
-  // Format date for display
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    })
+      .slice(0, 7)
+    setPastReflections(pastWeek)
   }
 
   const saveReflection = () => {
     // Validate that at least one field has content
     if (!reflection.wentWell && !reflection.differently && !reflection.needHelp) {
-      // Show error message as toast
-      const errorDiv = document.createElement('div')
-      errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      errorDiv.textContent = 'Please fill in at least one reflection field'
-      document.body.appendChild(errorDiv)
-      setTimeout(() => errorDiv.remove(), 3000)
+      alert('Please fill in at least one reflection field')
       return
     }
 
@@ -265,36 +228,16 @@ const Dashboard = ({ user }) => {
       createdAt: new Date().toISOString()
     }
 
-    // Save the reflection
-    userDataStore.addReflection(user.id, reflectionData)
-    
-    // Clear the form IMMEDIATELY - this is critical
-    setReflection({
-      wentWell: '',
-      differently: '',
-      needHelp: ''
-    })
-    
-    // Mark as saved
-    setReflectionSaved(true)
-    
-    // Reload reflections to update history after a brief delay
-    setTimeout(() => {
+    try {
+      userDataStore.addReflection(user.id, reflectionData)
+      // Mark as saved and reload reflections
+      setReflectionSaved(true)
       loadReflections()
-    }, 100)
-    
-    // Show success message as a toast notification (no alert!)
-    const successDiv = document.createElement('div')
-    successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fadeIn'
-    successDiv.textContent = 'Reflection saved! ✓'
-    document.body.appendChild(successDiv)
-    
-    // Remove the toast after 2 seconds
-    setTimeout(() => {
-      if (successDiv && successDiv.parentNode) {
-        successDiv.remove()
-      }
-    }, 2000)
+      alert('Reflection saved successfully!')
+    } catch (error) {
+      console.error('Error saving reflection:', error)
+      alert('Failed to save reflection. Please try again.')
+    }
   }
 
   const updateCommitmentStatus = (status) => {
@@ -357,35 +300,6 @@ const Dashboard = ({ user }) => {
         .sort((a, b) => new Date(b.date) - new Date(a.date))
       setRecentCommitments(recentCommits)
     }
-  }
-  
-  const toggleCommitmentStatus = (commitmentId, currentStatus) => {
-    // Toggle between completed and pending
-    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed'
-    userDataStore.updateCommitmentStatus(user.id, commitmentId, newStatus)
-    
-    // Refresh commitments
-    const updatedData = userDataStore.getUserData(user.id)
-    const recentCommits = updatedData.commitments
-      .filter(c => {
-        const commitDate = new Date(c.date)
-        const daysDiff = (today - commitDate) / (1000 * 60 * 60 * 24)
-        return daysDiff <= 7
-      })
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-    setRecentCommitments(recentCommits)
-    
-    // Recalculate completion rate
-    const completedCommits = recentCommits.filter(c => c.status === 'completed').length
-    const rate = recentCommits.length > 0 ? (completedCommits / recentCommits.length) * 100 : 0
-    setCompletionRate(Math.round(rate))
-    
-    // Show success message
-    const successDiv = document.createElement('div')
-    successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-    successDiv.textContent = newStatus === 'completed' ? 'Marked as complete! ✓' : 'Marked as pending'
-    document.body.appendChild(successDiv)
-    setTimeout(() => successDiv.remove(), 2000)
   }
 
   const startEditingGoal = (goal) => {
@@ -564,17 +478,13 @@ const Dashboard = ({ user }) => {
                   <div className="space-y-3">
                     {recentCommitments.slice(0, 5).map((commit) => (
                       <div key={commit.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <button
-                          className="flex-shrink-0 mt-1 hover:scale-110 transition-transform cursor-pointer"
-                          onClick={() => toggleCommitmentStatus(commit.id, commit.status)}
-                          title={commit.status === 'completed' ? 'Mark as incomplete' : 'Mark as complete'}
-                        >
+                        <div className="flex-shrink-0 mt-1">
                           {commit.status === 'completed' ? (
                             <CheckCircle className="h-5 w-5 text-green-600" />
                           ) : (
-                            <Circle className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                            <Circle className="h-5 w-5 text-gray-400" />
                           )}
-                        </button>
+                        </div>
                         <div className="flex-1 min-w-0">
                           {editingCommitment === commit.id ? (
                             <div className="space-y-2">
@@ -610,6 +520,12 @@ const Dashboard = ({ user }) => {
                           )}
                         </div>
                         <div className="flex items-center space-x-2">
+                          <Badge 
+                            variant={commit.status === 'completed' ? 'default' : 'secondary'}
+                            className={commit.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
+                          >
+                            {commit.status}
+                          </Badge>
                           {editingCommitment !== commit.id && (
                             <>
                               <Button
@@ -889,74 +805,6 @@ const Dashboard = ({ user }) => {
                 <Button onClick={saveReflection} className="w-full">
                   Save Reflection
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Reflection History */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5" />
-                  <span>Past Reflections</span>
-                </CardTitle>
-                <CardDescription>
-                  Review your previous daily reflections
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {reflectionHistory.length === 0 ? (
-                    <p className="text-center text-gray-500 py-4">No past reflections found</p>
-                  ) : (
-                    reflectionHistory.map((entry, index) => (
-                      <div key={index} className="border rounded-lg p-4 space-y-3 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-sm">{formatDate(entry.date)}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              const expanded = expandedReflections.includes(entry.date)
-                              setExpandedReflections(expanded 
-                                ? expandedReflections.filter(d => d !== entry.date)
-                                : [...expandedReflections, entry.date]
-                              )
-                            }}
-                          >
-                            {expandedReflections.includes(entry.date) ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                        
-                        {expandedReflections.includes(entry.date) && (
-                          <div className="space-y-3 pt-2 border-t">
-                            {entry.wentWell && (
-                              <div>
-                                <p className="text-sm font-medium text-gray-600 mb-1">What went well:</p>
-                                <p className="text-sm text-gray-700 bg-green-50 p-2 rounded">{entry.wentWell}</p>
-                              </div>
-                            )}
-                            {entry.differently && (
-                              <div>
-                                <p className="text-sm font-medium text-gray-600 mb-1">What I'd do differently:</p>
-                                <p className="text-sm text-gray-700 bg-yellow-50 p-2 rounded">{entry.differently}</p>
-                              </div>
-                            )}
-                            {entry.needHelp && (
-                              <div>
-                                <p className="text-sm font-medium text-gray-600 mb-1">Need help with:</p>
-                                <p className="text-sm text-gray-700 bg-blue-50 p-2 rounded">{entry.needHelp}</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
               </CardContent>
             </Card>
           </TabsContent>

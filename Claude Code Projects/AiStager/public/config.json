@@ -1,8 +1,0 @@
-{
-  "api_status": "ready",
-  "environment": "production",
-  "features": {
-    "instantdeco": true,
-    "imgbb": true
-  }
-}

@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
-import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Eye, MessageSquare, ChevronUp } from 'lucide-react'
+import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Eye } from 'lucide-react'
 import UserManagement from './UserManagement.jsx'
 import MessagingCenter from './MessagingCenter.jsx'
 import AnalyticsDashboard from './AnalyticsDashboard.jsx'
@@ -26,8 +26,6 @@ const AdminDashboard = ({ user }) => {
   })
   const [expandedUsers, setExpandedUsers] = useState(new Set())
   const [detailedUserData, setDetailedUserData] = useState({})
-  const [teamReflections, setTeamReflections] = useState([])
-  const [expandedReflections, setExpandedReflections] = useState(new Set())
 
   // Load real team data from analytics store
   useEffect(() => {
@@ -39,45 +37,7 @@ const AdminDashboard = ({ user }) => {
       overallCompletion: stats.overallCompletion,
       weeklyGoalsCompletion: stats.weeklyGoalsCompletion
     })
-    
-    // Load team reflections
-    loadTeamReflections()
   }, [location.pathname])
-  
-  const loadTeamReflections = () => {
-    // Get all users' reflections
-    const allUsers = adminStore.getAllUsersComplete()
-    const reflections = []
-    
-    allUsers.forEach(userData => {
-      if (userData.reflections && userData.reflections.length > 0) {
-        // Get last 7 days of reflections for each user
-        const recentReflections = userData.reflections
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .slice(0, 7)
-          .map(r => ({
-            ...r,
-            userId: userData.id,
-            userName: userData.name
-          }))
-        reflections.push(...recentReflections)
-      }
-    })
-    
-    // Sort all reflections by date
-    reflections.sort((a, b) => new Date(b.date) - new Date(a.date))
-    setTeamReflections(reflections)
-  }
-  
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    })
-  }
 
   const getInitials = (name) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase()
@@ -203,10 +163,9 @@ const AdminDashboard = ({ user }) => {
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Team Overview</TabsTrigger>
           <TabsTrigger value="detailed">Detailed View</TabsTrigger>
-          <TabsTrigger value="reflections">Reflections</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="messaging">Messaging</TabsTrigger>
@@ -545,95 +504,6 @@ const AdminDashboard = ({ user }) => {
               )
             })}
           </div>
-        </TabsContent>
-
-        {/* Team Reflections */}
-        <TabsContent value="reflections" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <MessageSquare className="h-5 w-5" />
-                <span>Team Reflections</span>
-              </CardTitle>
-              <CardDescription>
-                Review daily reflections from all team members
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {teamReflections.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">No reflections found from the team yet</p>
-                ) : (
-                  teamReflections.map((reflection, index) => {
-                    const reflectionKey = `${reflection.userId}-${reflection.date}`
-                    const isExpanded = expandedReflections.has(reflectionKey)
-                    
-                    return (
-                      <div key={index} className="border rounded-lg hover:shadow-md transition-shadow">
-                        <div className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarFallback className="text-xs">
-                                  {getInitials(reflection.userName)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-semibold">{reflection.userName}</p>
-                                <p className="text-sm text-gray-500">{formatDate(reflection.date)}</p>
-                              </div>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const newExpanded = new Set(expandedReflections)
-                                if (isExpanded) {
-                                  newExpanded.delete(reflectionKey)
-                                } else {
-                                  newExpanded.add(reflectionKey)
-                                }
-                                setExpandedReflections(newExpanded)
-                              }}
-                            >
-                              {isExpanded ? (
-                                <ChevronUp className="h-4 w-4" />
-                              ) : (
-                                <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                          
-                          {isExpanded && (
-                            <div className="mt-4 space-y-3 pt-4 border-t">
-                              {reflection.wentWell && (
-                                <div>
-                                  <p className="text-sm font-medium text-gray-600 mb-1">What went well:</p>
-                                  <p className="text-sm text-gray-700 bg-green-50 p-3 rounded-lg">{reflection.wentWell}</p>
-                                </div>
-                              )}
-                              {reflection.differently && (
-                                <div>
-                                  <p className="text-sm font-medium text-gray-600 mb-1">What they'd do differently:</p>
-                                  <p className="text-sm text-gray-700 bg-yellow-50 p-3 rounded-lg">{reflection.differently}</p>
-                                </div>
-                              )}
-                              {reflection.needHelp && (
-                                <div>
-                                  <p className="text-sm font-medium text-gray-600 mb-1">Need help with:</p>
-                                  <p className="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg">{reflection.needHelp}</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         {/* Analytics */}
