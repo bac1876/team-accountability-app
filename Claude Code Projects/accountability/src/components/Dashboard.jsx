@@ -62,10 +62,11 @@ const Dashboard = ({ user }) => {
       setUserData(data)
       loadReflections()
       
-      // Load today's commitment
+      // Load today's commitment status only (not the text)
       const todayCommit = data.commitments.find(c => c.date === todayString)
       if (todayCommit) {
-        setTodayCommitment(todayCommit.text)
+        // Don't reload the text into the input field - it should stay in Recent Commitments
+        // Only set the status if a commitment exists
         setCommitmentStatus(todayCommit.status)
       }
 
@@ -104,6 +105,16 @@ const Dashboard = ({ user }) => {
     
     if (!todayCommitment.trim()) {
       console.log('No commitment text provided')
+      alert('Please enter a commitment before saving')
+      return
+    }
+
+    // Check if a commitment already exists for today
+    const existingData = userDataStore.getUserData(user.id)
+    const existingCommitment = existingData.commitments.find(c => c.date === todayString)
+    if (existingCommitment) {
+      alert('You already have a commitment for today. You can edit it from the Recent Commitments section.')
+      setTodayCommitment('')
       return
     }
 
@@ -125,11 +136,28 @@ const Dashboard = ({ user }) => {
         userDataStore.updateCommitmentStatus(user.id, todayCommit.id, commitmentStatus)
       }
       
+      // Refresh recent commitments to show the new one immediately
+      const recentCommits = updatedData.commitments
+        .filter(c => {
+          const commitDate = new Date(c.date)
+          const daysDiff = (today - commitDate) / (1000 * 60 * 60 * 24)
+          return daysDiff <= 7
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+      setRecentCommitments(recentCommits)
+      
+      // Calculate completion rate
+      const completedCommits = recentCommits.filter(c => c.status === 'completed').length
+      const rate = recentCommits.length > 0 ? (completedCommits / recentCommits.length) * 100 : 0
+      setCompletionRate(Math.round(rate))
+      
       // Clear the form after successful save
       setTodayCommitment('')
       console.log('Commitment saved successfully')
+      alert('Commitment saved successfully!')
     } catch (error) {
       console.error('Error saving commitment:', error)
+      alert('Failed to save commitment. Please try again.')
     }
   }
 
