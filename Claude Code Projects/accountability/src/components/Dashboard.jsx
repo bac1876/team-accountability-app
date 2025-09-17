@@ -94,19 +94,18 @@ const Dashboard = ({ user }) => {
   const saveCommitment = () => {
     if (!todayCommitment.trim()) return
 
-    const commitmentData = {
-      id: Date.now().toString(),
-      text: todayCommitment,
-      date: todayString,
-      status: commitmentStatus,
-      createdAt: new Date().toISOString()
-    }
-
-    userDataStore.addCommitment(user.id, commitmentData)
+    // addCommitment expects just the text string, not an object
+    userDataStore.addCommitment(user.id, todayCommitment)
     
-    // Refresh data
+    // Update the commitment status after saving
     const updatedData = userDataStore.getUserData(user.id)
     setUserData(updatedData)
+    
+    // Find the newly added commitment and update its status if needed
+    const todayCommit = updatedData.commitments.find(c => c.date === todayString)
+    if (todayCommit && commitmentStatus !== 'pending') {
+      userDataStore.updateCommitmentStatus(user.id, todayCommit.id, commitmentStatus)
+    }
   }
 
   const addWeeklyGoal = () => {
