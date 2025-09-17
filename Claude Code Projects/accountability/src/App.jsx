@@ -47,17 +47,18 @@ function App() {
     document.documentElement.classList.add('dark')
     
     // Clear any potentially corrupted localStorage on version mismatch
-    const APP_VERSION = '1.0.1'
+    const APP_VERSION = '1.0.2'
     const storedVersion = localStorage.getItem('appVersion')
     if (storedVersion !== APP_VERSION) {
       console.log('App version changed, clearing localStorage')
-      // Keep the current user but clear other potentially corrupted data
-      const currentUser = localStorage.getItem('currentUser')
+      // Force complete reset for Chrome cache issues
       localStorage.clear()
-      if (currentUser) {
-        localStorage.setItem('currentUser', currentUser)
-      }
+      sessionStorage.clear()
       localStorage.setItem('appVersion', APP_VERSION)
+      // Force page reload after clearing cache
+      setTimeout(() => {
+        window.location.reload()
+      }, 100)
     }
     
     const savedUser = localStorage.getItem('currentUser')
