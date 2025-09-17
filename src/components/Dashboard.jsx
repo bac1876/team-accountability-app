@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useNavigation } from '../context/NavigationContext'
 import { format, startOfWeek, endOfWeek } from 'date-fns'
@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Progress } from '@/components/ui/progress.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Label } from '@/components/ui/label.jsx'
-import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp, Edit, Trash2, X, Check, BarChart3 } from 'lucide-react'
-import { userDataStore } from '../utils/dataStore.js'
+import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp, Edit, Trash2, X, Check, BarChart3, CalendarCheck, Phone } from 'lucide-react'
+import { userDataStore, phoneCallStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
 // import DailyFocus from './DailyFocus.jsx'
 import DailyFocusSimple from './DailyFocusSimple.jsx'
@@ -385,17 +385,99 @@ const Dashboard = ({ user }) => {
           <p className="text-slate-400">Track your daily commitments and achieve your goals</p>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Stats Overview - Week View */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          {/* Monday through Friday commitment status */}
+          {(() => {
+            const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+            const currentDate = new Date();
+            const currentDay = currentDate.getDay();
+            const monday = new Date(currentDate);
+            monday.setDate(currentDate.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
+            
+            return weekDays.map((day, index) => {
+              const dayDate = new Date(monday);
+              dayDate.setDate(monday.getDate() + index);
+              const dayString = dayDate.toISOString().split('T')[0];
+              const dayCommitment = recentCommitments.find(c => c.date === dayString);
+              const isToday = dayString === todayString;
+              const isFuture = dayDate > currentDate;
+              
+              // Determine status
+              let status = 'none';
+              let bgColor = 'bg-slate-800/50';
+              let iconColor = 'text-slate-500';
+              let icon = Circle;
+              
+              if (dayCommitment) {
+                if (dayCommitment.status === 'completed') {
+                  status = 'completed';
+                  bgColor = 'bg-green-900/30 border-green-700/50';
+                  iconColor = 'text-green-400';
+                  icon = CheckCircle;
+                } else {
+                  status = 'pending';
+                  bgColor = 'bg-yellow-900/30 border-yellow-700/50';
+                  iconColor = 'text-yellow-400';
+                  icon = Clock;
+                }
+              } else if (isFuture) {
+                bgColor = 'bg-slate-800/30';
+                iconColor = 'text-slate-600';
+              } else if (!isToday) {
+                // Past day with no commitment
+                bgColor = 'bg-red-900/30 border-red-700/50';
+                iconColor = 'text-red-400';
+                icon = X;
+              }
+              
+              if (isToday) {
+                bgColor = bgColor.replace('/30', '/50').replace('/50', '/70');
+              }
+              
+              return (
+                <Card key={day} className={`${bgColor} backdrop-blur border-slate-700/50 ${isToday ? 'ring-2 ring-blue-500/50' : ''}`}>
+                  <CardContent className="p-4">
+                    <div className="flex flex-col items-center space-y-2">
+                      {React.createElement(icon, { className: `h-6 w-6 ${iconColor}` })}
+                      <div className="text-center">
+                        <p className="text-xs font-medium text-slate-400">{day}</p>
+                        <p className="text-sm font-bold text-white">
+                          {dayDate.getDate()}
+                        </p>
+                        {isToday && (
+                          <Badge variant="secondary" className="mt-1 text-xs bg-blue-600/20 text-blue-300">
+                            Today
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            });
+          })()}
+        </div>
+
+        {/* Phone Call Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="bg-slate-800/50 backdrop-blur border-slate-700/50">
             <CardContent className="p-6">
               <div className="flex items-center space-x-2">
                 <div className="p-3 bg-blue-500/20 rounded-xl">
-                  <Target className="h-8 w-8 text-blue-400" />
+                  <Phone className="h-8 w-8 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-400">Completion Rate</p>
-                  <p className="text-2xl font-bold text-white">{completionRate}%</p>
+                  <p className="text-sm font-medium text-slate-400">Today's Call Target</p>
+                  <p className="text-2xl font-bold text-white">
+                    {(() => {
+                      const phoneCallData = phoneCallStore?.getDailyStats?.(user.id, todayString);
+                      if (phoneCallData && phoneCallData.targetCalls > 0) {
+                        return `${phoneCallData.actualCalls || 0}/${phoneCallData.targetCalls} (${phoneCallData.completionRate}%)`;
+                      }
+                      return 'Not set';
+                    })()}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -405,25 +487,11 @@ const Dashboard = ({ user }) => {
             <CardContent className="p-6">
               <div className="flex items-center space-x-2">
                 <div className="p-3 bg-green-500/20 rounded-xl">
-                  <CheckCircle className="h-8 w-8 text-green-400" />
+                  <Target className="h-8 w-8 text-green-400" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-slate-400">Weekly Goals</p>
                   <p className="text-2xl font-bold text-white">{weeklyGoals.filter(g => g.completed).length}/{weeklyGoals.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-slate-800/50 backdrop-blur border-slate-700/50">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-2">
-                <div className="p-3 bg-purple-500/20 rounded-xl">
-                  <TrendingUp className="h-8 w-8 text-purple-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-400">Recent Commits</p>
-                  <p className="text-2xl font-bold text-white">{recentCommitments.length}</p>
                 </div>
               </div>
             </CardContent>
