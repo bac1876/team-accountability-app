@@ -199,6 +199,7 @@ function App() {
         </Routes>
       </Router>
     </NavigationProvider>
+    </ErrorBoundary>
   )
 }
 
