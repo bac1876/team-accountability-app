@@ -92,19 +92,36 @@ const Dashboard = ({ user }) => {
   }, [user?.id, todayString])
 
   const saveCommitment = () => {
-    if (!todayCommitment.trim()) return
+    console.log('Save commitment clicked!', { todayCommitment, user })
+    
+    if (!todayCommitment.trim()) {
+      console.log('No commitment text provided')
+      return
+    }
 
-    // addCommitment expects just the text string, not an object
-    userDataStore.addCommitment(user.id, todayCommitment)
-    
-    // Update the commitment status after saving
-    const updatedData = userDataStore.getUserData(user.id)
-    setUserData(updatedData)
-    
-    // Find the newly added commitment and update its status if needed
-    const todayCommit = updatedData.commitments.find(c => c.date === todayString)
-    if (todayCommit && commitmentStatus !== 'pending') {
-      userDataStore.updateCommitmentStatus(user.id, todayCommit.id, commitmentStatus)
+    try {
+      console.log('Adding commitment:', todayCommitment)
+      // addCommitment expects just the text string, not an object
+      const newCommitment = userDataStore.addCommitment(user.id, todayCommitment)
+      console.log('Commitment added:', newCommitment)
+      
+      // Update the commitment status after saving
+      const updatedData = userDataStore.getUserData(user.id)
+      console.log('Updated data:', updatedData)
+      setUserData(updatedData)
+      
+      // Find the newly added commitment and update its status if needed
+      const todayCommit = updatedData.commitments.find(c => c.date === todayString)
+      if (todayCommit && commitmentStatus !== 'pending') {
+        console.log('Updating commitment status to:', commitmentStatus)
+        userDataStore.updateCommitmentStatus(user.id, todayCommit.id, commitmentStatus)
+      }
+      
+      // Clear the form after successful save
+      setTodayCommitment('')
+      console.log('Commitment saved successfully')
+    } catch (error) {
+      console.error('Error saving commitment:', error)
     }
   }
 
