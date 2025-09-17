@@ -1,8 +1,8 @@
 {
-  "buildCommand": "npm install @rollup/rollup-linux-x64-gnu --force && npm run build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "devCommand": "npm run dev",
-  "installCommand": "npm install --legacy-peer-deps",
+  "installCommand": "npm ci",
   "framework": "vite",
   "rewrites": [
     {
