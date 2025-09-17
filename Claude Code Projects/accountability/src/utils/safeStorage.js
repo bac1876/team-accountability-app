@@ -80,11 +80,22 @@ export const safeLocalStorage = {
 
 // Clean up old or corrupted data
 function cleanupOldData() {
-  const keysToKeep = ['current_user', 'users', 'user_data', 'app_version']
+  // Protected keys that should never be automatically deleted
+  const protectedKeys = [
+    'teamUsers',        // User database
+    'userData',         // User data
+    'usersInitialized', // Flag to prevent re-initialization
+    'currentUser',      // Current session
+    'appVersion'        // App version
+  ]
+  
   const allKeys = Object.keys(localStorage)
   
   allKeys.forEach(key => {
-    if (!keysToKeep.some(keeper => key.includes(keeper))) {
+    // Only remove keys that aren't protected
+    if (!protectedKeys.includes(key) && 
+        !key.includes('user') && 
+        !key.includes('User')) {
       try {
         localStorage.removeItem(key)
       } catch (e) {
@@ -126,8 +137,21 @@ export function validateStoredData() {
 export function checkForReset() {
   const urlParams = new URLSearchParams(window.location.search)
   if (urlParams.get('reset') === 'true') {
-    console.log('Reset parameter detected, clearing storage...')
+    console.log('Reset parameter detected, clearing storage but preserving users...')
+    
+    // Preserve user data before clearing
+    const usersBackup = localStorage.getItem('teamUsers')
+    const userDataBackup = localStorage.getItem('userData')
+    const usersInitialized = localStorage.getItem('usersInitialized')
+    
+    // Clear storage
     safeLocalStorage.clear()
+    
+    // Restore user data
+    if (usersBackup) localStorage.setItem('teamUsers', usersBackup)
+    if (userDataBackup) localStorage.setItem('userData', userDataBackup)
+    if (usersInitialized) localStorage.setItem('usersInitialized', usersInitialized)
+    
     // Remove the reset parameter from URL
     urlParams.delete('reset')
     const newUrl = window.location.pathname + 
@@ -135,6 +159,21 @@ export function checkForReset() {
     window.history.replaceState({}, document.title, newUrl)
     return true
   }
+  
+  // Check for full reset (including users) - requires explicit parameter
+  if (urlParams.get('fullreset') === 'true') {
+    console.log('Full reset parameter detected, clearing ALL storage including users...')
+    safeLocalStorage.clear()
+    localStorage.removeItem('usersInitialized')
+    
+    // Remove the reset parameter from URL
+    urlParams.delete('fullreset')
+    const newUrl = window.location.pathname + 
+      (urlParams.toString() ? '?' + urlParams.toString() : '')
+    window.history.replaceState({}, document.title, newUrl)
+    return true
+  }
+  
   return false
 }
 

@@ -10,7 +10,9 @@ import Dashboard from './components/Dashboard'
 import AdminDashboard from './components/AdminDashboard'
 import Navigation from './components/Navigation'
 import ModernLayout from './components/ModernLayout'
+import ErrorBoundary from './components/ErrorBoundary'
 import { NavigationProvider, useNavigation } from './context/NavigationContext'
+import { initializeStorage } from './utils/safeStorage'
 
 // Component that decides which dashboard to show based on navigation
 function DashboardRouter({ user }) {
@@ -39,38 +41,90 @@ function App() {
 
   // Check for existing session on app load
   useEffect(() => {
-    // Force clear any conflicting styles/classes first
-    document.documentElement.className = ''
-    document.body.className = ''
-    
-    // Always apply dark mode
-    document.documentElement.classList.add('dark')
-    
-    // Clear any potentially corrupted localStorage on version mismatch
-    const APP_VERSION = '1.0.2'
-    const storedVersion = localStorage.getItem('appVersion')
-    if (storedVersion !== APP_VERSION) {
-      console.log('App version changed, clearing localStorage')
-      // Force complete reset for Chrome cache issues
-      localStorage.clear()
-      sessionStorage.clear()
-      localStorage.setItem('appVersion', APP_VERSION)
-      // Force page reload after clearing cache
-      setTimeout(() => {
+    try {
+      // Initialize safe storage and check for reset
+      const storageOk = initializeStorage()
+      if (!storageOk) {
+        console.error('Storage initialization failed')
+        // Clear everything and reload
+        localStorage.clear()
+        sessionStorage.clear()
         window.location.reload()
-      }, 100)
-    }
-    
-    const savedUser = localStorage.getItem('currentUser')
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser))
-      } catch (error) {
-        console.error('Error loading user session:', error)
-        localStorage.removeItem('currentUser')
+        return
       }
+      
+      // Force clear any conflicting styles/classes first
+      document.documentElement.className = ''
+      document.body.className = ''
+      
+      // Always apply dark mode and ensure background
+      document.documentElement.classList.add('dark')
+      document.documentElement.style.backgroundColor = '#010409'
+      document.body.style.backgroundColor = '#010409'
+      
+      // Clear any potentially corrupted localStorage on version mismatch
+      const APP_VERSION = '1.0.4' // Incremented for user preservation fix
+      const storedVersion = localStorage.getItem('appVersion')
+      if (storedVersion !== APP_VERSION) {
+        console.log('App version changed, clearing cache but preserving users')
+        // Preserve critical user data
+        const usersBackup = localStorage.getItem('teamUsers')
+        const userDataBackup = localStorage.getItem('userData')
+        
+        // Clear everything else
+        const keysToPreserve = ['teamUsers', 'userData', 'appVersion']
+        const allKeys = Object.keys(localStorage)
+        allKeys.forEach(key => {
+          if (!keysToPreserve.includes(key)) {
+            localStorage.removeItem(key)
+          }
+        })
+        
+        // Restore user data if it existed
+        if (usersBackup) localStorage.setItem('teamUsers', usersBackup)
+        if (userDataBackup) localStorage.setItem('userData', userDataBackup)
+        
+        // Update version
+        localStorage.setItem('appVersion', APP_VERSION)
+        
+        // Clear session storage
+        sessionStorage.clear()
+        
+        // Force page reload after clearing cache
+        setTimeout(() => {
+          window.location.reload()
+        }, 100)
+        return
+      }
+      
+      const savedUser = localStorage.getItem('currentUser')
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser)
+          // Validate the user object structure
+          if (parsed && typeof parsed === 'object' && parsed.id) {
+            setUser(parsed)
+          } else {
+            throw new Error('Invalid user object')
+          }
+        } catch (error) {
+          console.error('Error loading user session:', error)
+          localStorage.removeItem('currentUser')
+        }
+      }
+    } catch (error) {
+      console.error('Critical initialization error:', error)
+      // Last resort - clear everything and reload
+      try {
+        localStorage.clear()
+        sessionStorage.clear()
+      } catch (e) {
+        console.error('Cannot clear storage:', e)
+      }
+      window.location.reload()
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   const login = (userData) => {
@@ -94,9 +148,10 @@ function App() {
   }
 
   return (
-    <NavigationProvider>
-      <Router>
-        <Routes>
+    <ErrorBoundary>
+      <NavigationProvider>
+        <Router>
+          <Routes>
           <Route 
             path="/login" 
             element={

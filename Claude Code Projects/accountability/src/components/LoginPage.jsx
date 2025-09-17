@@ -18,12 +18,20 @@ const LoginPage = ({ onLogin }) => {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
-  // Get users from localStorage or initialize with all 23 users
+  // Get users from localStorage
   const getUsers = () => {
-    // Initialize default data if needed (creates all 23 users)
-    initializeDefaultData()
-    // Return all users from the store
-    return userStore.getAll()
+    // Get existing users without reinitializing
+    const users = userStore.getAll()
+    
+    // Only initialize if truly empty AND not already initialized before
+    if (users.length === 0 && !localStorage.getItem('usersInitialized')) {
+      console.log('First time setup - initializing default users')
+      initializeDefaultData()
+      localStorage.setItem('usersInitialized', 'true')
+      return userStore.getAll()
+    }
+    
+    return users
   }
 
   const handleSubmit = async (e) => {
