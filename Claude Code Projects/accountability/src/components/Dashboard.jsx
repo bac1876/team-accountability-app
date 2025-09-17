@@ -89,7 +89,7 @@ const Dashboard = ({ user }) => {
         setReflection(todayReflection)
       }
     }
-  }, [user, todayString, weekStart, weekEnd])
+  }, [user?.id, todayString])
 
   const saveCommitment = () => {
     if (!todayCommitment.trim()) return
