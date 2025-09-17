@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__magicui__21st_magic_component_builder",
+      "Bash(npm run build:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm ls:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_evaluate",
+      "Bash(git add:*)",
+      "Read(//c/Users/Owner/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
