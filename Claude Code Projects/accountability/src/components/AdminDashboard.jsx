@@ -8,10 +8,10 @@ import { Progress } from '@/components/ui/progress.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
-import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Eye } from 'lucide-react'
 import UserManagement from './UserManagement.jsx'
 import MessagingCenter from './MessagingCenter.jsx'
-import { analyticsStore } from '../utils/dataStore.js'
+import { analyticsStore, adminStore } from '../utils/dataStore.js'
 
 // Cache bust: 2025-09-14-16:35 - Force deployment update
 const AdminDashboard = ({ user }) => {
@@ -23,6 +23,8 @@ const AdminDashboard = ({ user }) => {
     overallCompletion: 0,
     weeklyGoalsCompletion: 0
   })
+  const [expandedUsers, setExpandedUsers] = useState(new Set())
+  const [detailedUserData, setDetailedUserData] = useState({})
 
   // Load real team data from analytics store
   useEffect(() => {
@@ -71,6 +73,24 @@ const AdminDashboard = ({ user }) => {
         {labels[status] || 'Unknown'}
       </Badge>
     )
+  }
+
+  const toggleUserExpansion = (userId) => {
+    const newExpanded = new Set(expandedUsers)
+    if (newExpanded.has(userId)) {
+      newExpanded.delete(userId)
+    } else {
+      newExpanded.add(userId)
+      // Load detailed data when expanding
+      if (!detailedUserData[userId]) {
+        const userData = adminStore.getUserRecentActivity(userId)
+        setDetailedUserData(prev => ({
+          ...prev,
+          [userId]: userData
+        }))
+      }
+    }
+    setExpandedUsers(newExpanded)
   }
 
   return (
@@ -169,62 +189,163 @@ const AdminDashboard = ({ user }) => {
                     <TableHead>Weekly Goals</TableHead>
                     <TableHead>Last Reflection</TableHead>
                     <TableHead>Completion Rate</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {teamData.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs">
-                              {getInitials(member.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{member.name}</p>
-                            <p className="text-sm text-muted-foreground">{member.email}</p>
+                    <>
+                      <TableRow key={member.id}>
+                        <TableCell>
+                          <div className="flex items-center space-x-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="text-xs">
+                                {getInitials(member.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{member.name}</p>
+                              <p className="text-sm text-muted-foreground">{member.email}</p>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-xs">
-                          {member.todayCommitment ? (
-                            <p className="text-sm truncate">{member.todayCommitment}</p>
-                          ) : (
-                            <p className="text-sm text-muted-foreground italic">No commitment set</p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          {getStatusIcon(member.commitmentStatus)}
-                          {getStatusBadge(member.commitmentStatus)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="text-sm">
-                            {member.completedGoals} / {member.weeklyGoals}
+                        </TableCell>
+                        <TableCell>
+                          <div className="max-w-xs">
+                            {member.todayCommitment ? (
+                              <p className="text-sm truncate">{member.todayCommitment}</p>
+                            ) : (
+                              <p className="text-sm text-muted-foreground italic">No commitment set</p>
+                            )}
                           </div>
-                          <Progress 
-                            value={(member.completedGoals / member.weeklyGoals) * 100} 
-                            className="h-2 w-16"
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm">
-                          {format(new Date(member.lastReflection), 'MMM d')}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium">{member.completionRate}%</span>
-                          <Progress value={member.completionRate} className="h-2 w-16" />
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            {getStatusIcon(member.commitmentStatus)}
+                            {getStatusBadge(member.commitmentStatus)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="text-sm">
+                              {member.completedGoals} / {member.weeklyGoals}
+                            </div>
+                            <Progress 
+                              value={(member.completedGoals / member.weeklyGoals) * 100} 
+                              className="h-2 w-16"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-sm">
+                            {format(new Date(member.lastReflection), 'MMM d')}
+                          </p>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium">{member.completionRate}%</span>
+                            <Progress value={member.completionRate} className="h-2 w-16" />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleUserExpansion(member.id)}
+                            className="flex items-center space-x-1"
+                          >
+                            {expandedUsers.has(member.id) ? (
+                              <ChevronDown className="w-4 h-4" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4" />
+                            )}
+                            <Eye className="w-4 h-4" />
+                            <span>Details</span>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      
+                      {expandedUsers.has(member.id) && detailedUserData[member.id] && (
+                        <TableRow>
+                          <TableCell colSpan={7} className="bg-muted/50 p-6">
+                            <div className="space-y-6">
+                              <h4 className="font-semibold text-lg">Complete Profile: {member.name}</h4>
+                              
+                              {/* Recent Commitments */}
+                              <div>
+                                <h5 className="font-medium mb-3">Recent Commitments (Last 7 Days)</h5>
+                                <div className="space-y-2">
+                                  {detailedUserData[member.id].commitments?.length > 0 ? (
+                                    detailedUserData[member.id].commitments.map((commitment, index) => (
+                                      <div key={index} className="flex items-start justify-between p-3 bg-background rounded-lg border">
+                                        <div className="flex-1">
+                                          <p className="text-sm">{commitment.text}</p>
+                                          <p className="text-xs text-muted-foreground mt-1">
+                                            {format(new Date(commitment.date), 'MMM d, yyyy')}
+                                          </p>
+                                        </div>
+                                        <div className="ml-4">
+                                          {getStatusBadge(commitment.status)}
+                                        </div>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-sm text-muted-foreground italic">No recent commitments</p>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* All Goals */}
+                              <div>
+                                <h5 className="font-medium mb-3">All Goals</h5>
+                                <div className="space-y-2">
+                                  {detailedUserData[member.id].goals?.length > 0 ? (
+                                    detailedUserData[member.id].goals.map((goal, index) => (
+                                      <div key={index} className="p-3 bg-background rounded-lg border">
+                                        <div className="flex items-start justify-between">
+                                          <div className="flex-1">
+                                            <p className="text-sm font-medium">{goal.text}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                              Created: {format(new Date(goal.createdAt), 'MMM d, yyyy')}
+                                            </p>
+                                          </div>
+                                          <div className="ml-4">
+                                            {getStatusBadge(goal.status)}
+                                          </div>
+                                        </div>
+                                        {goal.description && (
+                                          <p className="text-xs mt-2 text-muted-foreground">{goal.description}</p>
+                                        )}
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-sm text-muted-foreground italic">No goals set</p>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* Recent Reflections */}
+                              <div>
+                                <h5 className="font-medium mb-3">Recent Reflections</h5>
+                                <div className="space-y-2">
+                                  {detailedUserData[member.id].reflections?.length > 0 ? (
+                                    detailedUserData[member.id].reflections.slice(0, 3).map((reflection, index) => (
+                                      <div key={index} className="p-3 bg-background rounded-lg border">
+                                        <p className="text-sm">{reflection.text}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                          {format(new Date(reflection.date), 'MMM d, yyyy')}
+                                        </p>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-sm text-muted-foreground italic">No reflections yet</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
                   ))}
                 </TableBody>
               </Table>
@@ -235,71 +356,152 @@ const AdminDashboard = ({ user }) => {
         {/* Detailed View */}
         <TabsContent value="detailed" className="space-y-6">
           <div className="grid gap-6">
-            {teamData.map((member) => (
-              <Card key={member.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback>
-                          {getInitials(member.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">{member.name}</CardTitle>
-                        <CardDescription>{member.email}</CardDescription>
+            {teamData.map((member) => {
+              // Load detailed data for this user if not already loaded
+              if (!detailedUserData[member.id]) {
+                const userData = adminStore.getUserRecentActivity(member.id)
+                setDetailedUserData(prev => ({
+                  ...prev,
+                  [member.id]: userData
+                }))
+              }
+              
+              const userDetails = detailedUserData[member.id]
+              
+              return (
+                <Card key={member.id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>
+                            {getInitials(member.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-lg">{member.name}</CardTitle>
+                          <CardDescription>{member.email}</CardDescription>
+                        </div>
                       </div>
+                      <Badge variant="outline">
+                        Last login: {format(new Date(member.lastLogin), 'MMM d')}
+                      </Badge>
                     </div>
-                    <Badge variant="outline">
-                      Last login: {format(new Date(member.lastLogin), 'MMM d')}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Today's Commitment</h4>
-                      {member.todayCommitment ? (
-                        <div className="space-y-2">
-                          <p className="text-sm">{member.todayCommitment}</p>
-                          <div className="flex items-center space-x-2">
-                            {getStatusIcon(member.commitmentStatus)}
-                            {getStatusBadge(member.commitmentStatus)}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      {/* Today's Commitment */}
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Today's Commitment</h4>
+                        {member.todayCommitment ? (
+                          <div className="p-3 bg-muted rounded-lg">
+                            <p className="text-sm">{member.todayCommitment}</p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              {getStatusIcon(member.commitmentStatus)}
+                              {getStatusBadge(member.commitmentStatus)}
+                            </div>
                           </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground italic">No commitment set</p>
+                        )}
+                      </div>
+                      
+                      {/* All Goals with Full Text */}
+                      <div className="space-y-2">
+                        <h4 className="font-medium">All Goals ({userDetails?.goals?.length || 0})</h4>
+                        <div className="space-y-3">
+                          {userDetails?.goals?.length > 0 ? (
+                            userDetails.goals.map((goal, index) => (
+                              <div key={index} className="p-4 bg-muted rounded-lg border-l-4 border-l-blue-500">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <p className="font-medium text-sm">{goal.text}</p>
+                                    {goal.description && (
+                                      <p className="text-xs text-muted-foreground mt-1">{goal.description}</p>
+                                    )}
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                      Created: {format(new Date(goal.createdAt), 'MMM d, yyyy')}
+                                    </p>
+                                  </div>
+                                  <div className="ml-4">
+                                    {getStatusBadge(goal.status)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">No goals set</p>
+                          )}
                         </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">No commitment set</p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Weekly Goals Progress</h4>
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span>{member.completedGoals} of {member.weeklyGoals} completed</span>
-                          <span>{Math.round((member.completedGoals / member.weeklyGoals) * 100)}%</span>
+                      </div>
+                      
+                      {/* Recent Commitments History */}
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Recent Commitments (Last 7 Days)</h4>
+                        <div className="space-y-2">
+                          {userDetails?.commitments?.length > 0 ? (
+                            userDetails.commitments.map((commitment, index) => (
+                              <div key={index} className="p-3 bg-muted rounded-lg">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <p className="text-sm">{commitment.text}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {format(new Date(commitment.date), 'MMM d, yyyy')}
+                                    </p>
+                                  </div>
+                                  <div className="ml-4">
+                                    {getStatusBadge(commitment.status)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">No recent commitments</p>
+                          )}
                         </div>
-                        <Progress value={(member.completedGoals / member.weeklyGoals) * 100} />
+                      </div>
+                      
+                      {/* Recent Reflections */}
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Recent Reflections</h4>
+                        <div className="space-y-2">
+                          {userDetails?.reflections?.length > 0 ? (
+                            userDetails.reflections.slice(0, 3).map((reflection, index) => (
+                              <div key={index} className="p-3 bg-muted rounded-lg">
+                                <p className="text-sm">{reflection.text}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {format(new Date(reflection.date), 'MMM d, yyyy')}
+                                </p>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">No reflections yet</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Performance Stats */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span>Weekly Goals Progress</span>
+                            <span>{member.completedGoals} / {member.weeklyGoals}</span>
+                          </div>
+                          <Progress value={(member.completedGoals / member.weeklyGoals) * 100} />
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span>Overall Completion Rate</span>
+                            <span>{member.completionRate}%</span>
+                          </div>
+                          <Progress value={member.completionRate} />
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Overall Performance</h4>
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span>Completion Rate</span>
-                          <span>{member.completionRate}%</span>
-                        </div>
-                        <Progress value={member.completionRate} />
-                        <p className="text-xs text-muted-foreground">
-                          Last reflection: {format(new Date(member.lastReflection), 'MMM d, yyyy')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         </TabsContent>
 

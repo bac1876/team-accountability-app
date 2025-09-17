@@ -195,6 +195,66 @@ export const userDataStore = {
   }
 }
 
+// Admin-specific data access functions
+export const adminStore = {
+  // Get complete user profile including all data
+  getCompleteUserProfile: (userId) => {
+    const userData = userDataStore.getUserData(userId)
+    const user = userStore.getAll().find(u => u.id === userId)
+    
+    return {
+      user: user,
+      userData: userData,
+      allCommitments: userData.commitments || [],
+      allGoals: userData.goals || [],
+      allReflections: userData.reflections || [],
+      stats: userData.stats || {
+        totalCommitments: 0,
+        completedCommitments: 0,
+        completionRate: 0
+      }
+    }
+  },
+
+  // Get all users with their complete data
+  getAllUsersComplete: () => {
+    const users = userStore.getAll()
+    return users.map(user => {
+      if (user.role !== 'admin') {
+        return adminStore.getCompleteUserProfile(user.id)
+      }
+      return null
+    }).filter(profile => profile !== null)
+  },
+
+  // Get team member's recent activity (last 7 days)
+  getUserRecentActivity: (userId, days = 7) => {
+    const profile = adminStore.getCompleteUserProfile(userId)
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - days)
+
+    const recentCommitments = profile.allCommitments.filter(c => 
+      new Date(c.date) >= cutoffDate
+    ).sort((a, b) => new Date(b.date) - new Date(a.date))
+
+    const recentGoals = profile.allGoals.filter(g => 
+      new Date(g.createdAt) >= cutoffDate
+    ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+    const recentReflections = profile.allReflections.filter(r => 
+      new Date(r.date) >= cutoffDate
+    ).sort((a, b) => new Date(b.date) - new Date(a.date))
+
+    return {
+      user: profile.user,
+      recentCommitments,
+      recentGoals,
+      recentReflections,
+      stats: profile.stats
+    }
+  }
+}
+
 // Team Analytics
 export const analyticsStore = {
   getTeamStats: () => {
