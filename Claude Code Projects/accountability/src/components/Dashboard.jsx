@@ -29,6 +29,8 @@ const Dashboard = ({ user }) => {
     differently: '',
     needHelp: ''
   })
+  const [reflectionSaved, setReflectionSaved] = useState(false)
+  const [pastReflections, setPastReflections] = useState([])
   const [recentCommitments, setRecentCommitments] = useState([])
   const [userData, setUserData] = useState(null)
   const [completionRate, setCompletionRate] = useState(0)
@@ -58,6 +60,7 @@ const Dashboard = ({ user }) => {
     if (user?.id) {
       const data = userDataStore.getUserData(user.id)
       setUserData(data)
+      loadReflections()
       
       // Load today's commitment
       const todayCommit = data.commitments.find(c => c.date === todayString)
@@ -158,17 +161,55 @@ const Dashboard = ({ user }) => {
     setWeeklyGoals(currentWeekGoals)
   }
 
+  const loadReflections = () => {
+    const userData = userDataStore.getUserData(user.id)
+    const allReflections = userData.reflections || []
+    
+    // Check if today's reflection exists
+    const todayReflection = allReflections.find(r => r.date === todayString)
+    if (todayReflection) {
+      setReflection({
+        wentWell: todayReflection.wentWell || '',
+        differently: todayReflection.differently || '',
+        needHelp: todayReflection.needHelp || ''
+      })
+      setReflectionSaved(true)
+    }
+    
+    // Get past reflections (last 7 days)
+    const pastWeek = allReflections
+      .filter(r => r.date !== todayString)
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 7)
+    setPastReflections(pastWeek)
+  }
+
   const saveReflection = () => {
+    // Validate that at least one field has content
+    if (!reflection.wentWell && !reflection.differently && !reflection.needHelp) {
+      alert('Please fill in at least one reflection field')
+      return
+    }
+
     const reflectionData = {
       id: Date.now().toString(),
       date: todayString,
-      wentWell: reflection.wentWell,
-      differently: reflection.differently,
-      needHelp: reflection.needHelp,
+      wentWell: reflection.wentWell || '',
+      differently: reflection.differently || '',
+      needHelp: reflection.needHelp || '',
       createdAt: new Date().toISOString()
     }
 
-    userDataStore.addReflection(user.id, reflectionData)
+    try {
+      userDataStore.addReflection(user.id, reflectionData)
+      // Mark as saved and reload reflections
+      setReflectionSaved(true)
+      loadReflections()
+      alert('Reflection saved successfully!')
+    } catch (error) {
+      console.error('Error saving reflection:', error)
+      alert('Failed to save reflection. Please try again.')
+    }
   }
 
   const updateCommitmentStatus = (status) => {
