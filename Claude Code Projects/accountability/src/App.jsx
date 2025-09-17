@@ -39,8 +39,26 @@ function App() {
 
   // Check for existing session on app load
   useEffect(() => {
+    // Force clear any conflicting styles/classes first
+    document.documentElement.className = ''
+    document.body.className = ''
+    
     // Always apply dark mode
     document.documentElement.classList.add('dark')
+    
+    // Clear any potentially corrupted localStorage on version mismatch
+    const APP_VERSION = '1.0.1'
+    const storedVersion = localStorage.getItem('appVersion')
+    if (storedVersion !== APP_VERSION) {
+      console.log('App version changed, clearing localStorage')
+      // Keep the current user but clear other potentially corrupted data
+      const currentUser = localStorage.getItem('currentUser')
+      localStorage.clear()
+      if (currentUser) {
+        localStorage.setItem('currentUser', currentUser)
+      }
+      localStorage.setItem('appVersion', APP_VERSION)
+    }
     
     const savedUser = localStorage.getItem('currentUser')
     if (savedUser) {

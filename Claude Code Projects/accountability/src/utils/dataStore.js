@@ -574,7 +574,7 @@ export const initializeDefaultData = () => {
   if (users.length === 0) {
     const defaultUsers = [
       // Admin
-      { id: 1, username: 'brian@searchnwa.com', password: 'pass123', role: 'admin', name: 'Brian Curtis', email: 'brian@searchnwa.com', phone: '+1-555-0101' },
+      { id: 1, username: 'brian@searchnwa.com', password: 'Lbbc#2245', role: 'admin', name: 'Brian Curtis', email: 'brian@searchnwa.com', phone: '+1-555-0101' },
       
       // Demo Users
       { id: 2, username: 'john@example.com', password: 'pass123', role: 'member', name: 'John Doe', email: 'john@example.com', phone: '+1-555-0102' },
