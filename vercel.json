@@ -1,0 +1,13 @@
+{
+  "buildCommand": "cd \"Claude Code Projects/accountability\" && pnpm run build",
+  "outputDirectory": "Claude Code Projects/accountability/dist",
+  "devCommand": "cd \"Claude Code Projects/accountability\" && pnpm run dev",
+  "installCommand": "cd \"Claude Code Projects/accountability\" && pnpm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
