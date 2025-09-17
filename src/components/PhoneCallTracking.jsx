@@ -51,35 +51,26 @@ const PhoneCallTracking = ({ user }) => {
     setWeeklyStats(weekly)
     setMonthlyStats(monthly)
     
-    // Pre-fill forms with existing data
+    // Always keep forms empty for new entries - don't pre-fill
     setCommitmentData({
-      targetCalls: daily.targetCalls || '',
-      description: daily.description || ''
+      targetCalls: '',
+      description: ''
     })
     setActualData({
-      actualCalls: daily.actualCalls || '',
-      notes: daily.notes || ''
+      actualCalls: '',
+      notes: ''
     })
   }
 
   const handleCommitmentSubmit = async (e) => {
     e.preventDefault()
-    console.log('Phone call goal submit clicked!', { commitmentData, selectedDate, user: user.id })
     
     if (!commitmentData.targetCalls || commitmentData.targetCalls < 0) {
-      console.log('Invalid target calls:', commitmentData.targetCalls)
       return
     }
 
     setLoading(true)
     try {
-      console.log('Adding phone call commitment...', {
-        userId: user.id,
-        date: selectedDate,
-        targetCalls: parseInt(commitmentData.targetCalls),
-        description: commitmentData.description
-      })
-      
       const result = await phoneCallStore.addCommitment(
         user.id,
         selectedDate,
@@ -87,11 +78,29 @@ const PhoneCallTracking = ({ user }) => {
         commitmentData.description
       )
       
-      console.log('Phone call commitment added:', result)
+      // Clear the form after successful save
+      setCommitmentData({
+        targetCalls: '',
+        description: ''
+      })
+      
+      // Reload stats (but keep forms empty)
       loadStats()
-      console.log('Phone call goal saved successfully!')
+      
+      // Show success toast
+      const successDiv = document.createElement('div')
+      successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
+      successDiv.textContent = 'Phone call goal saved successfully! ✓'
+      document.body.appendChild(successDiv)
+      setTimeout(() => successDiv.remove(), 3000)
     } catch (error) {
       console.error('Error saving phone call commitment:', error)
+      // Show error toast
+      const errorDiv = document.createElement('div')
+      errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
+      errorDiv.textContent = 'Error saving phone call goal'
+      document.body.appendChild(errorDiv)
+      setTimeout(() => errorDiv.remove(), 3000)
     } finally {
       setLoading(false)
     }
@@ -109,9 +118,30 @@ const PhoneCallTracking = ({ user }) => {
         parseInt(actualData.actualCalls),
         actualData.notes
       )
+      
+      // Clear the form after successful save
+      setActualData({
+        actualCalls: '',
+        notes: ''
+      })
+      
+      // Reload stats (but keep forms empty)
       loadStats()
+      
+      // Show success toast
+      const successDiv = document.createElement('div')
+      successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
+      successDiv.textContent = 'Phone calls logged successfully! ✓'
+      document.body.appendChild(successDiv)
+      setTimeout(() => successDiv.remove(), 3000)
     } catch (error) {
       console.error('Error logging calls:', error)
+      // Show error toast
+      const errorDiv = document.createElement('div')
+      errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
+      errorDiv.textContent = 'Error logging phone calls'
+      document.body.appendChild(errorDiv)
+      setTimeout(() => errorDiv.remove(), 3000)
     } finally {
       setLoading(false)
     }
@@ -125,7 +155,11 @@ const PhoneCallTracking = ({ user }) => {
   }
 
   const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    // Parse date string and add timezone offset to avoid date shifting
+    const [year, month, day] = dateStr.split('-').map(Number)
+    const date = new Date(year, month - 1, day) // Month is 0-indexed
+    
+    return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric'
