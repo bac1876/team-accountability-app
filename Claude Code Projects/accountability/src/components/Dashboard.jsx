@@ -9,11 +9,12 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Progress } from '@/components/ui/progress.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Label } from '@/components/ui/label.jsx'
-import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp, Edit, Trash2, X, Check } from 'lucide-react'
+import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp, Edit, Trash2, X, Check, BarChart3 } from 'lucide-react'
 import { userDataStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
 // import DailyFocus from './DailyFocus.jsx'
 import DailyFocusSimple from './DailyFocusSimple.jsx'
+import AnalyticsDashboard from './AnalyticsDashboard.jsx'
 
 const Dashboard = ({ user }) => {
   const { activeTab, navigateToTab } = useNavigation()
@@ -329,12 +330,13 @@ const Dashboard = ({ user }) => {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5 bg-slate-800/30 backdrop-blur border border-slate-700/50 p-1">
+          <TabsList className="grid w-full grid-cols-6 bg-slate-800/30 backdrop-blur border border-slate-700/50 p-1">
             <TabsTrigger value="commitment" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Today's Commitment</TabsTrigger>
             <TabsTrigger value="goals" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Weekly Goals</TabsTrigger>
             <TabsTrigger value="reflection" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Daily Reflection</TabsTrigger>
             <TabsTrigger value="calls" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Phone Calls</TabsTrigger>
             <TabsTrigger value="focus" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Daily Focus</TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Analytics</TabsTrigger>
           </TabsList>
 
           {/* Today's Commitment Tab */}
@@ -746,6 +748,11 @@ const Dashboard = ({ user }) => {
           {/* Daily Focus Tab */}
           <TabsContent value="focus">
             <DailyFocusSimple user={user} />
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <AnalyticsDashboard user={user} />
           </TabsContent>
         </Tabs>
       </div>

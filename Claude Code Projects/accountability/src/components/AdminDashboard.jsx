@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Eye } from 'lucide-react'
 import UserManagement from './UserManagement.jsx'
 import MessagingCenter from './MessagingCenter.jsx'
+import AnalyticsDashboard from './AnalyticsDashboard.jsx'
 import { analyticsStore, adminStore } from '../utils/dataStore.js'
 
 // Cache bust: 2025-09-14-16:35 - Force deployment update
@@ -507,72 +508,7 @@ const AdminDashboard = ({ user }) => {
 
         {/* Analytics */}
         <TabsContent value="analytics" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Performance Trends</CardTitle>
-                <CardDescription>
-                  Overall team metrics and engagement
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Daily Active Users</span>
-                    <span>{teamStats.activeToday} / {teamStats.totalUsers}</span>
-                  </div>
-                  <Progress value={(teamStats.activeToday / teamStats.totalUsers) * 100} />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Average Completion Rate</span>
-                    <span>{teamStats.overallCompletion}%</span>
-                  </div>
-                  <Progress value={teamStats.overallCompletion} />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Weekly Goals Progress</span>
-                    <span>{teamStats.weeklyGoalsCompletion}%</span>
-                  </div>
-                  <Progress value={teamStats.weeklyGoalsCompletion} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Zapier Integration Status</CardTitle>
-                <CardDescription>
-                  API endpoint for automated reminders
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-3 bg-muted rounded-lg">
-                  <p className="text-sm font-medium mb-2">API Endpoint:</p>
-                  <code className="text-xs bg-background p-2 rounded block">
-                    /api/zapier/daily-reminder-data
-                  </code>
-                </div>
-                
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Users needing reminders today:</p>
-                  <div className="space-y-1">
-                    {teamData
-                      .filter(member => !member.todayCommitment || member.commitmentStatus === 'pending')
-                      .map(member => (
-                        <div key={member.id} className="text-sm text-muted-foreground">
-                          • {member.name} - {!member.todayCommitment ? 'No commitment' : 'Pending completion'}
-                        </div>
-                      ))
-                    }
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <AnalyticsDashboard user={user} />
         </TabsContent>
 
         {/* User Management */}
