@@ -64,19 +64,34 @@ const PhoneCallTracking = ({ user }) => {
 
   const handleCommitmentSubmit = async (e) => {
     e.preventDefault()
-    if (!commitmentData.targetCalls || commitmentData.targetCalls < 0) return
+    console.log('Phone call goal submit clicked!', { commitmentData, selectedDate, user: user.id })
+    
+    if (!commitmentData.targetCalls || commitmentData.targetCalls < 0) {
+      console.log('Invalid target calls:', commitmentData.targetCalls)
+      return
+    }
 
     setLoading(true)
     try {
-      await phoneCallStore.addCommitment(
+      console.log('Adding phone call commitment...', {
+        userId: user.id,
+        date: selectedDate,
+        targetCalls: parseInt(commitmentData.targetCalls),
+        description: commitmentData.description
+      })
+      
+      const result = await phoneCallStore.addCommitment(
         user.id,
         selectedDate,
         parseInt(commitmentData.targetCalls),
         commitmentData.description
       )
+      
+      console.log('Phone call commitment added:', result)
       loadStats()
+      console.log('Phone call goal saved successfully!')
     } catch (error) {
-      console.error('Error saving commitment:', error)
+      console.error('Error saving phone call commitment:', error)
     } finally {
       setLoading(false)
     }

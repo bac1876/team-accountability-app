@@ -15,7 +15,18 @@
       "mcp__playwright__browser_fill_form",
       "mcp__playwright__browser_evaluate",
       "Bash(git add:*)",
-      "Read(//c/Users/Owner/**)"
+      "Read(//c/Users/Owner/**)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git remote remove:*)",
+      "Bash(git remote add:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rm:*)",
+      "Bash(cat:*)",
+      "Bash(git ls-tree:*)",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_wait_for"
     ],
     "deny": [],
     "ask": []

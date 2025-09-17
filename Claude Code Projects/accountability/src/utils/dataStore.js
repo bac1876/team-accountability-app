@@ -151,6 +151,47 @@ export const userDataStore = {
     userData.reflections.push(newReflection)
     userDataStore.saveUserData(userId, userData)
     return newReflection
+  },
+
+  deleteCommitment: (userId, commitmentId) => {
+    const userData = userDataStore.getUserData(userId)
+    userData.commitments = userData.commitments.filter(c => c.id !== commitmentId)
+    userData.stats.totalCommitments = userData.commitments.length
+    userData.stats.completedCommitments = userData.commitments.filter(c => c.status === 'completed').length
+    userData.stats.completionRate = userData.stats.totalCommitments > 0 
+      ? Math.round((userData.stats.completedCommitments / userData.stats.totalCommitments) * 100)
+      : 0
+    userDataStore.saveUserData(userId, userData)
+    return userData.commitments
+  },
+
+  updateCommitment: (userId, commitmentId, newText) => {
+    const userData = userDataStore.getUserData(userId)
+    const commitment = userData.commitments.find(c => c.id === commitmentId)
+    if (commitment) {
+      commitment.text = newText
+      commitment.updatedAt = new Date().toISOString()
+      userDataStore.saveUserData(userId, userData)
+    }
+    return commitment
+  },
+
+  deleteGoal: (userId, goalId) => {
+    const userData = userDataStore.getUserData(userId)
+    userData.goals = userData.goals.filter(g => g.id !== goalId)
+    userDataStore.saveUserData(userId, userData)
+    return userData.goals
+  },
+
+  updateGoal: (userId, goalId, newText) => {
+    const userData = userDataStore.getUserData(userId)
+    const goal = userData.goals.find(g => g.id === goalId)
+    if (goal) {
+      goal.text = newText
+      goal.updatedAt = new Date().toISOString()
+      userDataStore.saveUserData(userId, userData)
+    }
+    return goal
   }
 }
 

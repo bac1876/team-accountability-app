@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Progress } from '@/components/ui/progress.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Label } from '@/components/ui/label.jsx'
-import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp } from 'lucide-react'
+import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp, Edit, Trash2, X, Check } from 'lucide-react'
 import { userDataStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
 // import DailyFocus from './DailyFocus.jsx'
@@ -31,6 +31,10 @@ const Dashboard = ({ user }) => {
   const [recentCommitments, setRecentCommitments] = useState([])
   const [userData, setUserData] = useState(null)
   const [completionRate, setCompletionRate] = useState(0)
+  const [editingCommitment, setEditingCommitment] = useState(null)
+  const [editingGoal, setEditingGoal] = useState(null)
+  const [editCommitmentText, setEditCommitmentText] = useState('')
+  const [editGoalText, setEditGoalText] = useState('')
 
   const today = new Date()
   const todayString = today.toISOString().split('T')[0]
@@ -180,6 +184,95 @@ const Dashboard = ({ user }) => {
     }
   }
 
+  // Edit and Delete Functions
+  const startEditingCommitment = (commitment) => {
+    setEditingCommitment(commitment.id)
+    setEditCommitmentText(commitment.text)
+  }
+
+  const cancelEditCommitment = () => {
+    setEditingCommitment(null)
+    setEditCommitmentText('')
+  }
+
+  const saveEditCommitment = (commitmentId) => {
+    if (editCommitmentText.trim()) {
+      userDataStore.updateCommitment(user.id, commitmentId, editCommitmentText.trim())
+      
+      // Refresh commitments
+      const updatedData = userDataStore.getUserData(user.id)
+      const recentCommits = updatedData.commitments
+        .filter(c => {
+          const commitDate = new Date(c.date)
+          const daysDiff = (today - commitDate) / (1000 * 60 * 60 * 24)
+          return daysDiff <= 7
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+      setRecentCommitments(recentCommits)
+      
+      setEditingCommitment(null)
+      setEditCommitmentText('')
+    }
+  }
+
+  const deleteCommitment = (commitmentId) => {
+    if (confirm('Are you sure you want to delete this commitment?')) {
+      userDataStore.deleteCommitment(user.id, commitmentId)
+      
+      // Refresh commitments
+      const updatedData = userDataStore.getUserData(user.id)
+      const recentCommits = updatedData.commitments
+        .filter(c => {
+          const commitDate = new Date(c.date)
+          const daysDiff = (today - commitDate) / (1000 * 60 * 60 * 24)
+          return daysDiff <= 7
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+      setRecentCommitments(recentCommits)
+    }
+  }
+
+  const startEditingGoal = (goal) => {
+    setEditingGoal(goal.id)
+    setEditGoalText(goal.text)
+  }
+
+  const cancelEditGoal = () => {
+    setEditingGoal(null)
+    setEditGoalText('')
+  }
+
+  const saveEditGoal = (goalId) => {
+    if (editGoalText.trim()) {
+      userDataStore.updateGoal(user.id, goalId, editGoalText.trim())
+      
+      // Refresh goals
+      const updatedData = userDataStore.getUserData(user.id)
+      const currentWeekGoals = updatedData.goals.filter(g => {
+        const goalDate = new Date(g.createdAt)
+        return goalDate >= weekStart && goalDate <= weekEnd
+      })
+      setWeeklyGoals(currentWeekGoals)
+      
+      setEditingGoal(null)
+      setEditGoalText('')
+    }
+  }
+
+  const deleteGoal = (goalId) => {
+    if (confirm('Are you sure you want to delete this goal?')) {
+      userDataStore.deleteGoal(user.id, goalId)
+      
+      // Refresh goals
+      const updatedData = userDataStore.getUserData(user.id)
+      const currentWeekGoals = updatedData.goals.filter(g => {
+        const goalDate = new Date(g.createdAt)
+        return goalDate >= weekStart && goalDate <= weekEnd
+      })
+      setWeeklyGoals(currentWeekGoals)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-6">
@@ -322,15 +415,67 @@ const Dashboard = ({ user }) => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900">{commit.text}</p>
-                          <p className="text-xs text-gray-500">{format(new Date(commit.date), 'MMM d, yyyy')}</p>
+                          {editingCommitment === commit.id ? (
+                            <div className="space-y-2">
+                              <Textarea
+                                value={editCommitmentText}
+                                onChange={(e) => setEditCommitmentText(e.target.value)}
+                                className="text-sm"
+                                rows={2}
+                              />
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => saveEditCommitment(commit.id)}
+                                  className="h-7 px-2"
+                                >
+                                  <Check className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={cancelEditCommitment}
+                                  className="h-7 px-2"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <p className="text-sm font-medium text-gray-900">{commit.text}</p>
+                              <p className="text-xs text-gray-500">{format(new Date(commit.date), 'MMM d, yyyy')}</p>
+                            </>
+                          )}
                         </div>
-                        <Badge 
-                          variant={commit.status === 'completed' ? 'default' : 'secondary'}
-                          className={commit.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
-                        >
-                          {commit.status}
-                        </Badge>
+                        <div className="flex items-center space-x-2">
+                          <Badge 
+                            variant={commit.status === 'completed' ? 'default' : 'secondary'}
+                            className={commit.status === 'completed' ? 'bg-green-100 text-green-800' : ''}
+                          >
+                            {commit.status}
+                          </Badge>
+                          {editingCommitment !== commit.id && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => startEditingCommitment(commit)}
+                                className="h-7 w-7 p-0 hover:bg-blue-100"
+                              >
+                                <Edit className="h-3 w-3 text-blue-600" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => deleteCommitment(commit.id)}
+                                className="h-7 w-7 p-0 hover:bg-red-100"
+                              >
+                                <Trash2 className="h-3 w-3 text-red-600" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -381,27 +526,79 @@ const Dashboard = ({ user }) => {
                             )}
                           </button>
                           <div className="flex-1 min-w-0">
-                            <p className={`text-base font-medium ${goal.completed ? 'text-slate-400 line-through' : 'text-white'}`}>
-                              {goal.text}
-                            </p>
-                            <p className="text-xs text-slate-400 mt-1">
-                              Added {format(new Date(goal.createdAt), 'MMM d, yyyy')}
-                            </p>
+                            {editingGoal === goal.id ? (
+                              <div className="space-y-2">
+                                <Textarea
+                                  value={editGoalText}
+                                  onChange={(e) => setEditGoalText(e.target.value)}
+                                  className="text-sm bg-slate-600 border-slate-500 text-white"
+                                  rows={2}
+                                />
+                                <div className="flex space-x-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => saveEditGoal(goal.id)}
+                                    className="h-7 px-2"
+                                  >
+                                    <Check className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={cancelEditGoal}
+                                    className="h-7 px-2"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <p className={`text-base font-medium ${goal.completed ? 'text-slate-400 line-through' : 'text-white'}`}>
+                                  {goal.text}
+                                </p>
+                                <p className="text-xs text-slate-400 mt-1">
+                                  Added {format(new Date(goal.createdAt), 'MMM d, yyyy')}
+                                </p>
+                              </>
+                            )}
                           </div>
-                          <div className="flex flex-col items-end space-y-1">
-                            <Badge 
-                              variant={goal.completed ? 'default' : 'secondary'}
-                              className={goal.completed 
-                                ? 'bg-green-500/20 text-green-300 border-green-500/50' 
-                                : goal.progress >= 75 
-                                  ? 'bg-blue-500/20 text-blue-300 border-blue-500/50'
-                                  : goal.progress >= 50
-                                    ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50'
-                                    : 'bg-slate-500/20 text-slate-300 border-slate-500/50'
-                              }
-                            >
-                              {goal.completed ? '✓ Complete' : `${goal.progress || 0}%`}
-                            </Badge>
+                          <div className="flex flex-col items-end space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <Badge 
+                                variant={goal.completed ? 'default' : 'secondary'}
+                                className={goal.completed 
+                                  ? 'bg-green-500/20 text-green-300 border-green-500/50' 
+                                  : goal.progress >= 75 
+                                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/50'
+                                    : goal.progress >= 50
+                                      ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50'
+                                      : 'bg-slate-500/20 text-slate-300 border-slate-500/50'
+                                }
+                              >
+                                {goal.completed ? '✓ Complete' : `${goal.progress || 0}%`}
+                              </Badge>
+                              {editingGoal !== goal.id && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => startEditingGoal(goal)}
+                                    className="h-7 w-7 p-0 hover:bg-blue-500/20"
+                                  >
+                                    <Edit className="h-3 w-3 text-blue-400" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => deleteGoal(goal.id)}
+                                    className="h-7 w-7 p-0 hover:bg-red-500/20"
+                                  >
+                                    <Trash2 className="h-3 w-3 text-red-400" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                         {!goal.completed && (
