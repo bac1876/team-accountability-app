@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label.jsx'
 import { CheckCircle, Circle, Clock, Target, MessageSquare, TrendingUp } from 'lucide-react'
 import { userDataStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
-import DailyFocus from './DailyFocus.jsx'
+// import DailyFocus from './DailyFocus.jsx'
+import DailyFocusSimple from './DailyFocusSimple.jsx'
 
 const Dashboard = ({ user }) => {
   const { activeTab, navigateToTab } = useNavigation()
@@ -531,7 +532,7 @@ const Dashboard = ({ user }) => {
 
           {/* Daily Focus Tab */}
           <TabsContent value="focus">
-            <DailyFocus user={user} />
+            <DailyFocusSimple user={user} />
           </TabsContent>
         </Tabs>
       </div>

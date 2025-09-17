@@ -11,15 +11,32 @@ import { Focus, Target, CheckCircle, TrendingUp, Calendar, Star, Zap, AlertCircl
 import { dailyFocusStore } from '../utils/dataStore.js'
 
 const DailyFocus = ({ user }) => {
+  // Initialize with a weekday
+  const getInitialDate = () => {
+    const today = new Date().toISOString().split('T')[0]
+    const day = new Date(today).getDay()
+    if (day === 0) { // Sunday
+      const nextDay = new Date(today)
+      nextDay.setDate(nextDay.getDate() + 1)
+      return nextDay.toISOString().split('T')[0]
+    } else if (day === 6) { // Saturday
+      const nextDay = new Date(today)
+      nextDay.setDate(nextDay.getDate() + 2)
+      return nextDay.toISOString().split('T')[0]
+    }
+    return today
+  }
+  
   const [focusData, setFocusData] = useState({
     focusText: '',
     priority: 'high'
   })
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(getInitialDate())
   const [dailyFocus, setDailyFocus] = useState(null)
   const [weeklyFocus, setWeeklyFocus] = useState(null)
   const [monthlyFocus, setMonthlyFocus] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState('today')
 
   // Helper functions for weekday logic
   const isWeekday = (dateStr) => {
@@ -41,48 +58,31 @@ const DailyFocus = ({ user }) => {
     return date.toISOString().split('T')[0]
   }
 
-  const getCurrentWeekday = () => {
-    const today = new Date().toISOString().split('T')[0]
-    return isWeekday(today) ? today : getNextWeekday(today)
-  }
-
   useEffect(() => {
-    // Ensure selected date is a weekday
-    if (!isWeekday(selectedDate)) {
-      setSelectedDate(getNextWeekday(selectedDate))
-    } else {
-      loadFocusData()
+    // Load focus data when selectedDate or user changes
+    if (isWeekday(selectedDate)) {
+      const daily = dailyFocusStore.getDailyFocus(user.id, selectedDate)
+      const weekly = dailyFocusStore.getWeeklyFocus(user.id)
+      const monthly = dailyFocusStore.getMonthlyFocus(user.id)
+      
+      setDailyFocus(daily)
+      setWeeklyFocus(weekly)
+      setMonthlyFocus(monthly)
+      
+      // Pre-fill form with existing data
+      if (daily) {
+        setFocusData({
+          focusText: daily.focusText || '',
+          priority: daily.priority || 'high'
+        })
+      } else {
+        setFocusData({
+          focusText: '',
+          priority: 'high'
+        })
+      }
     }
   }, [selectedDate, user.id])
-
-  useEffect(() => {
-    // Initialize with current weekday
-    const currentWeekday = getCurrentWeekday()
-    setSelectedDate(currentWeekday)
-  }, [])
-
-  const loadFocusData = () => {
-    const daily = dailyFocusStore.getDailyFocus(user.id, selectedDate)
-    const weekly = dailyFocusStore.getWeeklyFocus(user.id)
-    const monthly = dailyFocusStore.getMonthlyFocus(user.id)
-    
-    setDailyFocus(daily)
-    setWeeklyFocus(weekly)
-    setMonthlyFocus(monthly)
-    
-    // Pre-fill form with existing data
-    if (daily) {
-      setFocusData({
-        focusText: daily.focusText || '',
-        priority: daily.priority || 'high'
-      })
-    } else {
-      setFocusData({
-        focusText: '',
-        priority: 'high'
-      })
-    }
-  }
 
   const handleFocusSubmit = async (e) => {
     e.preventDefault()
@@ -96,7 +96,13 @@ const DailyFocus = ({ user }) => {
         focusData.focusText.trim(),
         focusData.priority
       )
-      loadFocusData()
+      // Reload focus data
+      const daily = dailyFocusStore.getDailyFocus(user.id, selectedDate)
+      const weekly = dailyFocusStore.getWeeklyFocus(user.id)
+      const monthly = dailyFocusStore.getMonthlyFocus(user.id)
+      setDailyFocus(daily)
+      setWeeklyFocus(weekly)
+      setMonthlyFocus(monthly)
     } catch (error) {
       console.error('Error saving focus:', error)
     } finally {
@@ -114,7 +120,13 @@ const DailyFocus = ({ user }) => {
         selectedDate,
         !dailyFocus.completed
       )
-      loadFocusData()
+      // Reload focus data
+      const daily = dailyFocusStore.getDailyFocus(user.id, selectedDate)
+      const weekly = dailyFocusStore.getWeeklyFocus(user.id)
+      const monthly = dailyFocusStore.getMonthlyFocus(user.id)
+      setDailyFocus(daily)
+      setWeeklyFocus(weekly)
+      setMonthlyFocus(monthly)
     } catch (error) {
       console.error('Error updating completion:', error)
     } finally {
@@ -170,7 +182,14 @@ const DailyFocus = ({ user }) => {
           <Input
             type="date"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(e) => {
+              const newDate = e.target.value
+              if (isWeekday(newDate)) {
+                setSelectedDate(newDate)
+              } else {
+                setSelectedDate(getNextWeekday(newDate))
+              }
+            }}
             className="w-fit"
           />
           {!isWeekday(selectedDate) && (
@@ -185,7 +204,7 @@ const DailyFocus = ({ user }) => {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="today" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="today">Today</TabsTrigger>
           <TabsTrigger value="set">Set Focus</TabsTrigger>
