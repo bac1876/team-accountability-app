@@ -39,6 +39,9 @@ function App() {
 
   // Check for existing session on app load
   useEffect(() => {
+    // Always apply dark mode
+    document.documentElement.classList.add('dark')
+    
     const savedUser = localStorage.getItem('currentUser')
     if (savedUser) {
       try {
