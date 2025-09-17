@@ -196,17 +196,22 @@ const Dashboard = ({ user }) => {
     // Check if today's reflection exists
     const todayReflection = allReflections.find(r => r.date === todayString)
     if (todayReflection) {
-      setReflection({
-        wentWell: todayReflection.wentWell || '',
-        differently: todayReflection.differently || '',
-        needHelp: todayReflection.needHelp || ''
-      })
+      // Mark that today's reflection is saved, but DON'T populate the form
+      // This keeps the form empty for potential additional reflections
       setReflectionSaved(true)
+    } else {
+      setReflectionSaved(false)
     }
     
-    // Get past reflections (last 7 days)
+    // Always keep form empty for new entries
+    setReflection({
+      wentWell: '',
+      differently: '',
+      needHelp: ''
+    })
+    
+    // Get past reflections (including today's if it exists)
     const pastWeek = allReflections
-      .filter(r => r.date !== todayString)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 7)
     setPastReflections(pastWeek)
@@ -230,14 +235,42 @@ const Dashboard = ({ user }) => {
 
     try {
       userDataStore.addReflection(user.id, reflectionData)
+      // Clear the form after saving
+      setReflection({
+        wentWell: '',
+        differently: '',
+        needHelp: ''
+      })
       // Mark as saved and reload reflections
       setReflectionSaved(true)
       loadReflections()
-      alert('Reflection saved successfully!')
+      
+      // Show success toast instead of alert
+      const successDiv = document.createElement('div')
+      successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
+      successDiv.textContent = 'Reflection saved successfully! ✓'
+      document.body.appendChild(successDiv)
+      setTimeout(() => successDiv.remove(), 2000)
     } catch (error) {
       console.error('Error saving reflection:', error)
       alert('Failed to save reflection. Please try again.')
     }
+  }
+
+  const toggleCommitmentStatus = (commitmentId, currentStatus) => {
+    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed'
+    userDataStore.updateCommitmentStatus(user.id, commitmentId, newStatus)
+    
+    // Refresh the commitments list
+    const updatedData = userDataStore.getUserData(user.id)
+    setRecentCommitments(updatedData.commitments.slice(-7))
+    
+    // Show success toast
+    const successDiv = document.createElement('div')
+    successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
+    successDiv.textContent = `Commitment marked as ${newStatus}! ✓`
+    document.body.appendChild(successDiv)
+    setTimeout(() => successDiv.remove(), 2000)
   }
 
   const updateCommitmentStatus = (status) => {
@@ -531,6 +564,23 @@ const Dashboard = ({ user }) => {
                               <Button
                                 size="sm"
                                 variant="ghost"
+                                onClick={() => toggleCommitmentStatus(commit.id, commit.status)}
+                                className={`h-7 w-7 p-0 ${
+                                  commit.status === 'completed' 
+                                    ? 'hover:bg-yellow-100' 
+                                    : 'hover:bg-green-100'
+                                }`}
+                                title={commit.status === 'completed' ? 'Mark as pending' : 'Mark as completed'}
+                              >
+                                {commit.status === 'completed' ? (
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                ) : (
+                                  <Circle className="h-3 w-3 text-gray-400" />
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
                                 onClick={() => startEditingCommitment(commit)}
                                 className="h-7 w-7 p-0 hover:bg-blue-100"
                               >
@@ -807,6 +857,50 @@ const Dashboard = ({ user }) => {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Past Reflections */}
+            {pastReflections.length > 0 && (
+              <Card className="bg-slate-800/50 backdrop-blur border-slate-700/50">
+                <CardHeader>
+                  <CardTitle>Recent Reflections</CardTitle>
+                  <CardDescription>Your reflections from the past week</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {pastReflections.map((refl) => (
+                      <div key={refl.id} className="p-4 bg-gray-50 rounded-lg space-y-3">
+                        <div className="flex justify-between items-start">
+                          <span className="text-sm font-semibold text-gray-900">
+                            {format(new Date(refl.date), 'MMM d, yyyy')}
+                            {refl.date === todayString && (
+                              <Badge className="ml-2 bg-green-100 text-green-800">Today</Badge>
+                            )}
+                          </span>
+                        </div>
+                        {refl.wentWell && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-600 mb-1">What went well:</p>
+                            <p className="text-sm text-gray-800">{refl.wentWell}</p>
+                          </div>
+                        )}
+                        {refl.differently && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-600 mb-1">Would do differently:</p>
+                            <p className="text-sm text-gray-800">{refl.differently}</p>
+                          </div>
+                        )}
+                        {refl.needHelp && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-600 mb-1">Need help with:</p>
+                            <p className="text-sm text-gray-800">{refl.needHelp}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Phone Calls Tab */}
