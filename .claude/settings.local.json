@@ -13,7 +13,9 @@
       "Bash(git reset:*)",
       "Bash(curl:*)",
       "Bash(python:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(cd:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

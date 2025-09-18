@@ -115,6 +115,10 @@ const DashboardAPI = ({ user }) => {
     setSaving(true)
     try {
       await commitmentsAPI.create(user.id, todayString, todayCommitment, commitmentStatus)
+
+      // Clear the form after successful save
+      setTodayCommitment('')
+
       await loadUserData() // Reload to get updated data
 
       // Show success
@@ -255,16 +259,22 @@ const DashboardAPI = ({ user }) => {
         })}
       </div>
 
-      {/* Main Tabs */}
+      {/* Main Content - No Tab Bar, controlled by sidebar */}
       <Tabs value={activeTab} onValueChange={navigateToTab} className="space-y-4">
-        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-          <TabsList className="flex w-max md:w-full bg-slate-800/30 p-1">
-            <TabsTrigger value="commitment" className="min-w-[100px]">Commitment</TabsTrigger>
-            <TabsTrigger value="goals" className="min-w-[100px]">Goals</TabsTrigger>
-            <TabsTrigger value="phone-calls" className="min-w-[100px]">Phone Calls</TabsTrigger>
-            <TabsTrigger value="reflection" className="min-w-[100px]">Reflection</TabsTrigger>
-          </TabsList>
-        </div>
+        {/* Dashboard Tab */}
+        <TabsContent value="dashboard" className="space-y-4">
+          <Card className="bg-slate-800/50 border-slate-700/50">
+            <CardHeader>
+              <CardTitle className="text-white">Dashboard Overview</CardTitle>
+              <CardDescription className="text-slate-400">
+                Your accountability dashboard
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-slate-300">Welcome to your accountability dashboard. Use the sidebar to navigate between different sections.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Commitment Tab */}
         <TabsContent value="commitment" className="space-y-4">

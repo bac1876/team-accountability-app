@@ -42,6 +42,13 @@ const ModernLayout = ({ user, onLogout, children }) => {
     {
       label: 'Dashboard',
       icon: LayoutDashboard,
+      tab: 'dashboard',
+      path: '/',
+      badge: null
+    },
+    {
+      label: 'Commitment',
+      icon: CheckCircle,
       tab: 'commitment',
       path: '/',
       badge: null
@@ -54,16 +61,9 @@ const ModernLayout = ({ user, onLogout, children }) => {
       badge: null
     },
     {
-      label: 'Daily Focus',
-      icon: Star,
-      tab: 'focus',
-      path: '/',
-      badge: 'New'
-    },
-    {
       label: 'Phone Calls',
       icon: Phone,
-      tab: 'calls',
+      tab: 'phone-calls',
       path: '/',
       badge: null
     },
