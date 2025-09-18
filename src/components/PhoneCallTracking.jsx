@@ -279,7 +279,7 @@ const PhoneCallTracking = ({ user }) => {
                 {/* Quick Select Buttons */}
                 <div className="flex flex-wrap gap-2">
                   <span className="text-sm text-gray-600 w-full">Quick select:</span>
-                  {[5, 10, 15, 20, 25, 30].map(num => (
+                  {[25, 50, 75, 100].map(num => (
                     <Button
                       key={num}
                       size="sm"
