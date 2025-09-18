@@ -7,24 +7,37 @@ export default async function handler(req, res) {
       case 'GET':
         // Get commitments for a user
         const { userId, date, history } = req.query
-        
+
         if (!userId) {
           return res.status(400).json({ error: 'User ID is required' })
         }
 
+        // Import sql directly for all operations
+        const { sql } = await import('@vercel/postgres')
+
         if (history === 'true') {
           // Get commitment history
-          const commitments = await commitmentQueries.getByUser(userId)
-          res.status(200).json(commitments)
+          const result = await sql`
+            SELECT * FROM daily_commitments
+            WHERE user_id = ${userId}
+            ORDER BY commitment_date DESC
+          `
+          res.status(200).json(result.rows)
         } else if (date) {
           // Get commitment for specific date
-          const commitment = await commitmentQueries.getByUserAndDate(userId, date)
-          res.status(200).json(commitment || null)
+          const result = await sql`
+            SELECT * FROM daily_commitments
+            WHERE user_id = ${userId} AND commitment_date = ${date}
+          `
+          res.status(200).json(result.rows[0] || null)
         } else {
           // Get today's commitment
           const today = new Date().toISOString().split('T')[0]
-          const commitment = await commitmentQueries.getByUserAndDate(userId, today)
-          res.status(200).json(commitment || null)
+          const result = await sql`
+            SELECT * FROM daily_commitments
+            WHERE user_id = ${userId} AND commitment_date = ${today}
+          `
+          res.status(200).json(result.rows[0] || null)
         }
         break
 

@@ -38,12 +38,18 @@ export default async function handler(req, res) {
         }
 
         try {
-          const goal = await goalQueries.create({
-            userId,
-            goalText,
-            targetDate: targetDate || null
-          })
-          res.status(201).json(goal)
+          // Import sql directly like in commitments
+          const { sql } = await import('@vercel/postgres')
+
+          // Use sql`` template literal which is the recommended way
+          const result = await sql`
+            INSERT INTO weekly_goals (user_id, goal_text, target_date)
+            VALUES (${userId}, ${goalText}, ${targetDate || null})
+            RETURNING *
+          `
+
+          console.log('Goal created successfully:', result.rows[0])
+          res.status(201).json(result.rows[0])
         } catch (dbError) {
           console.error('Database error creating goal:', dbError)
           res.status(500).json({
