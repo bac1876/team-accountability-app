@@ -121,7 +121,8 @@ const CommitmentsSection = ({ user }) => {
     yesterday.setDate(yesterday.getDate() - 1)
     if (dateStr === yesterday.toISOString().split('T')[0]) return 'Yesterday'
 
-    const date = new Date(dateStr)
+    const [year, month, day] = dateStr.split('-').map(Number)
+    const date = new Date(year, month - 1, day)
     return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -161,12 +162,16 @@ const CommitmentsSection = ({ user }) => {
               <div className="text-center">
                 <div className="text-3xl font-bold mb-1">{formatDateDisplay(selectedDate)}</div>
                 <div className="text-purple-100 text-sm">
-                  {new Date(selectedDate).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  {(() => {
+                    const [year, month, day] = selectedDate.split('-').map(Number)
+                    const date = new Date(year, month - 1, day)
+                    return date.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                  })()}
                 </div>
               </div>
 
