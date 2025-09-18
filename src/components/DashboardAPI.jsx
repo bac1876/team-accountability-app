@@ -116,9 +116,8 @@ const DashboardAPI = ({ user }) => {
     try {
       await commitmentsAPI.create(user.id, todayString, todayCommitment, commitmentStatus)
 
-      // Clear the form after successful save
-      setTodayCommitment('')
-
+      // Don't clear the commitment text - it should remain displayed
+      // Just reload data to show it's saved
       await loadUserData() // Reload to get updated data
 
       // Show success

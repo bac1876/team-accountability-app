@@ -109,7 +109,7 @@ export const usersAPI = {
 // Commitments APIs
 export const commitmentsAPI = {
   async getByUser(userId) {
-    return apiCall(`/commitments?userId=${userId}`)
+    return apiCall(`/commitments/${userId}`)
   },
 
   async getByUserAndDate(userId, date) {
@@ -124,7 +124,7 @@ export const commitmentsAPI = {
   },
 
   async updateStatus(userId, date, status) {
-    return apiCall('/commitments/status', {
+    return apiCall('/commitments', {
       method: 'PUT',
       body: JSON.stringify({ userId, date, status }),
     })
@@ -138,7 +138,7 @@ export const commitmentsAPI = {
 // Goals APIs
 export const goalsAPI = {
   async getByUser(userId) {
-    return apiCall(`/goals?userId=${userId}`)
+    return apiCall(`/goals/${userId}`)
   },
 
   async create(userId, goalText, targetDate = null) {
@@ -149,14 +149,14 @@ export const goalsAPI = {
   },
 
   async updateProgress(goalId, progress) {
-    return apiCall(`/goals/${goalId}/progress`, {
+    return apiCall('/goals', {
       method: 'PUT',
-      body: JSON.stringify({ progress }),
+      body: JSON.stringify({ goalId, progress }),
     })
   },
 
   async delete(goalId) {
-    return apiCall(`/goals/${goalId}`, {
+    return apiCall(`/goals?goalId=${goalId}`, {
       method: 'DELETE',
     })
   }
@@ -165,7 +165,7 @@ export const goalsAPI = {
 // Reflections APIs
 export const reflectionsAPI = {
   async getByUser(userId) {
-    return apiCall(`/reflections?userId=${userId}`)
+    return apiCall(`/reflections/${userId}`)
   },
 
   async getByUserAndDate(userId, date) {
