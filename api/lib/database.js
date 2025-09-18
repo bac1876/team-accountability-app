@@ -1,15 +1,12 @@
 // Database connection and utilities for Vercel Postgres - API version
-import { createPool } from '@vercel/postgres'
-
-// Create a connection pool
-const pool = createPool({
-  connectionString: process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL
-})
+import { sql } from '@vercel/postgres'
 
 // Database connection wrapper with error handling
 export async function query(text, params = []) {
   try {
-    const result = await pool.query(text, params)
+    // Use sql`` template literal for Vercel Postgres
+    // This is the recommended way for serverless functions
+    const result = await sql.query(text, params)
     return result
   } catch (error) {
     console.error('Database query error:', error)
