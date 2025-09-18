@@ -1,5 +1,6 @@
 // API endpoint for weekly goals management
 import { goalQueries } from '../lib/database.js'
+import { sql } from '@vercel/postgres'
 
 export default async function handler(req, res) {
   try {
@@ -7,7 +8,7 @@ export default async function handler(req, res) {
       case 'GET':
         // Get goals for a user
         const { userId, active } = req.query
-        
+
         if (!userId) {
           return res.status(400).json({ error: 'User ID is required' })
         }
@@ -26,25 +27,22 @@ export default async function handler(req, res) {
 
       case 'POST':
         // Create new goal
-        const { userId, goalText, targetDate } = req.body
+        const { userId: postUserId, goalText, targetDate } = req.body
 
-        console.log('Received goal data:', { userId, goalText, targetDate })
+        console.log('Received goal data:', { userId: postUserId, goalText, targetDate })
 
-        if (!userId || !goalText) {
+        if (!postUserId || !goalText) {
           return res.status(400).json({
             error: 'User ID and goal text are required',
-            received: { userId, goalText: goalText ? 'provided' : 'missing' }
+            received: { userId: postUserId, goalText: goalText ? 'provided' : 'missing' }
           })
         }
 
         try {
-          // Import sql directly like in commitments
-          const { sql } = await import('@vercel/postgres')
-
           // Use sql`` template literal which is the recommended way
           const result = await sql`
             INSERT INTO weekly_goals (user_id, goal_text, target_date)
-            VALUES (${userId}, ${goalText}, ${targetDate || null})
+            VALUES (${postUserId}, ${goalText}, ${targetDate || null})
             RETURNING *
           `
 
@@ -55,7 +53,7 @@ export default async function handler(req, res) {
           res.status(500).json({
             error: 'Database error',
             details: dbError.message,
-            userId,
+            userId: postUserId,
             goalText: goalText ? 'provided' : 'missing'
           })
         }
@@ -63,16 +61,16 @@ export default async function handler(req, res) {
 
       case 'PUT':
         // Update goal (text and/or progress)
-        const { goalId, goalText, progress } = req.body
+        const { goalId, goalText: putText, progress } = req.body
 
         if (!goalId) {
           return res.status(400).json({ error: 'Goal ID is required' })
         }
 
         let updatedGoal
-        if (goalText !== undefined || progress !== undefined) {
+        if (putText !== undefined || progress !== undefined) {
           // Update both text and/or progress
-          updatedGoal = await goalQueries.updateGoal(goalId, goalText, progress)
+          updatedGoal = await goalQueries.updateGoal(goalId, putText, progress)
         } else {
           return res.status(400).json({ error: 'Either goalText or progress must be provided' })
         }
@@ -87,7 +85,7 @@ export default async function handler(req, res) {
       case 'DELETE':
         // Delete goal
         const { goalId: deleteGoalId } = req.query
-        
+
         if (!deleteGoalId) {
           return res.status(400).json({ error: 'Goal ID is required' })
         }

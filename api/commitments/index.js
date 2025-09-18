@@ -1,5 +1,6 @@
 // API endpoint for daily commitments management
 import { commitmentQueries } from '../lib/database.js'
+import { sql } from '@vercel/postgres'
 
 export default async function handler(req, res) {
   try {
@@ -11,9 +12,6 @@ export default async function handler(req, res) {
         if (!userId) {
           return res.status(400).json({ error: 'User ID is required' })
         }
-
-        // Import sql directly for all operations
-        const { sql } = await import('@vercel/postgres')
 
         if (history === 'true') {
           // Get commitment history
@@ -43,26 +41,23 @@ export default async function handler(req, res) {
 
       case 'POST':
         // Always create new commitment (allowing multiple per day)
-        const { userId, date, commitmentText, status = 'pending' } = req.body
+        const { userId: postUserId, date: postDate, commitmentText, status = 'pending' } = req.body
 
-        console.log('Received commitment data:', { userId, date, commitmentText, status })
+        console.log('Received commitment data:', { userId: postUserId, date: postDate, commitmentText, status })
 
-        if (!userId || !date || !commitmentText) {
+        if (!postUserId || !postDate || !commitmentText) {
           return res.status(400).json({
             error: 'User ID, date, and commitment text are required',
-            received: { userId, date, commitmentText: commitmentText ? 'provided' : 'missing' }
+            received: { userId: postUserId, date: postDate, commitmentText: commitmentText ? 'provided' : 'missing' }
           })
         }
 
-        // Always create new commitment - using direct SQL to debug issue
+        // Always create new commitment - using direct SQL
         try {
-          // Import sql directly for this specific case
-          const { sql } = await import('@vercel/postgres')
-
           // Use sql`` template literal which is the recommended way
           const result = await sql`
             INSERT INTO daily_commitments (user_id, commitment_date, commitment_text, status)
-            VALUES (${userId}, ${date}, ${commitmentText}, ${status})
+            VALUES (${postUserId}, ${postDate}, ${commitmentText}, ${status})
             RETURNING *
           `
 
@@ -73,8 +68,8 @@ export default async function handler(req, res) {
           res.status(500).json({
             error: 'Database error',
             details: dbError.message,
-            userId,
-            date
+            userId: postUserId,
+            date: postDate
           })
         }
         break
