@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./mobile-styles.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -189,5 +190,38 @@ html.dark,
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Mobile-friendly touch targets */
+@media (max-width: 768px) {
+  /* Ensure all buttons have minimum 44px height on mobile */
+  button {
+    min-height: 44px;
+    @apply text-base;
+  }
+
+  /* Make all form inputs mobile-friendly */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  textarea,
+  select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    @apply text-base;
+  }
+
+  /* Improve tap target sizes for interactive elements */
+  a, .clickable {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Better spacing on mobile */
+  .card {
+    @apply p-4;
   }
 }

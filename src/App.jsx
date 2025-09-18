@@ -46,11 +46,8 @@ function App() {
       const storageOk = initializeStorage()
       if (!storageOk) {
         console.error('Storage initialization failed')
-        // Clear everything and reload
-        localStorage.clear()
-        sessionStorage.clear()
-        window.location.reload()
-        return
+        // Don't clear data - preserve user information
+        // Just continue with existing data
       }
       
       // Force clear any conflicting styles/classes first

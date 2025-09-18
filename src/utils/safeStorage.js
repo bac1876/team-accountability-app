@@ -56,13 +56,9 @@ export const safeLocalStorage = {
   },
 
   clear: () => {
-    try {
-      localStorage.clear()
-      return true
-    } catch (error) {
-      console.error('localStorage clear error:', error)
-      return false
-    }
+    // Disabled to prevent data loss
+    console.warn('localStorage.clear() has been disabled to protect user data')
+    return false
   },
 
   // Check if storage is working properly
@@ -144,13 +140,9 @@ export function checkForReset() {
     const userDataBackup = localStorage.getItem('userData')
     const usersInitialized = localStorage.getItem('usersInitialized')
     
-    // Clear storage
-    safeLocalStorage.clear()
-    
-    // Restore user data
-    if (usersBackup) localStorage.setItem('teamUsers', usersBackup)
-    if (userDataBackup) localStorage.setItem('userData', userDataBackup)
-    if (usersInitialized) localStorage.setItem('usersInitialized', usersInitialized)
+    // Don't clear storage - just remove non-user data if needed
+    // Preserve all user-related data
+    console.log('Reset requested but user data preserved')
     
     // Remove the reset parameter from URL
     urlParams.delete('reset')
@@ -162,9 +154,9 @@ export function checkForReset() {
   
   // Check for full reset (including users) - requires explicit parameter
   if (urlParams.get('fullreset') === 'true') {
-    console.log('Full reset parameter detected, clearing ALL storage including users...')
-    safeLocalStorage.clear()
-    localStorage.removeItem('usersInitialized')
+    console.log('Full reset parameter detected, but preserving user data for safety')
+    // Don't clear user data even on full reset
+    // Only remove non-critical data if absolutely necessary
     
     // Remove the reset parameter from URL
     urlParams.delete('fullreset')
@@ -182,12 +174,7 @@ export function initializeStorage() {
   // Check if localStorage is available and working
   if (!safeLocalStorage.isWorking()) {
     console.error('localStorage is not available or not working properly')
-    // Try to clear and fix
-    try {
-      localStorage.clear()
-    } catch (e) {
-      console.error('Cannot clear localStorage:', e)
-    }
+    // Don't clear - preserve existing data
     return false
   }
   

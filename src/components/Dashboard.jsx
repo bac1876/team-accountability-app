@@ -379,14 +379,14 @@ const Dashboard = ({ user }) => {
   return (
     <div className="space-y-6">
       <div className="space-y-6">
-        {/* Header */}
+        {/* Header - Mobile Responsive */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-white">Welcome back, {user?.name || user?.username}!</h1>
-          <p className="text-slate-400">Track your daily commitments and achieve your goals</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Welcome back, {user?.name || user?.username}!</h1>
+          <p className="text-sm md:text-base text-slate-400">Track your daily commitments and achieve your goals</p>
         </div>
 
-        {/* Stats Overview - Week View */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        {/* Stats Overview - Week View - Mobile Responsive */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
           {/* Monday through Friday commitment status */}
           {(() => {
             const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
@@ -437,7 +437,7 @@ const Dashboard = ({ user }) => {
               
               return (
                 <Card key={day} className={`${bgColor} backdrop-blur border-slate-700/50 ${isToday ? 'ring-2 ring-blue-500/50' : ''}`}>
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 md:p-4">
                     <div className="flex flex-col items-center space-y-2">
                       {React.createElement(icon, { className: `h-6 w-6 ${iconColor}` })}
                       <div className="text-center">
@@ -459,8 +459,8 @@ const Dashboard = ({ user }) => {
           })()}
         </div>
 
-        {/* Phone Call Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Phone Call Stats - Mobile Responsive */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           <Card className="bg-slate-800/50 backdrop-blur border-slate-700/50">
             <CardContent className="p-6">
               <div className="flex items-center space-x-2">
@@ -498,16 +498,18 @@ const Dashboard = ({ user }) => {
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
+        {/* Main Content Tabs - Mobile Responsive */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-6 bg-slate-800/30 backdrop-blur border border-slate-700/50 p-1">
-            <TabsTrigger value="commitment" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Today's Commitment</TabsTrigger>
-            <TabsTrigger value="goals" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Weekly Goals</TabsTrigger>
-            <TabsTrigger value="reflection" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Daily Reflection</TabsTrigger>
-            <TabsTrigger value="calls" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Phone Calls</TabsTrigger>
-            <TabsTrigger value="focus" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Daily Focus</TabsTrigger>
-            <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Analytics</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <TabsList className="flex w-max md:w-full md:grid md:grid-cols-6 bg-slate-800/30 backdrop-blur border border-slate-700/50 p-1 min-w-full">
+              <TabsTrigger value="commitment" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Today's Commitment</TabsTrigger>
+              <TabsTrigger value="goals" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Weekly Goals</TabsTrigger>
+              <TabsTrigger value="reflection" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Daily Reflection</TabsTrigger>
+              <TabsTrigger value="calls" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Phone Calls</TabsTrigger>
+              <TabsTrigger value="focus" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Daily Focus</TabsTrigger>
+              <TabsTrigger value="analytics" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Analytics</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Today's Commitment Tab */}
           <TabsContent value="commitment" className="space-y-4">
