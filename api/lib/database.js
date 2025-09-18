@@ -98,6 +98,15 @@ export const commitmentQueries = {
     return result.rows[0]
   },
 
+  // Update commitment text and status
+  async update(userId, date, commitmentText, status) {
+    const result = await query(
+      'UPDATE daily_commitments SET commitment_text = $3, status = $4, updated_at = CURRENT_TIMESTAMP WHERE user_id = $1 AND commitment_date = $2 RETURNING *',
+      [userId, date, commitmentText, status]
+    )
+    return result.rows[0]
+  },
+
   // Get today's commitments for all users
   async getTodayForAll() {
     const today = new Date().toISOString().split('T')[0]

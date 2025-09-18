@@ -42,8 +42,7 @@ export default async function handler(req, res) {
         let commitment
         if (existing) {
           // Update existing commitment's text and status
-          // Note: we don't have an update method for text, so we'll just update status
-          commitment = await commitmentQueries.updateStatus(postUserId, postDate, status)
+          commitment = await commitmentQueries.update(postUserId, postDate, commitmentText, status)
         } else {
           // Create new commitment
           commitment = await commitmentQueries.create({
