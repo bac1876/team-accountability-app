@@ -15,9 +15,23 @@ const ModernLayout = ({ user, onLogout, children }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const { activeTab, navigateToTab } = useNavigation()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false) // Default to closed on mobile
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [notifications, setNotifications] = useState(3)
+
+  // Set sidebar open on desktop by default
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true)
+      } else {
+        setSidebarOpen(false)
+      }
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const getInitials = (name) => {
     if (!name) return 'U'
@@ -105,11 +119,19 @@ const ModernLayout = ({ user, onLogout, children }) => {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-5"></div>
       </div>
 
+      {/* Mobile Menu Overlay */}
+      {sidebarOpen && window.innerWidth < 1024 && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside className={cn(
         "fixed left-0 top-0 h-full z-40 transition-all duration-300 ease-in-out",
-        sidebarOpen ? "w-64" : "w-20",
-        "bg-slate-900/50 backdrop-blur-xl border-r border-slate-800/50"
+        "bg-slate-900/50 backdrop-blur-xl border-r border-slate-800/50",
+        sidebarOpen ? "w-64 translate-x-0" : "w-64 -translate-x-full lg:translate-x-0 lg:w-20"
       )}>
         <div className="flex flex-col h-full">
           {/* Logo Section */}
@@ -126,14 +148,14 @@ const ModernLayout = ({ user, onLogout, children }) => {
             </div>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-slate-400 hover:text-white transition-colors lg:block hidden"
+              className="text-slate-400 hover:text-white transition-colors"
             >
-              <Menu className="w-5 h-5" />
+              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+          <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto overflow-x-hidden">
             {currentNavItems.map((item) => {
               // Check if active based on tab or path
               const isActive = item.tab ? activeTab === item.tab : location.pathname === item.path
@@ -153,6 +175,10 @@ const ModernLayout = ({ user, onLogout, children }) => {
                       // Use regular navigation for non-tab routes
                       console.log('Navigating to:', item.path)
                       navigate(item.path)
+                    }
+                    // Close sidebar on mobile after navigation
+                    if (window.innerWidth < 1024) {
+                      setSidebarOpen(false)
                     }
                   }}
                   className={cn(
@@ -203,14 +229,15 @@ const ModernLayout = ({ user, onLogout, children }) => {
       {/* Main Content */}
       <div className={cn(
         "transition-all duration-300 ease-in-out",
-        sidebarOpen ? "ml-64" : "ml-20"
+        "ml-0 lg:ml-20",
+        sidebarOpen && window.innerWidth >= 1024 && "lg:ml-64"
       )}>
         {/* Top Header */}
         <header className="sticky top-0 z-30 h-16 bg-slate-900/50 backdrop-blur-xl border-b border-slate-800/50">
           <div className="h-full px-6 flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="text-slate-400 hover:text-white lg:hidden"
               >
                 <Menu className="w-6 h-6" />
@@ -258,31 +285,13 @@ const ModernLayout = ({ user, onLogout, children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-3 md:p-6">
           <div className="animate-fadeIn">
             {children}
           </div>
         </main>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
-          <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900 border-r border-slate-800">
-            {/* Mobile menu content - similar to desktop sidebar */}
-            <div className="flex flex-col h-full">
-              <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800/50">
-                <span className="text-white font-bold text-lg">Accountability</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="text-slate-400">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              {/* Add navigation items here */}
-            </div>
-          </aside>
-        </div>
-      )}
 
     </div>
   )
