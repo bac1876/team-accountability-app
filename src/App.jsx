@@ -7,7 +7,9 @@ import './styles/darkTheme.css'
 // Import components (we'll create these)
 import LoginPage from './components/LoginPage'
 import Dashboard from './components/Dashboard'
+import DashboardAPI from './components/DashboardAPI'
 import AdminDashboard from './components/AdminDashboard'
+import AdminDashboardAPI from './components/AdminDashboardAPI'
 import Navigation from './components/Navigation'
 import ModernLayout from './components/ModernLayout'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -28,12 +30,13 @@ function DashboardRouter({ user }) {
     window.location.pathname === '/admin'
   )
   
-  // Show AdminDashboard for admin-only views, Dashboard for everything else
+  // Show AdminDashboardAPI for admin-only views, DashboardAPI for everything else
   if (isAdminView) {
-    return <AdminDashboard user={user} />
+    return <AdminDashboardAPI user={user} />
   }
-  
-  return <Dashboard user={user} />
+
+  // Use DashboardAPI which connects to the database
+  return <DashboardAPI user={user} />
 }
 
 function App() {
@@ -158,13 +161,13 @@ function App() {
                 } 
               />
               
-              <Route 
-                path="/dashboard" 
+              <Route
+                path="/dashboard"
                 element={
                   <ModernLayout user={user} onLogout={logout}>
-                    <Dashboard key="dashboard" user={user} />
+                    <DashboardAPI key="dashboard" user={user} />
                   </ModernLayout>
-                } 
+                }
               />
               
               <Route 
