@@ -1,8 +1,14 @@
 // API client for frontend to backend communication
 
-const API_BASE_URL = import.meta.env.PROD
-  ? '' // Use relative URLs in production
-  : 'http://localhost:3000' // Use local server in development
+// Detect environment based on hostname for more reliable production detection
+const isLocalhost = window.location.hostname === 'localhost' ||
+                   window.location.hostname === '127.0.0.1' ||
+                   window.location.hostname.startsWith('192.168.') ||
+                   window.location.hostname.startsWith('10.')
+
+const API_BASE_URL = isLocalhost
+  ? 'http://localhost:3000' // Use local server in development
+  : '' // Use relative URLs in production
 
 // Helper for API calls
 async function apiCall(endpoint, options = {}) {
