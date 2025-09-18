@@ -68,12 +68,11 @@ const DashboardAPI = ({ user }) => {
           setCommitmentStatus(todayCommit.status || 'pending')
         }
 
-        // Get recent commitments
-        const recent = commitments
+        // Get commitments for current week (Mon-Fri)
+        const weekCommitments = commitments
           .filter(c => {
-            const date = new Date(c.commitment_date)
-            const diff = (today - date) / (1000 * 60 * 60 * 24)
-            return diff <= 7 && diff >= 0
+            const date = new Date(c.commitment_date + 'T00:00:00') // Ensure local timezone
+            return date >= weekStart && date <= weekEnd
           })
           .map(c => ({
             id: c.id,
@@ -83,7 +82,7 @@ const DashboardAPI = ({ user }) => {
           }))
           .sort((a, b) => new Date(b.date) - new Date(a.date))
 
-        setRecentCommitments(recent)
+        setRecentCommitments(weekCommitments)
 
         // Calculate commitment streak
         const streak = streakStore.calculateCommitmentStreak(user.id, commitments)

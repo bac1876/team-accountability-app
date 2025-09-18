@@ -722,8 +722,10 @@ export const streakStore = {
 
     // Sort commitments by date descending
     const sortedCommitments = [...allCommitments]
-      .filter(c => c.user_id === userId)
+      .filter(c => c.user_id === userId && c.status === 'completed')
       .sort((a, b) => new Date(b.commitment_date) - new Date(a.commitment_date))
+
+    if (sortedCommitments.length === 0) return 0
 
     let streak = 0
     const today = new Date()
@@ -732,7 +734,7 @@ export const streakStore = {
 
     // Start from today and work backwards
     let currentDate = new Date(today)
-    let isFirstDay = true
+    let expectingCommitment = true
 
     // If today is weekend, move to last Friday
     if (!streakStore.isWeekday(currentDate.toISOString().split('T')[0])) {
@@ -746,35 +748,20 @@ export const streakStore = {
 
       if (streakStore.isWeekday(dateStr)) {
         // Check if there's a completed commitment for this date
-        const dayCommitments = sortedCommitments.filter(c =>
-          c.commitment_date === dateStr && c.status === 'completed'
-        )
+        const hasCompleted = sortedCommitments.some(c => c.commitment_date === dateStr)
 
-        if (dayCommitments.length > 0) {
+        if (hasCompleted) {
           streak++
-          isFirstDay = false
         } else {
-          // For today, it's okay if there's a pending commitment
-          // For past days, if no completed commitment, check if it's still part of streak
+          // If today has no completed commitment yet, that's OK - check yesterday
+          // For past days, if no completed commitment, check if we should continue
           if (dateStr === todayStr) {
-            // Today - check if there's any commitment (pending is OK)
-            const todayCommitments = sortedCommitments.filter(c =>
-              c.commitment_date === dateStr
-            )
-            if (todayCommitments.length === 0 && !isFirstDay) {
-              // No commitment today but had streak yesterday - keep the streak
-              // Don't increment but don't break
-            } else if (todayCommitments.length === 0 && isFirstDay) {
-              // No commitments at all today, continue checking yesterday
-              isFirstDay = false
-            }
-          } else {
-            // Past day with no completed commitment - streak broken
-            // But only break if we've found at least one completed commitment
-            if (!isFirstDay) {
-              break
-            }
+            // Today - no completed commitment yet is OK, continue checking
+          } else if (streak > 0) {
+            // We had a streak but now it's broken
+            break
           }
+          // If streak is still 0, keep looking for the first completed commitment
         }
       }
 

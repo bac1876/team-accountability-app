@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button.jsx'
 import { Textarea } from '@/components/ui/textarea.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Label } from '@/components/ui/label.jsx'
-import { MessageSquare, Calendar, ChevronLeft, ChevronRight, Save, Trophy, AlertCircle, Target } from 'lucide-react'
+import { MessageSquare, Calendar, ChevronLeft, ChevronRight, Save, Trophy, AlertCircle, Target, Edit2 } from 'lucide-react'
 import { reflectionsAPI } from '../lib/api-client.js'
 
 const ReflectionsSection = ({ user }) => {
@@ -15,6 +15,7 @@ const ReflectionsSection = ({ user }) => {
   const [tomorrowFocus, setTomorrowFocus] = useState('')
   const [loading, setLoading] = useState(false)
   const [hasReflection, setHasReflection] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const today = new Date().toISOString().split('T')[0]
   const isToday = selectedDate === today
@@ -65,6 +66,7 @@ const ReflectionsSection = ({ user }) => {
       )
 
       await loadReflection()
+      setIsEditing(false)
 
       // Show success message
       const toast = document.createElement('div')
@@ -337,13 +339,24 @@ const ReflectionsSection = ({ user }) => {
 
           <Card className="bg-green-50 border-green-200">
             <CardContent className="pt-6">
-              <div className="text-center">
+              <div className="text-center space-y-3">
                 <Badge className="bg-green-100 text-green-700 border-0 text-lg px-4 py-2">
                   Reflection Complete
                 </Badge>
-                <p className="text-gray-600 mt-2">
+                <p className="text-gray-600">
                   Your reflection for {formatDateDisplay(selectedDate)} has been saved
                 </p>
+                <Button
+                  onClick={() => {
+                    setIsEditing(true)
+                    setHasReflection(false)
+                  }}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Edit2 className="h-4 w-4" />
+                  Edit Reflection
+                </Button>
               </div>
             </CardContent>
           </Card>
