@@ -8,6 +8,8 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
 async function apiCall(endpoint, options = {}) {
   const url = `${API_BASE_URL}/api${endpoint}`
 
+  console.log('Making API call to:', url)
+
   try {
     const response = await fetch(url, {
       ...options,
@@ -20,12 +22,17 @@ async function apiCall(endpoint, options = {}) {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Request failed' }))
+      console.error('API response error:', error)
       throw new Error(error.error || `HTTP ${response.status}`)
     }
 
     return await response.json()
   } catch (error) {
     console.error(`API call failed for ${endpoint}:`, error)
+    // If fetch itself failed, it might be a network or CORS issue
+    if (error.message === 'Failed to fetch') {
+      console.error('Network error - API might be down or CORS issue')
+    }
     throw error
   }
 }

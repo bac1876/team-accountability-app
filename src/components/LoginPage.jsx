@@ -25,6 +25,9 @@ const LoginPage = ({ onLogin }) => {
     setError('')
 
     try {
+      // Try the simple login endpoint first for testing
+      console.log('Attempting login with:', formData.username)
+
       // Call the real API
       const response = await authAPI.login(
         formData.username.toLowerCase().trim(),
