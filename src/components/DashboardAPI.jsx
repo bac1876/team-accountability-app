@@ -31,6 +31,7 @@ const DashboardAPI = ({ user }) => {
   const [saving, setSaving] = useState(false)
   const [editingCommitment, setEditingCommitment] = useState(null)
   const [editingGoal, setEditingGoal] = useState(null)
+  const [editingGoalProgress, setEditingGoalProgress] = useState({})
 
   const today = new Date()
   const todayString = today.toISOString().split('T')[0]
@@ -209,10 +210,24 @@ const DashboardAPI = ({ user }) => {
     try {
       await goalsAPI.updateGoal(goalId, newText, newProgress)
       setEditingGoal(null)
+      const newProgressState = {...editingGoalProgress}
+      delete newProgressState[goalId]
+      setEditingGoalProgress(newProgressState)
       await loadUserData()
     } catch (error) {
       console.error('Error updating goal:', error)
       alert('Failed to update goal')
+    }
+  }
+
+  // Quick update goal progress
+  const updateGoalProgress = async (goalId, newProgress) => {
+    try {
+      await goalsAPI.updateGoal(goalId, null, newProgress)
+      await loadUserData()
+    } catch (error) {
+      console.error('Error updating goal progress:', error)
+      alert('Failed to update goal progress')
     }
   }
 
@@ -493,10 +508,15 @@ const DashboardAPI = ({ user }) => {
                               max={100}
                               step={10}
                               className="flex-1"
-                              id={`goal-progress-${goal.id}`}
+                              onValueChange={(value) => {
+                                setEditingGoalProgress({
+                                  ...editingGoalProgress,
+                                  [goal.id]: value[0]
+                                })
+                              }}
                             />
                             <span className="text-white w-12 text-right">
-                              {goal.progress || 0}%
+                              {editingGoalProgress[goal.id] !== undefined ? editingGoalProgress[goal.id] : goal.progress || 0}%
                             </span>
                           </div>
                           <div className="flex gap-2">
@@ -504,8 +524,8 @@ const DashboardAPI = ({ user }) => {
                               size="sm"
                               onClick={() => {
                                 const text = document.getElementById(`goal-text-${goal.id}`).value
-                                const progress = document.getElementById(`goal-progress-${goal.id}`).value
-                                updateGoalText(goal.id, text, parseInt(progress))
+                                const progress = editingGoalProgress[goal.id] !== undefined ? editingGoalProgress[goal.id] : goal.progress || 0
+                                updateGoalText(goal.id, text, progress)
                               }}
                             >
                               <Save className="h-4 w-4 mr-1" /> Save
@@ -513,7 +533,12 @@ const DashboardAPI = ({ user }) => {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => setEditingGoal(null)}
+                              onClick={() => {
+                                setEditingGoal(null)
+                                const newProgress = {...editingGoalProgress}
+                                delete newProgress[goal.id]
+                                setEditingGoalProgress(newProgress)
+                              }}
                             >
                               <X className="h-4 w-4 mr-1" /> Cancel
                             </Button>
@@ -536,19 +561,24 @@ const DashboardAPI = ({ user }) => {
                               <p className={`text-base ${goal.completed ? 'text-slate-400 line-through' : 'text-white'}`}>
                                 {goal.text}
                               </p>
-                              {goal.progress !== undefined && goal.progress > 0 && (
-                                <div className="mt-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex-1 bg-slate-600 rounded-full h-2">
-                                      <div
-                                        className="bg-blue-500 h-2 rounded-full"
-                                        style={{ width: `${goal.progress}%` }}
-                                      />
-                                    </div>
-                                    <span className="text-xs text-slate-400">{goal.progress}%</span>
-                                  </div>
+                              <div className="mt-3">
+                                <div className="flex items-center gap-3">
+                                  <Label className="text-slate-400 text-xs">Progress:</Label>
+                                  <Slider
+                                    value={[goal.progress || 0]}
+                                    max={100}
+                                    step={5}
+                                    className="flex-1"
+                                    onValueChange={(value) => {
+                                      updateGoalProgress(goal.id, value[0])
+                                    }}
+                                    disabled={goal.completed}
+                                  />
+                                  <span className="text-sm text-white w-12 text-right font-medium">
+                                    {goal.progress || 0}%
+                                  </span>
                                 </div>
-                              )}
+                              </div>
                             </div>
                             <Button
                               size="sm"
