@@ -9,7 +9,7 @@ import { Slider } from '@/components/ui/slider.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Label } from '@/components/ui/label.jsx'
-import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone, Edit2, Save, Trash2, Flame, TrendingUp } from 'lucide-react'
+import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone, Edit2, Save, Trash2, Flame, TrendingUp, XCircle } from 'lucide-react'
 import { commitmentsAPI, goalsAPI, reflectionsAPI } from '../lib/api-client.js'
 import { streakStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
@@ -340,6 +340,8 @@ const DashboardAPI = ({ user }) => {
           const commitment = recentCommitments.find(c => c.date === dateString)
           const isToday = dateString === todayString
 
+          const isPast = dateString < todayString
+
           return (
             <Card
               key={day}
@@ -350,8 +352,12 @@ const DashboardAPI = ({ user }) => {
                 <div className="flex flex-col items-center space-y-2">
                   {commitment?.status === 'completed' ? (
                     <CheckCircle className="h-6 w-6 text-green-400" />
-                  ) : commitment ? (
+                  ) : commitment && commitment.status === 'pending' && !isPast ? (
                     <Clock className="h-6 w-6 text-yellow-400" />
+                  ) : isPast && !commitment ? (
+                    <XCircle className="h-6 w-6 text-red-400" />
+                  ) : isPast && commitment?.status === 'pending' ? (
+                    <XCircle className="h-6 w-6 text-red-400" />
                   ) : (
                     <Circle className="h-6 w-6 text-slate-500" />
                   )}
