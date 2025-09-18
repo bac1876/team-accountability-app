@@ -224,7 +224,7 @@ const DashboardAPI = ({ user }) => {
   // Quick update goal progress (called when slider is committed)
   const updateGoalProgress = async (goalId, newProgress) => {
     try {
-      await goalsAPI.updateGoal(goalId, null, newProgress)
+      await goalsAPI.updateGoal(goalId, undefined, newProgress)
       // Clear temp progress after successful update
       const newTemp = {...tempGoalProgress}
       delete newTemp[goalId]
@@ -232,7 +232,10 @@ const DashboardAPI = ({ user }) => {
       await loadUserData()
     } catch (error) {
       console.error('Error updating goal progress:', error)
-      alert('Failed to update goal progress')
+      // Only show error if it's a real failure, not just a warning
+      if (error.message && !error.message.includes('200')) {
+        alert('Failed to update goal progress')
+      }
     }
   }
 

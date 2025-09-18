@@ -73,13 +73,6 @@ const ModernLayout = ({ user, onLogout, children }) => {
       tab: 'reflection',
       path: '/',
       badge: null
-    },
-    {
-      label: 'Analytics',
-      icon: TrendingUp,
-      tab: 'analytics',
-      path: '/',
-      badge: null
     }
   ]
 
