@@ -15,7 +15,7 @@ export default async function handler(req, res) {
         if (date) {
           // Get specific date's reflection
           const reflection = await reflectionQueries.getByUserAndDate(userId, date)
-          res.status(200).json(reflection || null)
+          res.status(200).json(reflection ? [reflection] : [])
         } else {
           // Get all reflections for user
           const reflections = await reflectionQueries.getByUser(userId)
