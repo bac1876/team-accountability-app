@@ -41,17 +41,22 @@ export default async function handler(req, res) {
           })
         }
 
-        // Always create new commitment
+        // Always create new commitment - using direct SQL to debug issue
         try {
-          const commitment = await commitmentQueries.create({
-            userId,
-            date,
-            commitmentText,
-            status
-          })
-          res.status(200).json(commitment)
+          // Import sql directly for this specific case
+          const { sql } = await import('@vercel/postgres')
+
+          // Use sql`` template literal which is the recommended way
+          const result = await sql`
+            INSERT INTO daily_commitments (user_id, commitment_date, commitment_text, status)
+            VALUES (${userId}, ${date}, ${commitmentText}, ${status})
+            RETURNING *
+          `
+
+          console.log('Commitment created successfully:', result.rows[0])
+          res.status(200).json(result.rows[0])
         } catch (dbError) {
-          console.error('Database error:', dbError)
+          console.error('Database error creating commitment:', dbError)
           res.status(500).json({
             error: 'Database error',
             details: dbError.message,
