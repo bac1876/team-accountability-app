@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.j
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Eye } from 'lucide-react'
-import UserManagement from './UserManagement.jsx'
+import UserManagementAPI from './UserManagementAPI.jsx'
 import MessagingCenter from './MessagingCenter.jsx'
 import AnalyticsDashboard from './AnalyticsDashboard.jsx'
 import { usersAPI, commitmentsAPI, goalsAPI, reflectionsAPI, analyticsAPI } from '../lib/api-client.js'
@@ -488,7 +488,7 @@ const AdminDashboardAPI = ({ user }) => {
 
         {/* User Management Tab */}
         <TabsContent value="user-management" className="space-y-6">
-          <UserManagement />
+          <UserManagementAPI />
         </TabsContent>
 
         {/* Messaging Tab */}

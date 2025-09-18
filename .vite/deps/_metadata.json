@@ -1,49 +1,15 @@
 {
-  "hash": "57fc472a",
+  "hash": "b5ada9af",
   "configHash": "64780305",
-  "lockfileHash": "1672584c",
-  "browserHash": "dc85d934",
+  "lockfileHash": "1502d7dc",
+  "browserHash": "d9585913",
   "optimized": {
-    "react": {
-      "src": "../../node_modules/react/index.js",
-      "file": "react.js",
-      "fileHash": "c4ff9059",
-      "needsInterop": true
-    },
-    "react-dom/client": {
-      "src": "../../node_modules/react-dom/client.js",
-      "file": "react-dom_client.js",
-      "fileHash": "8833d5f9",
-      "needsInterop": true
-    },
-    "react-router-dom": {
-      "src": "../../node_modules/react-router-dom/dist/index.mjs",
-      "file": "react-router-dom.js",
-      "fileHash": "87a9f2cb",
-      "needsInterop": false
-    },
-    "lucide-react": {
-      "src": "../../node_modules/lucide-react/dist/esm/lucide-react.js",
-      "file": "lucide-react.js",
-      "fileHash": "5c90baa2",
-      "needsInterop": false
-    },
-    "date-fns": {
-      "src": "../../node_modules/date-fns/index.mjs",
-      "file": "date-fns.js",
-      "fileHash": "461c769e",
+    "@vercel/postgres": {
+      "src": "../../node_modules/@vercel/postgres/dist/index-node.js",
+      "file": "@vercel_postgres.js",
+      "fileHash": "84015c81",
       "needsInterop": false
     }
   },
-  "chunks": {
-    "chunk-XNLU4CTU": {
-      "file": "chunk-XNLU4CTU.js"
-    },
-    "chunk-O2Q6JZ3H": {
-      "file": "chunk-O2Q6JZ3H.js"
-    },
-    "chunk-DC5AMYBS": {
-      "file": "chunk-DC5AMYBS.js"
-    }
-  }
+  "chunks": {}
 }
