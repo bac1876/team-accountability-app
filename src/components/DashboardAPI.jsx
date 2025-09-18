@@ -32,6 +32,7 @@ const DashboardAPI = ({ user }) => {
   const [editingCommitment, setEditingCommitment] = useState(null)
   const [editingGoal, setEditingGoal] = useState(null)
   const [editingGoalProgress, setEditingGoalProgress] = useState({})
+  const [tempGoalProgress, setTempGoalProgress] = useState({})
 
   const today = new Date()
   const todayString = today.toISOString().split('T')[0]
@@ -220,14 +221,44 @@ const DashboardAPI = ({ user }) => {
     }
   }
 
-  // Quick update goal progress
+  // Quick update goal progress (called when slider is committed)
   const updateGoalProgress = async (goalId, newProgress) => {
     try {
       await goalsAPI.updateGoal(goalId, null, newProgress)
+      // Clear temp progress after successful update
+      const newTemp = {...tempGoalProgress}
+      delete newTemp[goalId]
+      setTempGoalProgress(newTemp)
       await loadUserData()
     } catch (error) {
       console.error('Error updating goal progress:', error)
       alert('Failed to update goal progress')
+    }
+  }
+
+  // Delete goal
+  const deleteGoal = async (goalId) => {
+    if (!confirm('Are you sure you want to delete this goal?')) return
+
+    try {
+      await goalsAPI.delete(goalId)
+      await loadUserData()
+    } catch (error) {
+      console.error('Error deleting goal:', error)
+      alert('Failed to delete goal')
+    }
+  }
+
+  // Delete commitment
+  const deleteCommitment = async (commitmentId) => {
+    if (!confirm('Are you sure you want to delete this commitment?')) return
+
+    try {
+      await commitmentsAPI.delete(commitmentId)
+      await loadUserData()
+    } catch (error) {
+      console.error('Error deleting commitment:', error)
+      alert('Failed to delete commitment')
     }
   }
 
@@ -245,7 +276,7 @@ const DashboardAPI = ({ user }) => {
         todayString,
         reflection.wentWell,
         reflection.differently,
-        reflection.needHelp
+        reflection.needHelp  // This gets mapped to tomorrowFocus in the API client
       )
 
       // Show success
@@ -450,6 +481,14 @@ const DashboardAPI = ({ user }) => {
                           >
                             <Edit2 className="h-4 w-4" />
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => deleteCommitment(commit.id)}
+                            className="text-red-400 hover:text-red-300"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                           <Badge variant={commit.status === 'completed' ? 'default' : 'secondary'}>
                             {commit.status}
                           </Badge>
@@ -565,28 +604,44 @@ const DashboardAPI = ({ user }) => {
                                 <div className="flex items-center gap-3">
                                   <Label className="text-slate-400 text-xs">Progress:</Label>
                                   <Slider
-                                    value={[goal.progress || 0]}
+                                    value={[tempGoalProgress[goal.id] !== undefined ? tempGoalProgress[goal.id] : (goal.progress || 0)]}
                                     max={100}
                                     step={5}
                                     className="flex-1"
                                     onValueChange={(value) => {
+                                      setTempGoalProgress({
+                                        ...tempGoalProgress,
+                                        [goal.id]: value[0]
+                                      })
+                                    }}
+                                    onValueCommit={(value) => {
                                       updateGoalProgress(goal.id, value[0])
                                     }}
                                     disabled={goal.completed}
                                   />
                                   <span className="text-sm text-white w-12 text-right font-medium">
-                                    {goal.progress || 0}%
+                                    {tempGoalProgress[goal.id] !== undefined ? tempGoalProgress[goal.id] : (goal.progress || 0)}%
                                   </span>
                                 </div>
                               </div>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setEditingGoal(goal.id)}
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setEditingGoal(goal.id)}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => deleteGoal(goal.id)}
+                                className="text-red-400 hover:text-red-300"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       )}

@@ -139,6 +139,12 @@ export const commitmentsAPI = {
 
   async getTodayForAll() {
     return apiCall('/commitments/today')
+  },
+
+  async delete(commitmentId) {
+    return apiCall(`/commitments?commitmentId=${commitmentId}`, {
+      method: 'DELETE',
+    })
   }
 }
 
