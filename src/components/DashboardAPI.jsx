@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.j
 import { Label } from '@/components/ui/label.jsx'
 import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone } from 'lucide-react'
 import { commitmentsAPI, goalsAPI, reflectionsAPI } from '../lib/api-client.js'
+import PhoneCallTracking from './PhoneCallTracking.jsx'
 
 const DashboardAPI = ({ user }) => {
   const { activeTab, navigateToTab } = useNavigation()
@@ -260,6 +261,7 @@ const DashboardAPI = ({ user }) => {
           <TabsList className="flex w-max md:w-full bg-slate-800/30 p-1">
             <TabsTrigger value="commitment" className="min-w-[100px]">Commitment</TabsTrigger>
             <TabsTrigger value="goals" className="min-w-[100px]">Goals</TabsTrigger>
+            <TabsTrigger value="phone-calls" className="min-w-[100px]">Phone Calls</TabsTrigger>
             <TabsTrigger value="reflection" className="min-w-[100px]">Reflection</TabsTrigger>
           </TabsList>
         </div>
@@ -446,6 +448,11 @@ const DashboardAPI = ({ user }) => {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Phone Calls Tab */}
+        <TabsContent value="phone-calls" className="space-y-4">
+          <PhoneCallTracking user={user} />
         </TabsContent>
       </Tabs>
     </div>
