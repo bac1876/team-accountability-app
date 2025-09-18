@@ -13,6 +13,7 @@ import ModernLayout from './components/ModernLayout'
 import ErrorBoundary from './components/ErrorBoundary'
 import { NavigationProvider, useNavigation } from './context/NavigationContext'
 import { initializeStorage } from './utils/safeStorage'
+import { authAPI } from './lib/api-client'
 
 // Component that decides which dashboard to show based on navigation
 function DashboardRouter({ user }) {
@@ -94,20 +95,10 @@ function App() {
         return
       }
       
-      const savedUser = localStorage.getItem('currentUser')
-      if (savedUser) {
-        try {
-          const parsed = JSON.parse(savedUser)
-          // Validate the user object structure
-          if (parsed && typeof parsed === 'object' && parsed.id) {
-            setUser(parsed)
-          } else {
-            throw new Error('Invalid user object')
-          }
-        } catch (error) {
-          console.error('Error loading user session:', error)
-          localStorage.removeItem('currentUser')
-        }
+      // Check for existing session from API client
+      const currentUser = authAPI.getCurrentUser()
+      if (currentUser) {
+        setUser(currentUser)
       }
     } catch (error) {
       console.error('Critical initialization error:', error)
@@ -126,14 +117,13 @@ function App() {
 
   const login = (userData) => {
     setUser(userData)
-    // Save to localStorage for session persistence
-    localStorage.setItem('currentUser', JSON.stringify(userData))
+    // Save to session storage via API client
+    authAPI.setCurrentUser(userData)
   }
 
   const logout = () => {
     setUser(null)
-    // Clear from localStorage
-    localStorage.removeItem('currentUser')
+    authAPI.logout()
   }
 
   if (loading) {

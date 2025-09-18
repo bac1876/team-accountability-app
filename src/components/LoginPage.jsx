@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label.jsx'
 import { Alert, AlertDescription } from '@/components/ui/alert.jsx'
 import { Eye, EyeOff } from 'lucide-react'
-import { userStore, initializeDefaultData } from '../utils/dataStore.js'
+import { authAPI } from '../lib/api-client.js'
 
 const LoginPage = ({ onLogin }) => {
   const navigate = useNavigate()
@@ -18,52 +18,36 @@ const LoginPage = ({ onLogin }) => {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
-  // Get users from localStorage
-  const getUsers = () => {
-    // Get existing users without reinitializing
-    const users = userStore.getAll()
-    
-    // Only initialize if truly empty AND not already initialized before
-    if (users.length === 0 && !localStorage.getItem('usersInitialized')) {
-      console.log('First time setup - initializing default users')
-      initializeDefaultData()
-      localStorage.setItem('usersInitialized', 'true')
-      return userStore.getAll()
-    }
-    
-    return users
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      // Call the real API
+      const response = await authAPI.login(
+        formData.username.toLowerCase().trim(),
+        formData.password
+      )
 
-    // Dynamic authentication using current users
-    const currentUsers = getUsers()
-    console.log('Current users:', currentUsers)
-    console.log('Looking for:', formData.username, formData.password)
-    
-    const user = currentUsers.find(
-      u => u.email === formData.username && u.password === formData.password
-    )
-    console.log('Found user:', user)
+      if (response.success && response.user) {
+        // Store user in session
+        authAPI.setCurrentUser(response.user)
+        onLogin(response.user)
 
-    if (user) {
-      const { password, ...userWithoutPassword } = user
-      onLogin(userWithoutPassword)
-      
-      // Redirect admin users to /admin, regular users to /dashboard
-      if (user.role === 'admin') {
-        navigate('/admin')
+        // Redirect based on role
+        if (response.user.role === 'admin') {
+          navigate('/admin')
+        } else {
+          navigate('/dashboard')
+        }
       } else {
-        navigate('/dashboard')
+        setError('Invalid email or password')
       }
-    } else {
-      setError('Invalid username or password')
+    } catch (error) {
+      console.error('Login error:', error)
+      setError(error.message || 'Invalid email or password')
     }
 
     setLoading(false)
@@ -98,12 +82,16 @@ const LoginPage = ({ onLogin }) => {
                 <Input
                   id="username"
                   name="username"
-                  type="email"
+                  type="text"
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Enter your email address"
                   required
-                  className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500"
+                  autoComplete="username"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 min-h-[44px] text-base"
+                  style={{ fontSize: '16px' }}
                 />
             </div>
             
@@ -118,12 +106,14 @@ const LoginPage = ({ onLogin }) => {
                   onChange={handleChange}
                   required
                   placeholder="Enter your password"
-                  className="pr-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500"
+                  autoComplete="current-password"
+                  className="pr-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500 min-h-[44px] text-base"
+                  style={{ fontSize: '16px' }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 min-w-[44px]"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -140,15 +130,22 @@ const LoginPage = ({ onLogin }) => {
               </Alert>
             )}
 
-            <Button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg" 
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg min-h-[48px] text-base"
               disabled={loading}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
 
+          {/* Test Account Helper */}
+          <div className="mt-6 pt-6 border-t border-slate-700">
+            <p className="text-xs text-slate-400 text-center mb-3">Test Account:</p>
+            <div className="text-xs text-slate-500 text-center">
+              <span className="text-slate-400 font-mono">bob@searchnwa.com / pass123</span>
+            </div>
+          </div>
 
         </CardContent>
       </Card>
