@@ -728,9 +728,11 @@ export const streakStore = {
     let streak = 0
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const todayStr = today.toISOString().split('T')[0]
 
     // Start from today and work backwards
     let currentDate = new Date(today)
+    let isFirstDay = true
 
     // If today is weekend, move to last Friday
     if (!streakStore.isWeekday(currentDate.toISOString().split('T')[0])) {
@@ -750,9 +752,29 @@ export const streakStore = {
 
         if (dayCommitments.length > 0) {
           streak++
+          isFirstDay = false
         } else {
-          // Streak broken - stop counting
-          break
+          // For today, it's okay if there's a pending commitment
+          // For past days, if no completed commitment, check if it's still part of streak
+          if (dateStr === todayStr) {
+            // Today - check if there's any commitment (pending is OK)
+            const todayCommitments = sortedCommitments.filter(c =>
+              c.commitment_date === dateStr
+            )
+            if (todayCommitments.length === 0 && !isFirstDay) {
+              // No commitment today but had streak yesterday - keep the streak
+              // Don't increment but don't break
+            } else if (todayCommitments.length === 0 && isFirstDay) {
+              // No commitments at all today, continue checking yesterday
+              isFirstDay = false
+            }
+          } else {
+            // Past day with no completed commitment - streak broken
+            // But only break if we've found at least one completed commitment
+            if (!isFirstDay) {
+              break
+            }
+          }
         }
       }
 
