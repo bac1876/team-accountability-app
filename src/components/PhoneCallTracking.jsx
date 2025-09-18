@@ -6,23 +6,22 @@ import { Label } from '@/components/ui/label.jsx'
 import { Textarea } from '@/components/ui/textarea.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
-import { Phone, Target, CheckCircle, TrendingUp, Calendar } from 'lucide-react'
+import { Phone, Target, CheckCircle, TrendingUp, Calendar, ChevronLeft, ChevronRight, Plus, Save } from 'lucide-react'
 import { phoneCallStore } from '../utils/dataStore.js'
 
 const PhoneCallTracking = ({ user }) => {
-  const [commitmentData, setCommitmentData] = useState({
-    targetCalls: '',
-    description: ''
-  })
-  const [actualData, setActualData] = useState({
-    actualCalls: '',
-    notes: ''
-  })
+  const [targetCalls, setTargetCalls] = useState('')
+  const [actualCalls, setActualCalls] = useState('')
+  const [notes, setNotes] = useState('')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [dailyStats, setDailyStats] = useState(null)
   const [weeklyStats, setWeeklyStats] = useState(null)
-  const [monthlyStats, setMonthlyStats] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [hasSetGoal, setHasSetGoal] = useState(false)
+  const [hasLoggedCalls, setHasLoggedCalls] = useState(false)
+
+  const today = new Date().toISOString().split('T')[0]
+  const isToday = selectedDate === today
 
   // Helper functions for weekday logic
   const isWeekday = (dateStr) => {
@@ -32,133 +31,101 @@ const PhoneCallTracking = ({ user }) => {
   }
 
   useEffect(() => {
-    // Load stats whenever date changes
     loadStats()
   }, [selectedDate, user.id])
-
-  useEffect(() => {
-    // Initialize with today's date
-    const today = new Date().toISOString().split('T')[0]
-    setSelectedDate(today)
-  }, [])
 
   const loadStats = () => {
     const daily = phoneCallStore.getDailyStats(user.id, selectedDate)
     const weekly = phoneCallStore.getWeeklyStats(user.id)
-    const monthly = phoneCallStore.getMonthlyStats(user.id)
-    
+
     setDailyStats(daily)
     setWeeklyStats(weekly)
-    setMonthlyStats(monthly)
-    
-    // Always keep forms empty for new entries - don't pre-fill
-    setCommitmentData({
-      targetCalls: '',
-      description: ''
-    })
-    setActualData({
-      actualCalls: '',
-      notes: ''
-    })
+
+    // Check if goal/calls already exist for this date
+    setHasSetGoal(daily && daily.targetCalls > 0)
+    setHasLoggedCalls(daily && daily.actualCalls > 0)
+
+    // Clear input fields
+    setTargetCalls('')
+    setActualCalls('')
+    setNotes('')
   }
 
-  const handleCommitmentSubmit = async (e) => {
-    e.preventDefault()
-    
-    if (!commitmentData.targetCalls || commitmentData.targetCalls < 0) {
-      return
-    }
+  const handleSetGoal = async () => {
+    if (!targetCalls || targetCalls < 0) return
 
     setLoading(true)
     try {
-      const result = await phoneCallStore.addCommitment(
+      await phoneCallStore.addCommitment(
         user.id,
         selectedDate,
-        parseInt(commitmentData.targetCalls),
-        commitmentData.description
+        parseInt(targetCalls),
+        ''
       )
-      
-      // Clear the form after successful save
-      setCommitmentData({
-        targetCalls: '',
-        description: ''
-      })
-      
-      // Reload stats (but keep forms empty)
+
+      setTargetCalls('')
+      setHasSetGoal(true)
       loadStats()
-      
-      // Show success toast
+
+      // Show success
       const successDiv = document.createElement('div')
       successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      successDiv.textContent = 'Phone call goal saved successfully! ✓'
+      successDiv.textContent = `Goal set: ${targetCalls} calls for ${formatDate(selectedDate)}`
       document.body.appendChild(successDiv)
       setTimeout(() => successDiv.remove(), 3000)
     } catch (error) {
-      console.error('Error saving phone call commitment:', error)
-      // Show error toast
-      const errorDiv = document.createElement('div')
-      errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      errorDiv.textContent = 'Error saving phone call goal'
-      document.body.appendChild(errorDiv)
-      setTimeout(() => errorDiv.remove(), 3000)
+      console.error('Error setting goal:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleActualSubmit = async (e) => {
-    e.preventDefault()
-    if (!actualData.actualCalls || actualData.actualCalls < 0) return
+  const handleLogCalls = async () => {
+    if (!actualCalls || actualCalls < 0) return
 
     setLoading(true)
     try {
       await phoneCallStore.logActualCalls(
         user.id,
         selectedDate,
-        parseInt(actualData.actualCalls),
-        actualData.notes
+        parseInt(actualCalls),
+        notes
       )
-      
-      // Clear the form after successful save
-      setActualData({
-        actualCalls: '',
-        notes: ''
-      })
-      
-      // Reload stats (but keep forms empty)
+
+      setActualCalls('')
+      setNotes('')
+      setHasLoggedCalls(true)
       loadStats()
-      
-      // Show success toast
+
+      // Show success
       const successDiv = document.createElement('div')
       successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      successDiv.textContent = 'Phone calls logged successfully! ✓'
+      successDiv.textContent = `Logged ${actualCalls} calls`
       document.body.appendChild(successDiv)
       setTimeout(() => successDiv.remove(), 3000)
     } catch (error) {
       console.error('Error logging calls:', error)
-      // Show error toast
-      const errorDiv = document.createElement('div')
-      errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
-      errorDiv.textContent = 'Error logging phone calls'
-      document.body.appendChild(errorDiv)
-      setTimeout(() => errorDiv.remove(), 3000)
     } finally {
       setLoading(false)
     }
   }
 
-  const getCompletionColor = (rate) => {
-    if (rate >= 100) return 'bg-green-500'
-    if (rate >= 80) return 'bg-blue-500'
-    if (rate >= 60) return 'bg-yellow-500'
-    return 'bg-red-500'
+  const changeDate = (days) => {
+    const date = new Date(selectedDate)
+    date.setDate(date.getDate() + days)
+    setSelectedDate(date.toISOString().split('T')[0])
   }
 
   const formatDate = (dateStr) => {
-    // Parse date string and add timezone offset to avoid date shifting
     const [year, month, day] = dateStr.split('-').map(Number)
-    const date = new Date(year, month - 1, day) // Month is 0-indexed
-    
+    const date = new Date(year, month - 1, day)
+
+    if (dateStr === today) return 'Today'
+
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    if (dateStr === yesterday.toISOString().split('T')[0]) return 'Yesterday'
+
     return date.toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
@@ -166,339 +133,354 @@ const PhoneCallTracking = ({ user }) => {
     })
   }
 
+  const getProgressColor = (rate) => {
+    if (rate >= 100) return 'text-green-600'
+    if (rate >= 80) return 'text-blue-600'
+    if (rate >= 50) return 'text-yellow-600'
+    return 'text-red-600'
+  }
+
+  const getProgressBg = (rate) => {
+    if (rate >= 100) return 'bg-green-100'
+    if (rate >= 80) return 'bg-blue-100'
+    if (rate >= 50) return 'bg-yellow-100'
+    return 'bg-red-100'
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Phone className="h-6 w-6 text-blue-600" />
-        <h2 className="text-2xl font-bold">Phone Call Tracking</h2>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold">Phone Call Tracker</h2>
+        <p className="text-gray-600">Set goals and track your daily phone calls</p>
       </div>
 
-      {/* Date Selector */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Select Date for Phone Call Tracking
-          </CardTitle>
-          <CardDescription>
-            Choose a date to set goals or log your phone calls (weekdays recommended for business calls)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date-picker">Date</Label>
-              <Input
-                id="date-picker"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => {
-                  const newDate = e.target.value
-                  if (isWeekday(newDate)) {
-                    setSelectedDate(newDate)
-                  } else {
-                    // Show warning but allow selection
-                    setSelectedDate(newDate)
-                  }
-                }}
-                className="w-fit"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Quick Select</Label>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-                >
-                  Today
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const yesterday = new Date()
-                    yesterday.setDate(yesterday.getDate() - 1)
-                    setSelectedDate(yesterday.toISOString().split('T')[0])
-                  }}
-                >
-                  Yesterday
-                </Button>
+      {/* Date Navigation */}
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => changeDate(-1)}
+                className="p-2 hover:bg-white/20 rounded-full transition"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-1">{formatDate(selectedDate)}</div>
+                <div className="text-blue-100 text-sm">
+                  {new Date(selectedDate).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </div>
+                {!isWeekday(selectedDate) && (
+                  <Badge className="mt-2 bg-yellow-500 text-white">Weekend</Badge>
+                )}
               </div>
+
+              <button
+                onClick={() => changeDate(1)}
+                className="p-2 hover:bg-white/20 rounded-full transition"
+                disabled={selectedDate >= today}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
             </div>
-          </div>
-          {!isWeekday(selectedDate) && (
-            <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md border border-amber-200">
-              <strong>📅 Weekend Selected</strong>
-              <p className="mt-1">You've selected {formatDate(selectedDate)} which is a weekend. Business calls are typically made on weekdays, but you can still track personal or weekend calls if needed.</p>
+
+            {/* Quick Navigation */}
+            <div className="flex justify-center gap-2 mt-4">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setSelectedDate(today)}
+                className={selectedDate === today ? 'bg-white text-blue-600' : 'bg-white/20 text-white hover:bg-white/30'}
+              >
+                Today
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  const yesterday = new Date()
+                  yesterday.setDate(yesterday.getDate() - 1)
+                  setSelectedDate(yesterday.toISOString().split('T')[0])
+                }}
+                className="bg-white/20 text-white hover:bg-white/30"
+              >
+                Yesterday
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  const date = new Date()
+                  const day = date.getDay()
+                  const diff = date.getDate() - day + (day === 0 ? -6 : 1)
+                  date.setDate(diff)
+                  setSelectedDate(date.toISOString().split('T')[0])
+                }}
+                className="bg-white/20 text-white hover:bg-white/30"
+              >
+                This Week
+              </Button>
             </div>
-          )}
-          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-            <div>
-              <p className="text-sm font-medium">Selected Date:</p>
-              <p className="text-lg font-bold text-blue-700">{formatDate(selectedDate)}</p>
-            </div>
-            <Badge variant={isWeekday(selectedDate) ? "default" : "secondary"}>
-              {isWeekday(selectedDate) ? 'Weekday' : 'Weekend'}
-            </Badge>
           </div>
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="daily">Daily</TabsTrigger>
-          <TabsTrigger value="commitment">Set Goal</TabsTrigger>
-          <TabsTrigger value="actual">Log Calls</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        </TabsList>
-
-        {/* Daily Overview */}
-        <TabsContent value="daily" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Daily Overview - {formatDate(selectedDate)}</CardTitle>
-              <CardDescription>Your phone call performance for the selected date</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {dailyStats && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <Target className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-blue-600">{dailyStats.targetCalls}</div>
-                    <div className="text-sm text-gray-600">Target Calls</div>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <Phone className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-green-600">{dailyStats.actualCalls}</div>
-                    <div className="text-sm text-gray-600">Actual Calls</div>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <CheckCircle className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                    <div className="text-2xl font-bold text-purple-600">{dailyStats.completionRate}%</div>
-                    <div className="text-sm text-gray-600">Completion Rate</div>
-                  </div>
-                </div>
-              )}
-              
-              {dailyStats?.description && (
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <Label className="text-sm font-medium">Goal Description:</Label>
-                  <p className="text-sm text-gray-700 mt-1">{dailyStats.description}</p>
-                </div>
-              )}
-              
-              {dailyStats?.notes && (
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <Label className="text-sm font-medium">Notes:</Label>
-                  <p className="text-sm text-gray-700 mt-1">{dailyStats.notes}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Set Commitment */}
-        <TabsContent value="commitment" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Set Call Goal for {formatDate(selectedDate)}
-              </CardTitle>
-              <CardDescription>Commit to the number of calls you plan to make</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCommitmentSubmit} className="space-y-4">
+      {/* Main Content Area */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Set Goal Card */}
+        <Card className={hasSetGoal ? 'opacity-75' : ''}>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-blue-600" />
+              Set Goal
+            </CardTitle>
+            <CardDescription>
+              How many calls will you make {isToday ? 'today' : `on ${formatDate(selectedDate)}`}?
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {hasSetGoal && dailyStats ? (
+              <div className="text-center py-8 space-y-2">
+                <div className="text-4xl font-bold text-blue-600">{dailyStats.targetCalls}</div>
+                <div className="text-gray-600">calls goal set</div>
+                <Badge className="bg-green-100 text-green-700">Goal Set ✓</Badge>
+              </div>
+            ) : (
+              <>
                 <div>
-                  <Label htmlFor="targetCalls">Target Number of Calls</Label>
-                  <Input
-                    id="targetCalls"
-                    type="number"
-                    min="0"
-                    value={commitmentData.targetCalls}
-                    onChange={(e) => setCommitmentData(prev => ({
-                      ...prev,
-                      targetCalls: e.target.value
-                    }))}
-                    placeholder="e.g., 10"
-                    required
-                  />
+                  <Label>Number of Calls</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      value={targetCalls}
+                      onChange={(e) => setTargetCalls(e.target.value)}
+                      placeholder="10"
+                      className="text-lg font-semibold"
+                    />
+                    <Button
+                      onClick={handleSetGoal}
+                      disabled={loading || !targetCalls}
+                      className="px-8"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Set Goal
+                    </Button>
+                  </div>
                 </div>
+
+                {/* Quick Select Buttons */}
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm text-gray-600 w-full">Quick select:</span>
+                  {[5, 10, 15, 20, 25, 30].map(num => (
+                    <Button
+                      key={num}
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setTargetCalls(num.toString())}
+                    >
+                      {num}
+                    </Button>
+                  ))}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Log Calls Card */}
+        <Card className={!hasSetGoal ? 'opacity-50' : ''}>
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5 text-green-600" />
+              Log Actual Calls
+            </CardTitle>
+            <CardDescription>
+              How many calls did you actually make?
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!hasSetGoal ? (
+              <div className="text-center py-8 text-gray-500">
+                <Target className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                <p>Set a goal first</p>
+              </div>
+            ) : hasLoggedCalls && dailyStats ? (
+              <div className="text-center py-8 space-y-2">
+                <div className="text-4xl font-bold text-green-600">{dailyStats.actualCalls}</div>
+                <div className="text-gray-600">calls completed</div>
+                <Badge className="bg-green-100 text-green-700">Logged ✓</Badge>
+              </div>
+            ) : (
+              <>
                 <div>
-                  <Label htmlFor="description">Description (Optional)</Label>
+                  <Label>Calls Made</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      value={actualCalls}
+                      onChange={(e) => setActualCalls(e.target.value)}
+                      placeholder="8"
+                      className="text-lg font-semibold"
+                    />
+                    <Button
+                      onClick={handleLogCalls}
+                      disabled={loading || !actualCalls || !hasSetGoal}
+                      className="px-8 bg-green-600 hover:bg-green-700"
+                    >
+                      <Save className="h-4 w-4 mr-1" />
+                      Log Calls
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Notes (optional)</Label>
                   <Textarea
-                    id="description"
-                    value={commitmentData.description}
-                    onChange={(e) => setCommitmentData(prev => ({
-                      ...prev,
-                      description: e.target.value
-                    }))}
-                    placeholder="e.g., Follow up with prospects, cold calls to new leads..."
-                    rows={3}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="2 appointments set, 3 voicemails..."
+                    rows={2}
+                    className="mt-2"
                   />
                 </div>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? 'Saving...' : 'Set Call Goal'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* Log Actual Calls */}
-        <TabsContent value="actual" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5" />
-                Log Actual Calls for {formatDate(selectedDate)}
-              </CardTitle>
-              <CardDescription>Record the number of calls you actually made</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleActualSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="actualCalls">Number of Calls Made</Label>
-                  <Input
-                    id="actualCalls"
-                    type="number"
-                    min="0"
-                    value={actualData.actualCalls}
-                    onChange={(e) => setActualData(prev => ({
-                      ...prev,
-                      actualCalls: e.target.value
-                    }))}
-                    placeholder="e.g., 8"
-                    required
+      {/* Daily Progress */}
+      {dailyStats && (dailyStats.targetCalls > 0 || dailyStats.actualCalls > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Daily Progress</span>
+              <Badge
+                className={`${getProgressBg(dailyStats.completionRate)} ${getProgressColor(dailyStats.completionRate)} border-0`}
+              >
+                {dailyStats.completionRate}% Complete
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Progress Bar */}
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Progress</span>
+                  <span className="font-semibold">
+                    {dailyStats.actualCalls} / {dailyStats.targetCalls} calls
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      dailyStats.completionRate >= 100 ? 'bg-green-500' :
+                      dailyStats.completionRate >= 80 ? 'bg-blue-500' :
+                      dailyStats.completionRate >= 50 ? 'bg-yellow-500' :
+                      'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min(dailyStats.completionRate, 100)}%` }}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="notes">Notes (Optional)</Label>
-                  <Textarea
-                    id="notes"
-                    value={actualData.notes}
-                    onChange={(e) => setActualData(prev => ({
-                      ...prev,
-                      notes: e.target.value
-                    }))}
-                    placeholder="e.g., 3 appointments set, 2 voicemails, 3 no answers..."
-                    rows={3}
-                  />
-                </div>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? 'Saving...' : 'Log Calls'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </div>
 
-        {/* Analytics */}
-        <TabsContent value="analytics" className="space-y-4">
-          {/* Weekly Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Weekly Performance (Weekdays Only)
-              </CardTitle>
-              <CardDescription>Current business week call tracking summary (Monday - Friday)</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {weeklyStats && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                      <div className="text-xl font-bold text-blue-600">{weeklyStats.totalTarget}</div>
-                      <div className="text-sm text-gray-600">Total Target</div>
-                    </div>
-                    <div className="text-center p-3 bg-green-50 rounded-lg">
-                      <div className="text-xl font-bold text-green-600">{weeklyStats.totalActual}</div>
-                      <div className="text-sm text-gray-600">Total Actual</div>
-                    </div>
-                    <div className="text-center p-3 bg-purple-50 rounded-lg">
-                      <div className="text-xl font-bold text-purple-600">{weeklyStats.weeklyCompletionRate}%</div>
-                      <div className="text-sm text-gray-600">Completion Rate</div>
-                    </div>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">{dailyStats.targetCalls}</div>
+                  <div className="text-xs text-gray-600">Goal</div>
+                </div>
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{dailyStats.actualCalls}</div>
+                  <div className="text-xs text-gray-600">Actual</div>
+                </div>
+                <div className={`p-3 rounded-lg ${getProgressBg(dailyStats.completionRate)}`}>
+                  <div className={`text-2xl font-bold ${getProgressColor(dailyStats.completionRate)}`}>
+                    {dailyStats.completionRate}%
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Daily Breakdown:</Label>
-                    {weeklyStats.days.map((day, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <span className="text-sm font-medium">{formatDate(day.date)}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">{day.actualCalls}/{day.targetCalls}</span>
-                          <Badge 
-                            variant="secondary" 
-                            className={`text-white ${getCompletionColor(day.completionRate)}`}
-                          >
-                            {day.completionRate}%
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <div className="text-xs text-gray-600">Rate</div>
+                </div>
+              </div>
+
+              {dailyStats.notes && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-700">{dailyStats.notes}</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Monthly Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Performance (Weekdays Only)</CardTitle>
-              <CardDescription>Current month call tracking summary - business days only</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {monthlyStats && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Total Target:</span>
-                        <span className="font-medium">{monthlyStats.totalTarget}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Total Actual:</span>
-                        <span className="font-medium">{monthlyStats.totalActual}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Completion Rate:</span>
-                        <Badge 
-                          variant="secondary" 
-                          className={`text-white ${getCompletionColor(monthlyStats.monthlyCompletionRate)}`}
-                        >
-                          {monthlyStats.monthlyCompletionRate}%
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Weekdays with Goals:</span>
-                        <span className="font-medium">{monthlyStats.daysWithCommitments}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Weekdays with Logs:</span>
-                        <span className="font-medium">{monthlyStats.daysWithActuals}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Total Weekdays:</span>
-                        <span className="font-medium">{monthlyStats.weekdaysInMonth}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-xs text-gray-500 bg-blue-50 p-2 rounded">
-                    📅 Only business days (Monday-Friday) are tracked. Weekends are excluded from all statistics.
-                  </div>
+      {/* Weekly Summary */}
+      {weeklyStats && weeklyStats.days.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              This Week's Performance
+            </CardTitle>
+            <CardDescription>
+              Monday to Friday summary
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Weekly Stats */}
+              <div className="grid grid-cols-3 gap-4 text-center mb-4">
+                <div>
+                  <div className="text-2xl font-bold text-blue-600">{weeklyStats.totalTarget}</div>
+                  <div className="text-xs text-gray-600">Weekly Goal</div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                <div>
+                  <div className="text-2xl font-bold text-green-600">{weeklyStats.totalActual}</div>
+                  <div className="text-xs text-gray-600">Calls Made</div>
+                </div>
+                <div>
+                  <div className={`text-2xl font-bold ${getProgressColor(weeklyStats.weeklyCompletionRate)}`}>
+                    {weeklyStats.weeklyCompletionRate}%
+                  </div>
+                  <div className="text-xs text-gray-600">Success Rate</div>
+                </div>
+              </div>
+
+              {/* Daily Breakdown */}
+              <div className="space-y-2">
+                {weeklyStats.days.map((day, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-center justify-between p-3 rounded-lg ${
+                      day.date === selectedDate ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
+                    }`}
+                  >
+                    <span className="font-medium">{formatDate(day.date)}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-600">
+                        {day.actualCalls} / {day.targetCalls}
+                      </span>
+                      <Badge
+                        className={`${getProgressBg(day.completionRate)} ${getProgressColor(day.completionRate)} border-0`}
+                      >
+                        {day.completionRate}%
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
