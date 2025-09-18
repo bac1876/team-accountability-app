@@ -32,8 +32,13 @@ export default async function handler(req, res) {
         // Always create new commitment (allowing multiple per day)
         const { userId, date, commitmentText, status = 'pending' } = req.body
 
+        console.log('Received commitment data:', { userId, date, commitmentText, status })
+
         if (!userId || !date || !commitmentText) {
-          return res.status(400).json({ error: 'User ID, date, and commitment text are required' })
+          return res.status(400).json({
+            error: 'User ID, date, and commitment text are required',
+            received: { userId, date, commitmentText: commitmentText ? 'provided' : 'missing' }
+          })
         }
 
         // Always create new commitment

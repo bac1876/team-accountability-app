@@ -27,9 +27,14 @@ export default async function handler(req, res) {
       case 'POST':
         // Create new goal
         const { userId, goalText, targetDate } = req.body
-        
+
+        console.log('Received goal data:', { userId, goalText, targetDate })
+
         if (!userId || !goalText) {
-          return res.status(400).json({ error: 'User ID and goal text are required' })
+          return res.status(400).json({
+            error: 'User ID and goal text are required',
+            received: { userId, goalText: goalText ? 'provided' : 'missing' }
+          })
         }
 
         const goal = await goalQueries.create({
