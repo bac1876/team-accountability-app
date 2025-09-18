@@ -12,7 +12,50 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import { Alert, AlertDescription } from '@/components/ui/alert.jsx'
 import { UserPlus, Edit, Trash2, Eye, EyeOff, Loader2 } from 'lucide-react'
 import UserImport from './UserImport.jsx'
-import { apiClient } from '../lib/api-client.js'
+import { usersAPI } from '../lib/api-client.js'
+
+// Helper for admin API calls
+const adminAPI = {
+  async listUsers() {
+    const response = await fetch('/api/admin/list-users')
+    if (!response.ok) throw new Error('Failed to list users')
+    return response.json()
+  },
+  async addUser(userData) {
+    const response = await fetch('/api/admin/add-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    })
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to add user')
+    }
+    return response.json()
+  },
+  async updateUser(userId, userData) {
+    const response = await fetch('/api/admin/update-user', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, ...userData })
+    })
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to update user')
+    }
+    return response.json()
+  },
+  async deleteUser(userId) {
+    const response = await fetch(`/api/admin/delete-user?userId=${userId}`, {
+      method: 'DELETE'
+    })
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to delete user')
+    }
+    return response.json()
+  }
+}
 
 const UserManagementAPI = () => {
   const [users, setUsers] = useState([])
@@ -39,7 +82,7 @@ const UserManagementAPI = () => {
   const loadUsers = async () => {
     setLoading(true)
     try {
-      const response = await apiClient('/admin/list-users')
+      const response = await adminAPI.listUsers()
       if (response.success) {
         setUsers(response.users)
       }
@@ -77,10 +120,7 @@ const UserManagementAPI = () => {
     }
 
     try {
-      const response = await apiClient('/admin/add-user', {
-        method: 'POST',
-        body: formData
-      })
+      const response = await adminAPI.addUser(formData)
 
       if (response.success) {
         setSuccess('User added successfully!')
@@ -111,14 +151,10 @@ const UserManagementAPI = () => {
     }
 
     try {
-      const response = await apiClient('/admin/update-user', {
-        method: 'PUT',
-        body: {
-          userId: editingUser.id,
-          ...formData,
-          // Only send password if it was changed
-          password: formData.password || undefined
-        }
+      const response = await adminAPI.updateUser(editingUser.id, {
+        ...formData,
+        // Only send password if it was changed
+        password: formData.password || undefined
       })
 
       if (response.success) {
@@ -142,9 +178,7 @@ const UserManagementAPI = () => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       setLoading(true)
       try {
-        const response = await apiClient(`/admin/delete-user?userId=${userId}`, {
-          method: 'DELETE'
-        })
+        const response = await adminAPI.deleteUser(userId)
 
         if (response.success) {
           setSuccess('User deleted successfully!')
