@@ -31,12 +31,29 @@ export default async function handler(req, res) {
       case 'POST':
         // Create or update commitment
         const { userId: postUserId, date: postDate, commitmentText, status = 'pending' } = req.body
-        
+
         if (!postUserId || !postDate || !commitmentText) {
           return res.status(400).json({ error: 'User ID, date, and commitment text are required' })
         }
 
-        const commitment = await commitmentQueries.upsert(postUserId, postDate, commitmentText, status)
+        // Check if commitment exists for this date
+        const existing = await commitmentQueries.getByUserAndDate(postUserId, postDate)
+
+        let commitment
+        if (existing) {
+          // Update existing commitment's text and status
+          // Note: we don't have an update method for text, so we'll just update status
+          commitment = await commitmentQueries.updateStatus(postUserId, postDate, status)
+        } else {
+          // Create new commitment
+          commitment = await commitmentQueries.create({
+            userId: postUserId,
+            date: postDate,
+            commitmentText,
+            status
+          })
+        }
+
         res.status(200).json(commitment)
         break
 

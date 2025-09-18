@@ -12,11 +12,14 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'User ID is required' })
         }
 
+        // Get all goals for the user (we don't have getActiveByUser)
+        const goals = await goalQueries.getByUser(userId)
+
+        // Filter active goals if requested
         if (active === 'true') {
-          const goals = await goalQueries.getActiveByUser(userId)
-          res.status(200).json(goals)
+          const activeGoals = goals.filter(g => g.status === 'active')
+          res.status(200).json(activeGoals)
         } else {
-          const goals = await goalQueries.getByUser(userId)
           res.status(200).json(goals)
         }
         break
@@ -29,7 +32,11 @@ export default async function handler(req, res) {
           return res.status(400).json({ error: 'User ID and goal text are required' })
         }
 
-        const goal = await goalQueries.create(userId, goalText, targetDate)
+        const goal = await goalQueries.create({
+          userId,
+          goalText,
+          targetDate: targetDate || null
+        })
         res.status(201).json(goal)
         break
 
