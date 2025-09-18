@@ -9,15 +9,16 @@ import { Slider } from '@/components/ui/slider.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Label } from '@/components/ui/label.jsx'
-import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone, Edit2, Save, Trash2 } from 'lucide-react'
+import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone, Edit2, Save, Trash2, Flame, TrendingUp } from 'lucide-react'
 import { commitmentsAPI, goalsAPI, reflectionsAPI } from '../lib/api-client.js'
+import { streakStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
 import CommitmentsSection from './CommitmentsSection.jsx'
 import WeeklyGoalsSection from './WeeklyGoalsSection.jsx'
 import ReflectionsSection from './ReflectionsSection.jsx'
 
 const DashboardAPI = ({ user }) => {
-  const { activeTab, navigateToTab } = useNavigation()
+  const { activeTab, navigateToTab, navigateToCommitmentDate } = useNavigation()
 
   // State
   const [todayCommitment, setTodayCommitment] = useState('')
@@ -36,6 +37,9 @@ const DashboardAPI = ({ user }) => {
   const [editingGoal, setEditingGoal] = useState(null)
   const [editingGoalProgress, setEditingGoalProgress] = useState({})
   const [tempGoalProgress, setTempGoalProgress] = useState({})
+  const [commitmentStreak, setCommitmentStreak] = useState(0)
+  const [phoneCallStreak, setPhoneCallStreak] = useState(0)
+  const [allCommitments, setAllCommitments] = useState([])
 
   const today = new Date()
   const todayString = today.toISOString().split('T')[0]
@@ -56,6 +60,7 @@ const DashboardAPI = ({ user }) => {
       // Load commitments
       const commitments = await commitmentsAPI.getByUser(user.id)
       if (commitments && Array.isArray(commitments)) {
+        setAllCommitments(commitments)  // Store all commitments for streak calculation
         // Find today's commitment
         const todayCommit = commitments.find(c => c.commitment_date === todayString)
         if (todayCommit) {
@@ -79,6 +84,10 @@ const DashboardAPI = ({ user }) => {
           .sort((a, b) => new Date(b.date) - new Date(a.date))
 
         setRecentCommitments(recent)
+
+        // Calculate commitment streak
+        const streak = streakStore.calculateCommitmentStreak(user.id, commitments)
+        setCommitmentStreak(streak)
       }
 
       // Load goals
@@ -98,6 +107,10 @@ const DashboardAPI = ({ user }) => {
 
         setWeeklyGoals(weekGoals)
       }
+
+      // Calculate phone call streak
+      const callStreak = streakStore.calculatePhoneCallStreak(user.id)
+      setPhoneCallStreak(callStreak)
 
       // Load today's reflection
       const reflections = await reflectionsAPI.getByUser(user.id)
@@ -328,7 +341,11 @@ const DashboardAPI = ({ user }) => {
           const isToday = dateString === todayString
 
           return (
-            <Card key={day} className={`bg-slate-800/50 border-slate-700/50 ${isToday ? 'ring-2 ring-blue-500/50' : ''}`}>
+            <Card
+              key={day}
+              className={`bg-slate-800/50 border-slate-700/50 cursor-pointer hover:bg-slate-700/50 transition-all ${isToday ? 'ring-2 ring-blue-500/50' : ''}`}
+              onClick={() => navigateToCommitmentDate(dateString)}
+            >
               <CardContent className="p-3 md:p-4">
                 <div className="flex flex-col items-center space-y-2">
                   {commitment?.status === 'completed' ? (
@@ -356,15 +373,102 @@ const DashboardAPI = ({ user }) => {
       <Tabs value={activeTab} onValueChange={navigateToTab} className="space-y-4">
         {/* Dashboard Tab */}
         <TabsContent value="dashboard" className="space-y-4">
+          {/* Streak Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Commitment Streak */}
+            <Card className="bg-gradient-to-br from-orange-500/20 to-red-600/20 border-orange-500/30">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Flame className={`h-6 w-6 ${commitmentStreak > 0 ? 'text-orange-500' : 'text-gray-500'}`} />
+                    Commitment Streak
+                  </CardTitle>
+                  <Badge className={`text-lg px-3 py-1 ${commitmentStreak > 0 ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' : 'bg-gray-700 text-gray-400'}`}>
+                    {commitmentStreak} {commitmentStreak === 1 ? 'Day' : 'Days'}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-300">
+                  {commitmentStreak > 0
+                    ? commitmentStreak >= 5
+                      ? `Amazing! You've completed commitments for ${commitmentStreak} weekdays straight!`
+                      : `Great job! Keep your streak going!`
+                    : 'Start your streak by completing today\'s commitment!'}
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all"
+                      style={{ width: `${Math.min(100, commitmentStreak * 10)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-slate-400">Goal: 10 days</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Phone Call Streak */}
+            <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 border-blue-500/30">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Phone className={`h-6 w-6 ${phoneCallStreak > 0 ? 'text-blue-500' : 'text-gray-500'}`} />
+                    Phone Call Streak
+                  </CardTitle>
+                  <Badge className={`text-lg px-3 py-1 ${phoneCallStreak > 0 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-gray-700 text-gray-400'}`}>
+                    {phoneCallStreak} {phoneCallStreak === 1 ? 'Day' : 'Days'}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-slate-300">
+                  {phoneCallStreak > 0
+                    ? phoneCallStreak >= 5
+                      ? `Incredible! ${phoneCallStreak} days of 25+ calls!`
+                      : `Nice! You've made 25+ calls for ${phoneCallStreak} weekdays!`
+                    : 'Make 25+ calls today to start your streak!'}
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all"
+                      style={{ width: `${Math.min(100, phoneCallStreak * 10)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-slate-400">Goal: 10 days</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Stats */}
           <Card className="bg-slate-800/50 border-slate-700/50">
             <CardHeader>
-              <CardTitle className="text-white">Dashboard Overview</CardTitle>
-              <CardDescription className="text-slate-400">
-                Your accountability dashboard
-              </CardDescription>
+              <CardTitle className="text-white flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-400" />
+                This Week's Progress
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-slate-300">Welcome to your accountability dashboard. Use the sidebar to navigate between different sections.</p>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-slate-700/30 rounded-lg">
+                  <p className="text-2xl font-bold text-white">{recentCommitments.filter(c => c.status === 'completed').length}</p>
+                  <p className="text-sm text-slate-400">Commitments Done</p>
+                </div>
+                <div className="text-center p-4 bg-slate-700/30 rounded-lg">
+                  <p className="text-2xl font-bold text-white">{weeklyGoals.filter(g => g.progress >= 100).length}</p>
+                  <p className="text-sm text-slate-400">Goals Completed</p>
+                </div>
+                <div className="text-center p-4 bg-slate-700/30 rounded-lg">
+                  <p className="text-2xl font-bold text-white">
+                    {recentCommitments.length > 0
+                      ? Math.round((recentCommitments.filter(c => c.status === 'completed').length / recentCommitments.length) * 100)
+                      : 0}%
+                  </p>
+                  <p className="text-sm text-slate-400">Success Rate</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

@@ -706,3 +706,106 @@ export const initializeDefaultData = () => {
     userStore.save(defaultUsers)
   }
 }
+
+// Streak Calculation Utilities
+export const streakStore = {
+  // Helper function to check if a date is a weekday
+  isWeekday: (dateStr) => {
+    const date = new Date(dateStr)
+    const day = date.getDay()
+    return day >= 1 && day <= 5 // Monday = 1, Friday = 5
+  },
+
+  // Calculate commitment streak (excluding weekends)
+  calculateCommitmentStreak: (userId, allCommitments) => {
+    if (!allCommitments || allCommitments.length === 0) return 0
+
+    // Sort commitments by date descending
+    const sortedCommitments = [...allCommitments]
+      .filter(c => c.user_id === userId)
+      .sort((a, b) => new Date(b.commitment_date) - new Date(a.commitment_date))
+
+    let streak = 0
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Start from today and work backwards
+    let currentDate = new Date(today)
+
+    // If today is weekend, move to last Friday
+    if (!streakStore.isWeekday(currentDate.toISOString().split('T')[0])) {
+      while (!streakStore.isWeekday(currentDate.toISOString().split('T')[0])) {
+        currentDate.setDate(currentDate.getDate() - 1)
+      }
+    }
+
+    while (currentDate >= new Date('2024-01-01')) { // Don't go too far back
+      const dateStr = currentDate.toISOString().split('T')[0]
+
+      if (streakStore.isWeekday(dateStr)) {
+        // Check if there's a completed commitment for this date
+        const dayCommitments = sortedCommitments.filter(c =>
+          c.commitment_date === dateStr && c.status === 'completed'
+        )
+
+        if (dayCommitments.length > 0) {
+          streak++
+        } else {
+          // Streak broken - stop counting
+          break
+        }
+      }
+
+      // Move to previous day
+      currentDate.setDate(currentDate.getDate() - 1)
+    }
+
+    return streak
+  },
+
+  // Calculate phone call streak (25+ calls on weekdays)
+  calculatePhoneCallStreak: (userId) => {
+    const allCalls = phoneCallStore.getAll()
+    const userCalls = allCalls.filter(c => c.userId === userId)
+
+    if (userCalls.length === 0) return 0
+
+    let streak = 0
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Start from today and work backwards
+    let currentDate = new Date(today)
+
+    // If today is weekend, move to last Friday
+    if (!streakStore.isWeekday(currentDate.toISOString().split('T')[0])) {
+      while (!streakStore.isWeekday(currentDate.toISOString().split('T')[0])) {
+        currentDate.setDate(currentDate.getDate() - 1)
+      }
+    }
+
+    while (currentDate >= new Date('2024-01-01')) { // Don't go too far back
+      const dateStr = currentDate.toISOString().split('T')[0]
+
+      if (streakStore.isWeekday(dateStr)) {
+        // Get actual calls for this date
+        const dayLog = userCalls.find(c =>
+          c.date === dateStr && c.type === 'actual'
+        )
+
+        // Check if they made 25+ calls
+        if (dayLog && dayLog.actualCalls >= 25) {
+          streak++
+        } else {
+          // Streak broken - stop counting
+          break
+        }
+      }
+
+      // Move to previous day
+      currentDate.setDate(currentDate.getDate() - 1)
+    }
+
+    return streak
+  }
+}

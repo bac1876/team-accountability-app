@@ -7,18 +7,26 @@ import { Label } from '@/components/ui/label.jsx'
 import { CheckCircle, Circle, Calendar, Plus, Edit2, Trash2, Save, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { format } from 'date-fns'
 import { commitmentsAPI } from '../lib/api-client.js'
+import { useNavigation } from '../context/NavigationContext.jsx'
 
 const CommitmentsSection = ({ user }) => {
+  const { selectedDate: contextDate, setSelectedDate: setContextDate } = useNavigation()
   const [todayCommitment, setTodayCommitment] = useState('')
   const [commitments, setCommitments] = useState([])
   const [editingCommitment, setEditingCommitment] = useState(null)
   const [editText, setEditText] = useState('')
   const [loading, setLoading] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(contextDate || new Date().toISOString().split('T')[0])
   const [hasCommitment, setHasCommitment] = useState(false)
 
   const today = new Date().toISOString().split('T')[0]
   const isToday = selectedDate === today
+
+  useEffect(() => {
+    if (contextDate && contextDate !== selectedDate) {
+      setSelectedDate(contextDate)
+    }
+  }, [contextDate])
 
   useEffect(() => {
     loadCommitments()
@@ -101,7 +109,9 @@ const CommitmentsSection = ({ user }) => {
   const changeDate = (days) => {
     const date = new Date(selectedDate)
     date.setDate(date.getDate() + days)
-    setSelectedDate(date.toISOString().split('T')[0])
+    const newDate = date.toISOString().split('T')[0]
+    setSelectedDate(newDate)
+    setContextDate(newDate)  // Update context as well
   }
 
   const formatDateDisplay = (dateStr) => {
