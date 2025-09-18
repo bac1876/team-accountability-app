@@ -185,7 +185,7 @@ export const goalsAPI = {
 // Reflections APIs
 export const reflectionsAPI = {
   async getByUser(userId) {
-    return apiCall(`/reflections/${userId}`)
+    return apiCall(`/reflections?userId=${userId}`)
   },
 
   async getByUserAndDate(userId, date) {
