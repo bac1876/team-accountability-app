@@ -383,27 +383,76 @@ const DashboardAPI = ({ user }) => {
                     <Flame className={`h-6 w-6 ${commitmentStreak > 0 ? 'text-orange-500' : 'text-gray-500'}`} />
                     Commitment Streak
                   </CardTitle>
-                  <Badge className={`text-lg px-3 py-1 ${commitmentStreak > 0 ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' : 'bg-gray-700 text-gray-400'}`}>
-                    {commitmentStreak} {commitmentStreak === 1 ? 'Day' : 'Days'}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {commitmentStreak >= 60 && (
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
+                        PLATINUM
+                      </Badge>
+                    )}
+                    {commitmentStreak >= 30 && commitmentStreak < 60 && (
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0">
+                        GOLD
+                      </Badge>
+                    )}
+                    {commitmentStreak >= 10 && commitmentStreak < 30 && (
+                      <Badge className="bg-gradient-to-r from-gray-400 to-gray-300 text-gray-800 border-0">
+                        SILVER
+                      </Badge>
+                    )}
+                    {commitmentStreak >= 5 && commitmentStreak < 10 && (
+                      <Badge className="bg-gradient-to-r from-amber-700 to-amber-600 text-white border-0">
+                        BRONZE
+                      </Badge>
+                    )}
+                    <Badge className={`text-lg px-3 py-1 ${commitmentStreak > 0 ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' : 'bg-gray-700 text-gray-400'}`}>
+                      {commitmentStreak} {commitmentStreak === 1 ? 'Day' : 'Days'}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-slate-300">
-                  {commitmentStreak > 0
-                    ? commitmentStreak >= 5
-                      ? `Amazing! You've completed commitments for ${commitmentStreak} weekdays straight!`
-                      : `Great job! Keep your streak going!`
+                  {commitmentStreak >= 60
+                    ? `Legendary! ${commitmentStreak} days of dedication!`
+                    : commitmentStreak >= 30
+                    ? `Outstanding! ${commitmentStreak} days of excellence!`
+                    : commitmentStreak >= 10
+                    ? `Impressive! ${commitmentStreak} days of consistency!`
+                    : commitmentStreak >= 5
+                    ? `Great start! ${commitmentStreak} days and building momentum!`
+                    : commitmentStreak > 0
+                    ? `Keep going! ${5 - commitmentStreak} more days to Bronze!`
                     : 'Start your streak by completing today\'s commitment!'}
                 </p>
-                <div className="mt-3 flex items-center gap-2">
+                <div className="mt-3">
+                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>Progress to next tier</span>
+                    <span>
+                      {commitmentStreak >= 60
+                        ? 'Max tier achieved!'
+                        : commitmentStreak >= 30
+                        ? `${60 - commitmentStreak} days to Platinum`
+                        : commitmentStreak >= 10
+                        ? `${30 - commitmentStreak} days to Gold`
+                        : commitmentStreak >= 5
+                        ? `${10 - commitmentStreak} days to Silver`
+                        : `${5 - commitmentStreak} days to Bronze`}
+                    </span>
+                  </div>
                   <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all"
-                      style={{ width: `${Math.min(100, commitmentStreak * 10)}%` }}
+                      style={{
+                        width: `${
+                          commitmentStreak >= 60 ? 100 :
+                          commitmentStreak >= 30 ? ((commitmentStreak - 30) / 30) * 100 :
+                          commitmentStreak >= 10 ? ((commitmentStreak - 10) / 20) * 100 :
+                          commitmentStreak >= 5 ? ((commitmentStreak - 5) / 5) * 100 :
+                          (commitmentStreak / 5) * 100
+                        }%`
+                      }}
                     />
                   </div>
-                  <span className="text-xs text-slate-400">Goal: 10 days</span>
                 </div>
               </CardContent>
             </Card>
@@ -416,27 +465,76 @@ const DashboardAPI = ({ user }) => {
                     <Phone className={`h-6 w-6 ${phoneCallStreak > 0 ? 'text-blue-500' : 'text-gray-500'}`} />
                     Phone Call Streak
                   </CardTitle>
-                  <Badge className={`text-lg px-3 py-1 ${phoneCallStreak > 0 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-gray-700 text-gray-400'}`}>
-                    {phoneCallStreak} {phoneCallStreak === 1 ? 'Day' : 'Days'}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    {phoneCallStreak >= 60 && (
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
+                        PLATINUM
+                      </Badge>
+                    )}
+                    {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0">
+                        GOLD
+                      </Badge>
+                    )}
+                    {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
+                      <Badge className="bg-gradient-to-r from-gray-400 to-gray-300 text-gray-800 border-0">
+                        SILVER
+                      </Badge>
+                    )}
+                    {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
+                      <Badge className="bg-gradient-to-r from-amber-700 to-amber-600 text-white border-0">
+                        BRONZE
+                      </Badge>
+                    )}
+                    <Badge className={`text-lg px-3 py-1 ${phoneCallStreak > 0 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-gray-700 text-gray-400'}`}>
+                      {phoneCallStreak} {phoneCallStreak === 1 ? 'Day' : 'Days'}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-slate-300">
-                  {phoneCallStreak > 0
-                    ? phoneCallStreak >= 5
-                      ? `Incredible! ${phoneCallStreak} days of 25+ calls!`
-                      : `Nice! You've made 25+ calls for ${phoneCallStreak} weekdays!`
-                    : 'Make 25+ calls today to start your streak!'}
+                  {phoneCallStreak >= 60
+                    ? `Legendary outreach! ${phoneCallStreak} days of consistent calls!`
+                    : phoneCallStreak >= 30
+                    ? `Outstanding performance! ${phoneCallStreak} days strong!`
+                    : phoneCallStreak >= 10
+                    ? `Impressive consistency! ${phoneCallStreak} days of calls!`
+                    : phoneCallStreak >= 5
+                    ? `Great momentum! ${phoneCallStreak} days and growing!`
+                    : phoneCallStreak > 0
+                    ? `Keep going! ${5 - phoneCallStreak} more days to Bronze!`
+                    : 'Start your streak with consistent daily calls!'}
                 </p>
-                <div className="mt-3 flex items-center gap-2">
+                <div className="mt-3">
+                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>Progress to next tier</span>
+                    <span>
+                      {phoneCallStreak >= 60
+                        ? 'Max tier achieved!'
+                        : phoneCallStreak >= 30
+                        ? `${60 - phoneCallStreak} days to Platinum`
+                        : phoneCallStreak >= 10
+                        ? `${30 - phoneCallStreak} days to Gold`
+                        : phoneCallStreak >= 5
+                        ? `${10 - phoneCallStreak} days to Silver`
+                        : `${5 - phoneCallStreak} days to Bronze`}
+                    </span>
+                  </div>
                   <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all"
-                      style={{ width: `${Math.min(100, phoneCallStreak * 10)}%` }}
+                      style={{
+                        width: `${
+                          phoneCallStreak >= 60 ? 100 :
+                          phoneCallStreak >= 30 ? ((phoneCallStreak - 30) / 30) * 100 :
+                          phoneCallStreak >= 10 ? ((phoneCallStreak - 10) / 20) * 100 :
+                          phoneCallStreak >= 5 ? ((phoneCallStreak - 5) / 5) * 100 :
+                          (phoneCallStreak / 5) * 100
+                        }%`
+                      }}
                     />
                   </div>
-                  <span className="text-xs text-slate-400">Goal: 10 days</span>
                 </div>
               </CardContent>
             </Card>

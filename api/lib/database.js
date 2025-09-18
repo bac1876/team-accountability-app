@@ -229,11 +229,19 @@ export const reflectionQueries = {
     return result.rows[0]
   },
 
-  // Create new reflection
+  // Create or update reflection (UPSERT)
   async create(reflectionData) {
     const { userId, date, wins, challenges, tomorrowFocus } = reflectionData
     const result = await query(
-      'INSERT INTO reflections (user_id, reflection_date, wins, challenges, tomorrow_focus) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      `INSERT INTO reflections (user_id, reflection_date, wins, challenges, tomorrow_focus)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (user_id, reflection_date)
+       DO UPDATE SET
+         wins = EXCLUDED.wins,
+         challenges = EXCLUDED.challenges,
+         tomorrow_focus = EXCLUDED.tomorrow_focus,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
       [userId, date, wins, challenges, tomorrowFocus]
     )
     return result.rows[0]

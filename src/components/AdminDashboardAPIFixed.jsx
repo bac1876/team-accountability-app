@@ -8,10 +8,11 @@ import { Progress } from '@/components/ui/progress.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table.jsx'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
-import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Eye } from 'lucide-react'
+import { Users, Target, TrendingUp, Calendar, CheckCircle, Clock, XCircle, ChevronDown, ChevronRight, Eye, Award } from 'lucide-react'
 import UserManagementAPI from './UserManagementAPI.jsx'
 import MessagingCenter from './MessagingCenter.jsx'
 import AnalyticsDashboard from './AnalyticsDashboard.jsx'
+import CoachingDashboard from './CoachingDashboard.jsx'
 import { usersAPI, commitmentsAPI, goalsAPI, reflectionsAPI, analyticsAPI } from '../lib/api-client.js'
 
 const AdminDashboardAPIFixed = ({ user }) => {
@@ -334,12 +335,15 @@ const AdminDashboardAPIFixed = ({ user }) => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={navigateToTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 bg-slate-800/30 border border-slate-700/50">
+        <TabsList className="grid w-full grid-cols-6 bg-slate-800/30 border border-slate-700/50">
           <TabsTrigger value="team-overview" className="data-[state=active]:bg-slate-700/50 text-white">
             Team Overview
           </TabsTrigger>
           <TabsTrigger value="detailed-view" className="data-[state=active]:bg-slate-700/50 text-white">
             Detailed View
+          </TabsTrigger>
+          <TabsTrigger value="coaching" className="data-[state=active]:bg-slate-700/50 text-white">
+            Coaching
           </TabsTrigger>
           <TabsTrigger value="analytics" className="data-[state=active]:bg-slate-700/50 text-white">
             Analytics
@@ -555,6 +559,11 @@ const AdminDashboardAPIFixed = ({ user }) => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Coaching Tab */}
+        <TabsContent value="coaching" className="space-y-6">
+          <CoachingDashboard user={user} />
         </TabsContent>
 
         {/* Analytics Tab */}
