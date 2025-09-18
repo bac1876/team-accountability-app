@@ -1,5 +1,5 @@
 // API endpoint for user authentication
-import { userQueries } from '../../src/lib/database.js'
+import { userQueries } from '../lib/database.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

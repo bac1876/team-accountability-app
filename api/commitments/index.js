@@ -1,5 +1,5 @@
 // API endpoint for daily commitments management
-import { commitmentQueries } from '../../src/lib/database.js'
+import { commitmentQueries } from '../lib/database.js'
 
 export default async function handler(req, res) {
   try {

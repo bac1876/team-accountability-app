@@ -1,5 +1,5 @@
 // API endpoint for weekly goals management
-import { goalQueries } from '../../src/lib/database.js'
+import { goalQueries } from '../lib/database.js'
 
 export default async function handler(req, res) {
   try {

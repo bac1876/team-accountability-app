@@ -1,5 +1,5 @@
 // API endpoint for bulk user import
-import { userQueries } from '../../src/lib/database.js'
+import { userQueries } from '../lib/database.js'
 
 // SearchNWA team data for import
 const searchNWATeam = [
