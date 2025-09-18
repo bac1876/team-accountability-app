@@ -64,7 +64,7 @@ export const commitmentQueries = {
   // Get commitments by user
   async getByUser(userId) {
     const result = await query(
-      'SELECT * FROM commitments WHERE user_id = $1 ORDER BY commitment_date DESC',
+      'SELECT * FROM daily_commitments WHERE user_id = $1 ORDER BY commitment_date DESC',
       [userId]
     )
     return result.rows
@@ -73,7 +73,7 @@ export const commitmentQueries = {
   // Get commitments by user and date
   async getByUserAndDate(userId, date) {
     const result = await query(
-      'SELECT * FROM commitments WHERE user_id = $1 AND commitment_date = $2',
+      'SELECT * FROM daily_commitments WHERE user_id = $1 AND commitment_date = $2',
       [userId, date]
     )
     return result.rows[0]
@@ -83,7 +83,7 @@ export const commitmentQueries = {
   async create(commitmentData) {
     const { userId, date, commitmentText, status = 'pending' } = commitmentData
     const result = await query(
-      'INSERT INTO commitments (user_id, commitment_date, commitment_text, status) VALUES ($1, $2, $3, $4) RETURNING *',
+      'INSERT INTO daily_commitments (user_id, commitment_date, commitment_text, status) VALUES ($1, $2, $3, $4) RETURNING *',
       [userId, date, commitmentText, status]
     )
     return result.rows[0]
@@ -92,7 +92,7 @@ export const commitmentQueries = {
   // Update commitment status
   async updateStatus(userId, date, status) {
     const result = await query(
-      'UPDATE commitments SET status = $3, updated_at = CURRENT_TIMESTAMP WHERE user_id = $1 AND commitment_date = $2 RETURNING *',
+      'UPDATE daily_commitments SET status = $3, updated_at = CURRENT_TIMESTAMP WHERE user_id = $1 AND commitment_date = $2 RETURNING *',
       [userId, date, status]
     )
     return result.rows[0]
@@ -102,7 +102,7 @@ export const commitmentQueries = {
   async getTodayForAll() {
     const today = new Date().toISOString().split('T')[0]
     const result = await query(
-      'SELECT c.*, u.name, u.email FROM commitments c JOIN users u ON c.user_id = u.id WHERE c.commitment_date = $1',
+      'SELECT c.*, u.name, u.email FROM daily_commitments c JOIN users u ON c.user_id = u.id WHERE c.commitment_date = $1',
       [today]
     )
     return result.rows
@@ -114,7 +114,7 @@ export const goalQueries = {
   // Get goals by user
   async getByUser(userId) {
     const result = await query(
-      'SELECT * FROM goals WHERE user_id = $1 ORDER BY created_at DESC',
+      'SELECT * FROM weekly_goals WHERE user_id = $1 ORDER BY created_at DESC',
       [userId]
     )
     return result.rows
@@ -124,7 +124,7 @@ export const goalQueries = {
   async create(goalData) {
     const { userId, goalText, targetDate = null } = goalData
     const result = await query(
-      'INSERT INTO goals (user_id, goal_text, target_date) VALUES ($1, $2, $3) RETURNING *',
+      'INSERT INTO weekly_goals (user_id, goal_text, target_date) VALUES ($1, $2, $3) RETURNING *',
       [userId, goalText, targetDate]
     )
     return result.rows[0]
@@ -132,9 +132,9 @@ export const goalQueries = {
 
   // Update goal progress
   async updateProgress(goalId, progress) {
-    const status = progress >= 100 ? 'completed' : 'in_progress'
+    const status = progress >= 100 ? 'completed' : 'active'
     const result = await query(
-      'UPDATE goals SET progress = $2, status = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
+      'UPDATE weekly_goals SET progress = $2, status = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
       [goalId, progress, status]
     )
     return result.rows[0]
@@ -142,7 +142,7 @@ export const goalQueries = {
 
   // Delete goal
   async delete(goalId) {
-    const result = await query('DELETE FROM goals WHERE id = $1 RETURNING *', [goalId])
+    const result = await query('DELETE FROM weekly_goals WHERE id = $1 RETURNING *', [goalId])
     return result.rows[0]
   }
 }
@@ -189,7 +189,7 @@ export const analyticsQueries = {
 
     // Get today's active users
     const activeToday = await query(
-      'SELECT COUNT(DISTINCT user_id) FROM commitments WHERE commitment_date = $1',
+      'SELECT COUNT(DISTINCT user_id) FROM daily_commitments WHERE commitment_date = $1',
       [today]
     )
 
@@ -198,7 +198,7 @@ export const analyticsQueries = {
       SELECT
         COUNT(*) as total,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed
-      FROM commitments
+      FROM daily_commitments
       WHERE commitment_date >= CURRENT_DATE - INTERVAL '7 days'
     `)
 
@@ -207,7 +207,7 @@ export const analyticsQueries = {
       SELECT
         COUNT(*) as total,
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed
-      FROM goals
+      FROM weekly_goals
       WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
     `)
 
@@ -227,10 +227,10 @@ export const analyticsQueries = {
   async getUserAnalytics(userId) {
     const stats = await query(`
       SELECT
-        (SELECT COUNT(*) FROM commitments WHERE user_id = $1 AND status = 'completed') as completed_commitments,
-        (SELECT COUNT(*) FROM commitments WHERE user_id = $1) as total_commitments,
-        (SELECT COUNT(*) FROM goals WHERE user_id = $1 AND status = 'completed') as completed_goals,
-        (SELECT COUNT(*) FROM goals WHERE user_id = $1) as total_goals,
+        (SELECT COUNT(*) FROM daily_commitments WHERE user_id = $1 AND status = 'completed') as completed_commitments,
+        (SELECT COUNT(*) FROM daily_commitments WHERE user_id = $1) as total_commitments,
+        (SELECT COUNT(*) FROM weekly_goals WHERE user_id = $1 AND status = 'completed') as completed_goals,
+        (SELECT COUNT(*) FROM weekly_goals WHERE user_id = $1) as total_goals,
         (SELECT COUNT(*) FROM reflections WHERE user_id = $1) as total_reflections
     `, [userId])
 
