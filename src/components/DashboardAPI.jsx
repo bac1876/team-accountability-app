@@ -34,8 +34,9 @@ const DashboardAPI = ({ user }) => {
 
   const today = new Date()
   const todayString = today.toISOString().split('T')[0]
-  const weekStart = startOfWeek(today)
-  const weekEnd = endOfWeek(today)
+  // Start week on Monday (1) instead of Sunday (0)
+  const weekStart = startOfWeek(today, { weekStartsOn: 1 })
+  const weekEnd = endOfWeek(today, { weekStartsOn: 1 })
 
   // Load data from API
   useEffect(() => {

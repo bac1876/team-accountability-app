@@ -30,16 +30,16 @@ export default async function handler(req, res) {
 
       case 'POST':
         // Always create new commitment (allowing multiple per day)
-        const { userId: postUserId, date: postDate, commitmentText, status = 'pending' } = req.body
+        const { userId, date, commitmentText, status = 'pending' } = req.body
 
-        if (!postUserId || !postDate || !commitmentText) {
+        if (!userId || !date || !commitmentText) {
           return res.status(400).json({ error: 'User ID, date, and commitment text are required' })
         }
 
         // Always create new commitment
         const commitment = await commitmentQueries.create({
-          userId: postUserId,
-          date: postDate,
+          userId,
+          date,
           commitmentText,
           status
         })
