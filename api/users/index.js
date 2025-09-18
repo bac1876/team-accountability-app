@@ -7,7 +7,15 @@ export default async function handler(req, res) {
       case 'GET':
         // Get all users
         const users = await userQueries.getAll()
-        res.status(200).json(users)
+        console.log(`Returning ${users.length} users from /api/users`)
+
+        // Filter out passwords before sending
+        const safeUsers = users.map(user => {
+          const { password, ...userWithoutPassword } = user
+          return userWithoutPassword
+        })
+
+        res.status(200).json(safeUsers)
         break
 
       case 'POST':
