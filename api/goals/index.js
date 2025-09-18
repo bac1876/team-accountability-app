@@ -37,12 +37,22 @@ export default async function handler(req, res) {
           })
         }
 
-        const goal = await goalQueries.create({
-          userId,
-          goalText,
-          targetDate: targetDate || null
-        })
-        res.status(201).json(goal)
+        try {
+          const goal = await goalQueries.create({
+            userId,
+            goalText,
+            targetDate: targetDate || null
+          })
+          res.status(201).json(goal)
+        } catch (dbError) {
+          console.error('Database error creating goal:', dbError)
+          res.status(500).json({
+            error: 'Database error',
+            details: dbError.message,
+            userId,
+            goalText: goalText ? 'provided' : 'missing'
+          })
+        }
         break
 
       case 'PUT':

@@ -42,14 +42,23 @@ export default async function handler(req, res) {
         }
 
         // Always create new commitment
-        const commitment = await commitmentQueries.create({
-          userId,
-          date,
-          commitmentText,
-          status
-        })
-
-        res.status(200).json(commitment)
+        try {
+          const commitment = await commitmentQueries.create({
+            userId,
+            date,
+            commitmentText,
+            status
+          })
+          res.status(200).json(commitment)
+        } catch (dbError) {
+          console.error('Database error:', dbError)
+          res.status(500).json({
+            error: 'Database error',
+            details: dbError.message,
+            userId,
+            date
+          })
+        }
         break
 
       case 'PUT':

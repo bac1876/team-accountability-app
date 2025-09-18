@@ -1,10 +1,12 @@
 // Database connection and utilities for Vercel Postgres - API version
-import { sql } from '@vercel/postgres'
+import { db } from '@vercel/postgres'
 
 // Database connection wrapper with error handling
 export async function query(text, params = []) {
   try {
-    const result = await sql.query(text, params)
+    const client = await db.connect()
+    const result = await client.query(text, params)
+    client.release()
     return result
   } catch (error) {
     console.error('Database query error:', error)
