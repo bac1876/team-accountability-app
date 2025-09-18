@@ -4,10 +4,12 @@ import { format, startOfWeek, endOfWeek } from 'date-fns'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Textarea } from '@/components/ui/textarea.jsx'
+import { Input } from '@/components/ui/input.jsx'
+import { Slider } from '@/components/ui/slider.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Label } from '@/components/ui/label.jsx'
-import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone } from 'lucide-react'
+import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone, Edit2, Save, Trash2 } from 'lucide-react'
 import { commitmentsAPI, goalsAPI, reflectionsAPI } from '../lib/api-client.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
 
@@ -27,6 +29,8 @@ const DashboardAPI = ({ user }) => {
   const [recentCommitments, setRecentCommitments] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [editingCommitment, setEditingCommitment] = useState(null)
+  const [editingGoal, setEditingGoal] = useState(null)
 
   const today = new Date()
   const todayString = today.toISOString().split('T')[0]
@@ -116,8 +120,10 @@ const DashboardAPI = ({ user }) => {
     try {
       await commitmentsAPI.create(user.id, todayString, todayCommitment, commitmentStatus)
 
-      // Don't clear the commitment text - it should remain displayed
-      // Just reload data to show it's saved
+      // Clear form after successful save (since we allow multiple commitments now)
+      setTodayCommitment('')
+      setCommitmentStatus('pending')
+
       await loadUserData() // Reload to get updated data
 
       // Show success
@@ -171,6 +177,41 @@ const DashboardAPI = ({ user }) => {
       await loadUserData()
     } catch (error) {
       console.error('Error updating goal:', error)
+    }
+  }
+
+  // Toggle commitment status
+  const toggleCommitmentStatus = async (commitmentId, currentStatus) => {
+    const newStatus = currentStatus === 'completed' ? 'pending' : 'completed'
+    try {
+      await commitmentsAPI.updateById(commitmentId, undefined, newStatus)
+      await loadUserData()
+    } catch (error) {
+      console.error('Error updating commitment status:', error)
+    }
+  }
+
+  // Update commitment text
+  const updateCommitmentText = async (commitmentId, newText) => {
+    try {
+      await commitmentsAPI.updateById(commitmentId, newText, undefined)
+      setEditingCommitment(null)
+      await loadUserData()
+    } catch (error) {
+      console.error('Error updating commitment:', error)
+      alert('Failed to update commitment')
+    }
+  }
+
+  // Update goal
+  const updateGoalText = async (goalId, newText, newProgress) => {
+    try {
+      await goalsAPI.updateGoal(goalId, newText, newProgress)
+      setEditingGoal(null)
+      await loadUserData()
+    } catch (error) {
+      console.error('Error updating goal:', error)
+      alert('Failed to update goal')
     }
   }
 
@@ -332,20 +373,72 @@ const DashboardAPI = ({ user }) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {recentCommitments.slice(0, 5).map(commit => (
+                  {recentCommitments.slice(0, 10).map(commit => (
                     <div key={commit.id} className="flex items-start space-x-3 p-3 bg-slate-700/50 rounded-lg">
-                      {commit.status === 'completed' ? (
-                        <CheckCircle className="h-5 w-5 text-green-400 mt-1" />
-                      ) : (
-                        <Circle className="h-5 w-5 text-slate-400 mt-1" />
-                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0"
+                        onClick={() => toggleCommitmentStatus(commit.id, commit.status)}
+                      >
+                        {commit.status === 'completed' ? (
+                          <CheckCircle className="h-5 w-5 text-green-400" />
+                        ) : (
+                          <Circle className="h-5 w-5 text-slate-400" />
+                        )}
+                      </Button>
                       <div className="flex-1">
-                        <p className="text-sm text-white">{commit.text}</p>
-                        <p className="text-xs text-slate-400">{format(new Date(commit.date), 'MMM d')}</p>
+                        {editingCommitment === commit.id ? (
+                          <div className="flex gap-2">
+                            <Textarea
+                              defaultValue={commit.text}
+                              className="bg-slate-600/50 text-white text-sm"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault()
+                                  updateCommitmentText(commit.id, e.target.value)
+                                }
+                              }}
+                              autoFocus
+                            />
+                            <Button
+                              size="sm"
+                              onClick={(e) => {
+                                const textarea = e.target.closest('div').querySelector('textarea')
+                                updateCommitmentText(commit.id, textarea.value)
+                              }}
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingCommitment(null)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm text-white">{commit.text}</p>
+                            <p className="text-xs text-slate-400">{format(new Date(commit.date), 'MMM d, h:mm a')}</p>
+                          </>
+                        )}
                       </div>
-                      <Badge variant={commit.status === 'completed' ? 'default' : 'secondary'}>
-                        {commit.status}
-                      </Badge>
+                      {editingCommitment !== commit.id && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setEditingCommitment(commit.id)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Badge variant={commit.status === 'completed' ? 'default' : 'secondary'}>
+                            {commit.status}
+                          </Badge>
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -384,22 +477,88 @@ const DashboardAPI = ({ user }) => {
               {weeklyGoals.length > 0 && (
                 <div className="space-y-3">
                   {weeklyGoals.map(goal => (
-                    <div key={goal.id} className="flex items-start space-x-3 p-4 bg-slate-700/50 rounded-lg">
-                      <button
-                        onClick={() => toggleGoalCompletion(goal.id, goal.progress)}
-                        className="mt-1"
-                      >
-                        {goal.completed ? (
-                          <CheckCircle className="h-6 w-6 text-green-400" />
-                        ) : (
-                          <Circle className="h-6 w-6 text-slate-400 hover:text-blue-400" />
-                        )}
-                      </button>
-                      <div className="flex-1">
-                        <p className={`text-base ${goal.completed ? 'text-slate-400 line-through' : 'text-white'}`}>
-                          {goal.text}
-                        </p>
-                      </div>
+                    <div key={goal.id} className="p-4 bg-slate-700/50 rounded-lg">
+                      {editingGoal === goal.id ? (
+                        <div className="space-y-3">
+                          <Textarea
+                            defaultValue={goal.text}
+                            className="bg-slate-600/50 text-white"
+                            id={`goal-text-${goal.id}`}
+                          />
+                          <div className="flex items-center gap-3">
+                            <Label className="text-slate-300">Progress:</Label>
+                            <Slider
+                              defaultValue={[goal.progress || 0]}
+                              max={100}
+                              step={10}
+                              className="flex-1"
+                              id={`goal-progress-${goal.id}`}
+                            />
+                            <span className="text-white w-12 text-right">
+                              {goal.progress || 0}%
+                            </span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                const text = document.getElementById(`goal-text-${goal.id}`).value
+                                const progress = document.getElementById(`goal-progress-${goal.id}`).value
+                                updateGoalText(goal.id, text, parseInt(progress))
+                              }}
+                            >
+                              <Save className="h-4 w-4 mr-1" /> Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingGoal(null)}
+                            >
+                              <X className="h-4 w-4 mr-1" /> Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex items-start space-x-3">
+                            <button
+                              onClick={() => toggleGoalCompletion(goal.id, goal.progress)}
+                              className="mt-1"
+                            >
+                              {goal.completed ? (
+                                <CheckCircle className="h-6 w-6 text-green-400" />
+                              ) : (
+                                <Circle className="h-6 w-6 text-slate-400 hover:text-blue-400" />
+                              )}
+                            </button>
+                            <div className="flex-1">
+                              <p className={`text-base ${goal.completed ? 'text-slate-400 line-through' : 'text-white'}`}>
+                                {goal.text}
+                              </p>
+                              {goal.progress !== undefined && goal.progress > 0 && (
+                                <div className="mt-2">
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex-1 bg-slate-600 rounded-full h-2">
+                                      <div
+                                        className="bg-blue-500 h-2 rounded-full"
+                                        style={{ width: `${goal.progress}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-xs text-slate-400">{goal.progress}%</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingGoal(goal.id)}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

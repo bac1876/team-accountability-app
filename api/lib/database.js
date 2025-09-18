@@ -107,6 +107,30 @@ export const commitmentQueries = {
     return result.rows[0]
   },
 
+  // Update commitment by ID
+  async updateById(commitmentId, commitmentText, status) {
+    let updateFields = []
+    let values = []
+    let valueIndex = 1
+
+    if (commitmentText !== undefined) {
+      updateFields.push(`commitment_text = $${valueIndex++}`)
+      values.push(commitmentText)
+    }
+    if (status !== undefined) {
+      updateFields.push(`status = $${valueIndex++}`)
+      values.push(status)
+    }
+    updateFields.push('updated_at = CURRENT_TIMESTAMP')
+    values.push(commitmentId)
+
+    const result = await query(
+      `UPDATE daily_commitments SET ${updateFields.join(', ')} WHERE id = $${valueIndex} RETURNING *`,
+      values
+    )
+    return result.rows[0]
+  },
+
   // Get today's commitments for all users
   async getTodayForAll() {
     const today = new Date().toISOString().split('T')[0]
@@ -145,6 +169,33 @@ export const goalQueries = {
     const result = await query(
       'UPDATE weekly_goals SET progress = $2, status = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
       [goalId, progress, status]
+    )
+    return result.rows[0]
+  },
+
+  // Update goal text and/or progress
+  async updateGoal(goalId, goalText, progress) {
+    let updateFields = []
+    let values = []
+    let valueIndex = 1
+
+    if (goalText !== undefined) {
+      updateFields.push(`goal_text = $${valueIndex++}`)
+      values.push(goalText)
+    }
+    if (progress !== undefined) {
+      updateFields.push(`progress = $${valueIndex++}`)
+      values.push(progress)
+      const status = progress >= 100 ? 'completed' : 'active'
+      updateFields.push(`status = $${valueIndex++}`)
+      values.push(status)
+    }
+    updateFields.push('updated_at = CURRENT_TIMESTAMP')
+    values.push(goalId)
+
+    const result = await query(
+      `UPDATE weekly_goals SET ${updateFields.join(', ')} WHERE id = $${valueIndex} RETURNING *`,
+      values
     )
     return result.rows[0]
   },

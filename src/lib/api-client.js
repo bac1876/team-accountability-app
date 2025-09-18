@@ -123,6 +123,13 @@ export const commitmentsAPI = {
     })
   },
 
+  async updateById(commitmentId, commitmentText, status) {
+    return apiCall('/commitments', {
+      method: 'PUT',
+      body: JSON.stringify({ commitmentId, commitmentText, status }),
+    })
+  },
+
   async updateStatus(userId, date, status) {
     return apiCall('/commitments', {
       method: 'PUT',
@@ -145,6 +152,13 @@ export const goalsAPI = {
     return apiCall('/goals', {
       method: 'POST',
       body: JSON.stringify({ userId, goalText, targetDate }),
+    })
+  },
+
+  async updateGoal(goalId, goalText, progress) {
+    return apiCall('/goals', {
+      method: 'PUT',
+      body: JSON.stringify({ goalId, goalText, progress }),
     })
   },
 

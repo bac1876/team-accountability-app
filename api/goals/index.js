@@ -41,18 +41,25 @@ export default async function handler(req, res) {
         break
 
       case 'PUT':
-        // Update goal progress
-        const { goalId, progress } = req.body
-        
-        if (!goalId || progress === undefined) {
-          return res.status(400).json({ error: 'Goal ID and progress are required' })
+        // Update goal (text and/or progress)
+        const { goalId, goalText, progress } = req.body
+
+        if (!goalId) {
+          return res.status(400).json({ error: 'Goal ID is required' })
         }
 
-        const updatedGoal = await goalQueries.updateProgress(goalId, progress)
+        let updatedGoal
+        if (goalText !== undefined || progress !== undefined) {
+          // Update both text and/or progress
+          updatedGoal = await goalQueries.updateGoal(goalId, goalText, progress)
+        } else {
+          return res.status(400).json({ error: 'Either goalText or progress must be provided' })
+        }
+
         if (!updatedGoal) {
           return res.status(404).json({ error: 'Goal not found' })
         }
-        
+
         res.status(200).json(updatedGoal)
         break
 

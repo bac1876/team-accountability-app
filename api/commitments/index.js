@@ -29,46 +29,37 @@ export default async function handler(req, res) {
         break
 
       case 'POST':
-        // Create or update commitment
+        // Always create new commitment (allowing multiple per day)
         const { userId: postUserId, date: postDate, commitmentText, status = 'pending' } = req.body
 
         if (!postUserId || !postDate || !commitmentText) {
           return res.status(400).json({ error: 'User ID, date, and commitment text are required' })
         }
 
-        // Check if commitment exists for this date
-        const existing = await commitmentQueries.getByUserAndDate(postUserId, postDate)
-
-        let commitment
-        if (existing) {
-          // Update existing commitment's text and status
-          commitment = await commitmentQueries.update(postUserId, postDate, commitmentText, status)
-        } else {
-          // Create new commitment
-          commitment = await commitmentQueries.create({
-            userId: postUserId,
-            date: postDate,
-            commitmentText,
-            status
-          })
-        }
+        // Always create new commitment
+        const commitment = await commitmentQueries.create({
+          userId: postUserId,
+          date: postDate,
+          commitmentText,
+          status
+        })
 
         res.status(200).json(commitment)
         break
 
       case 'PUT':
-        // Update commitment status
-        const { userId: putUserId, date: putDate, status: putStatus } = req.body
-        
-        if (!putUserId || !putDate || !putStatus) {
-          return res.status(400).json({ error: 'User ID, date, and status are required' })
+        // Update commitment by ID
+        const { commitmentId, commitmentText: putText, status: putStatus } = req.body
+
+        if (!commitmentId) {
+          return res.status(400).json({ error: 'Commitment ID is required' })
         }
 
-        const updatedCommitment = await commitmentQueries.updateStatus(putUserId, putDate, putStatus)
+        const updatedCommitment = await commitmentQueries.updateById(commitmentId, putText, putStatus)
         if (!updatedCommitment) {
           return res.status(404).json({ error: 'Commitment not found' })
         }
-        
+
         res.status(200).json(updatedCommitment)
         break
 
