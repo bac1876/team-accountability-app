@@ -9,7 +9,7 @@ import LoginPage from './components/LoginPage'
 import Dashboard from './components/Dashboard'
 import DashboardAPI from './components/DashboardAPI'
 import AdminDashboard from './components/AdminDashboard'
-import AdminDashboardAPI from './components/AdminDashboardAPI'
+import AdminDashboardAPIFixed from './components/AdminDashboardAPIFixed'
 import Navigation from './components/Navigation'
 import ModernLayout from './components/ModernLayout'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -30,9 +30,9 @@ function DashboardRouter({ user }) {
     window.location.pathname === '/admin'
   )
   
-  // Show AdminDashboardAPI for admin-only views, DashboardAPI for everything else
+  // Show AdminDashboardAPIFixed for admin-only views, DashboardAPI for everything else
   if (isAdminView) {
-    return <AdminDashboardAPI user={user} />
+    return <AdminDashboardAPIFixed user={user} />
   }
 
   // Use DashboardAPI which connects to the database

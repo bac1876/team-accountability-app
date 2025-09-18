@@ -12,7 +12,8 @@
       "Bash(node:*)",
       "Bash(git reset:*)",
       "Bash(curl:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
