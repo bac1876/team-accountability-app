@@ -2,6 +2,8 @@
   "name": "team-accountability-app",
   "private": true,
   "version": "1.0.0",
+  "homepage": "https://communitynwa.com",
+  "description": "Team accountability and goal tracking platform for Community NWA",
   "type": "module",
   "scripts": {
     "dev": "vite",
