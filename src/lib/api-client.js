@@ -1,6 +1,6 @@
 // API client for frontend to backend communication
 
-const API_BASE_URL = process.env.NODE_ENV === 'production'
+const API_BASE_URL = import.meta.env.PROD
   ? '' // Use relative URLs in production
   : 'http://localhost:3000' // Use local server in development
 
