@@ -109,7 +109,7 @@ export const usersAPI = {
 // Commitments APIs
 export const commitmentsAPI = {
   async getByUser(userId) {
-    return apiCall(`/commitments/${userId}`)
+    return apiCall(`/commitments?userId=${userId}&history=true`)
   },
 
   async getByUserAndDate(userId, date) {
