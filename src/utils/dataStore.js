@@ -748,7 +748,8 @@ export const streakStore = {
 
       if (streakStore.isWeekday(dateStr)) {
         // Check if there's a completed commitment for this date
-        const hasCompleted = sortedCommitments.some(c => c.commitment_date === dateStr)
+        // Extract date portion from commitment_date (format: "2025-09-18T00:00:00.000Z")
+        const hasCompleted = sortedCommitments.some(c => c.commitment_date.split('T')[0] === dateStr)
 
         if (hasCompleted) {
           streak++
