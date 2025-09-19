@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Week View</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .week-day {
+            display: inline-block;
+            margin: 10px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .completed { background-color: #90EE90; }
+        .pending { background-color: #FFFFE0; }
+        .no-commitment { background-color: #FFB6C1; }
+        pre { background: #f4f4f4; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Week View Debug</h1>
+    <div id="output"></div>
+
+    <script>
+        async function debugWeekView() {
+            const output = document.getElementById('output');
+
+            try {
+                // Login
+                const loginRes = await fetch('https://communitynwa.com/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'ba1876@gmail.com',
+                        password: 'Lbbc#2245'
+                    })
+                });
+
+                const loginData = await loginRes.json();
+                const userId = loginData.user.id;
+
+                // Get commitments
+                const commitmentsRes = await fetch(`https://communitynwa.com/api/commitments?userId=${userId}`);
+                const commitments = await commitmentsRes.json();
+
+                // Current date info
+                const today = new Date();
+                const todayString = today.toISOString().split('T')[0];
+
+                // Calculate current week (Monday to Friday)
+                const getMonday = (date) => {
+                    const d = new Date(date);
+                    const day = d.getDay();
+                    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                    return new Date(d.setDate(diff));
+                };
+
+                const weekStart = getMonday(today);
+                const weekDays = [];
+
+                for (let i = 0; i < 5; i++) {
+                    const date = new Date(weekStart);
+                    date.setDate(weekStart.getDate() + i);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const dateString = `${year}-${month}-${day}`;
+                    weekDays.push({
+                        dayName: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'][i],
+                        date: dateString,
+                        dayNum: date.getDate()
+                    });
+                }
+
+                // Filter commitments for this week
+                const weekCommitments = commitments.filter(c => {
+                    return weekDays.some(d => d.date === c.commitment_date);
+                });
+
+                let html = '<h2>Current Week Debug</h2>';
+                html += `<p>Today: ${todayString}</p>`;
+                html += `<p>Week Start: ${weekDays[0].date}</p>`;
+                html += `<p>Week End: ${weekDays[4].date}</p>`;
+
+                html += '<h3>Week Overview:</h3>';
+                html += '<div class="week-view">';
+
+                weekDays.forEach(day => {
+                    const commitment = weekCommitments.find(c => c.commitment_date === day.date);
+                    let className = 'week-day ';
+                    let status = '';
+
+                    if (commitment) {
+                        className += commitment.status === 'completed' ? 'completed' : 'pending';
+                        status = commitment.status === 'completed' ? '✅' : '⏰';
+                    } else {
+                        className += 'no-commitment';
+                        status = '❌';
+                    }
+
+                    html += `
+                        <div class="${className}">
+                            <div>${status}</div>
+                            <strong>${day.dayName}</strong><br>
+                            ${day.date}<br>
+                            ${commitment ? commitment.status : 'No commitment'}
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+
+                html += '<h3>All Commitments This Week:</h3>';
+                html += '<pre>' + JSON.stringify(weekCommitments, null, 2) + '</pre>';
+
+                html += '<h3>Recent Commitments (last 10):</h3>';
+                const recent = commitments
+                    .sort((a, b) => new Date(b.commitment_date) - new Date(a.commitment_date))
+                    .slice(0, 10);
+                html += '<pre>' + JSON.stringify(recent, null, 2) + '</pre>';
+
+                output.innerHTML = html;
+
+            } catch (error) {
+                output.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+
+        debugWeekView();
+    </script>
+</body>
+</html>

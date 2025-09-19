@@ -87,6 +87,27 @@ const DashboardAPI = ({ user }) => {
 
         setRecentCommitments(weekCommitments)
 
+        // Debug logging
+        console.log('Week Overview Debug:')
+        console.log('Week Start:', weekStart.toISOString())
+        console.log('Week End:', weekEnd.toISOString())
+        console.log('Today:', todayString)
+        console.log('All commitments loaded:', commitments.length)
+        console.log('Week commitments filtered:', weekCommitments)
+
+        // Log each day of the week and what commitment it has
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+        for (let i = 0; i < 5; i++) {
+          const date = new Date(weekStart)
+          date.setDate(weekStart.getDate() + i)
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, '0')
+          const dayStr = String(date.getDate()).padStart(2, '0')
+          const dateString = `${year}-${month}-${dayStr}`
+          const commitment = weekCommitments.find(c => c.date === dateString)
+          console.log(`${days[i]} ${dateString}:`, commitment ? `${commitment.status} - "${commitment.text}"` : 'No commitment')
+        }
+
         // Calculate commitment streak
         const streak = streakStore.calculateCommitmentStreak(user.id, commitments)
         setCommitmentStreak(streak)

@@ -189,7 +189,10 @@ const CommitmentsSection = ({ user }) => {
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => setSelectedDate(today)}
+                onClick={() => {
+                  setSelectedDate(today)
+                  setContextDate(today)  // Update context to sync week overview
+                }}
                 className={selectedDate === today ? 'bg-white text-purple-600' : 'bg-white/20 text-white hover:bg-white/30'}
               >
                 Today
@@ -200,7 +203,9 @@ const CommitmentsSection = ({ user }) => {
                 onClick={() => {
                   const yesterday = new Date()
                   yesterday.setDate(yesterday.getDate() - 1)
-                  setSelectedDate(yesterday.toISOString().split('T')[0])
+                  const yesterdayString = yesterday.toISOString().split('T')[0]
+                  setSelectedDate(yesterdayString)
+                  setContextDate(yesterdayString)  // Update context to sync week overview
                 }}
                 className="bg-white/20 text-white hover:bg-white/30"
               >
