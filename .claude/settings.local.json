@@ -16,7 +16,8 @@
       "Bash(cat:*)",
       "Bash(cd:*)",
       "Bash(timeout:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(npx concurrently:*)"
     ],
     "deny": [],
     "ask": []
