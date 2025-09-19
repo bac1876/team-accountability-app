@@ -123,11 +123,12 @@ const PhoneCallTracking = ({ user }) => {
 
     setLoading(true)
     try {
-      // Save to database only
+      // Save to database only - include target_calls if it exists
       await phoneCallsAPI.logCalls(
         user.id,
         selectedDate,
         parseInt(actualCalls),
+        dailyStats?.target || null,
         notes
       )
 

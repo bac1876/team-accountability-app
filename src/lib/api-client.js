@@ -233,12 +233,13 @@ export const phoneCallsAPI = {
     })
   },
 
-  async logCalls(userId, date, actualCalls, notes = '') {
+  async logCalls(userId, date, actualCalls, targetCalls = null, notes = '') {
     return apiCall('/phone-calls', {
       method: 'POST',
       body: JSON.stringify({
         user_id: userId,
         call_date: date,
+        target_calls: targetCalls,
         actual_calls: actualCalls,
         notes
       }),
