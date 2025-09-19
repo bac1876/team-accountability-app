@@ -28,13 +28,13 @@ const LoginPage = ({ onLogin }) => {
       // Try the simple login endpoint first for testing
       console.log('Attempting login with:', formData.username)
 
-      // Convert username to email if needed (ba1876 -> brian@communitynwa.com)
+      // Convert username to email if needed (ba1876 -> brian@searchnwa.com)
       const emailMap = {
-        'ba1876': 'brian@communitynwa.com',
+        'ba1876': 'brian@searchnwa.com',
         'bob': 'bob@searchnwa.com'
       }
       const email = emailMap[formData.username.toLowerCase().trim()] ||
-                   (formData.username.includes('@') ? formData.username : `${formData.username}@communitynwa.com`)
+                   (formData.username.includes('@') ? formData.username : `${formData.username}@searchnwa.com`)
 
       // Call the real API
       const response = await authAPI.login(
