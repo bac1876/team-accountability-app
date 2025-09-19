@@ -211,6 +211,46 @@ export const analyticsAPI = {
   }
 }
 
+// Phone Calls APIs
+export const phoneCallsAPI = {
+  async getByUser(userId, startDate = null, endDate = null) {
+    let url = `/phone-calls?userId=${userId}`
+    if (startDate) url += `&startDate=${startDate}`
+    if (endDate) url += `&endDate=${endDate}`
+    return apiCall(url)
+  },
+
+  async setGoal(userId, date, targetCalls) {
+    return apiCall('/phone-calls', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        call_date: date,
+        target_calls: targetCalls
+      }),
+    })
+  },
+
+  async logCalls(userId, date, actualCalls, notes = '') {
+    return apiCall('/phone-calls', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id: userId,
+        call_date: date,
+        actual_calls: actualCalls,
+        notes
+      }),
+    })
+  },
+
+  async getWeeklyStats(userId, startDate = null, endDate = null) {
+    let url = `/phone-calls/stats?userId=${userId}`
+    if (startDate) url += `&startDate=${startDate}`
+    if (endDate) url += `&endDate=${endDate}`
+    return apiCall(url)
+  }
+}
+
 // Export all APIs
 export default {
   auth: authAPI,
@@ -218,5 +258,6 @@ export default {
   commitments: commitmentsAPI,
   goals: goalsAPI,
   reflections: reflectionsAPI,
-  analytics: analyticsAPI
+  analytics: analyticsAPI,
+  phoneCalls: phoneCallsAPI
 }

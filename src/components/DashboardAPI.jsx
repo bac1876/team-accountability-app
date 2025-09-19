@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Label } from '@/components/ui/label.jsx'
 import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone, Edit2, Save, Trash2, Flame, TrendingUp, XCircle } from 'lucide-react'
-import { commitmentsAPI, goalsAPI, reflectionsAPI } from '../lib/api-client.js'
+import { commitmentsAPI, goalsAPI, reflectionsAPI, phoneCallsAPI } from '../lib/api-client.js'
 import { streakStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
 import CommitmentsSection from './CommitmentsSection.jsx'
@@ -135,9 +135,67 @@ const DashboardAPI = ({ user }) => {
         setWeeklyGoals(weekGoals)
       }
 
-      // Calculate phone call streak
-      const callStreak = streakStore.calculatePhoneCallStreak(user.id)
-      setPhoneCallStreak(callStreak)
+      // Calculate phone call streak from database
+      try {
+        // Get phone calls for the last 30 days
+        const thirtyDaysAgo = new Date()
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+        const phoneCalls = await phoneCallsAPI.getByUser(
+          user.id,
+          thirtyDaysAgo.toISOString().split('T')[0]
+        )
+
+        // Calculate streak (25+ calls on weekdays)
+        let streak = 0
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        // Sort calls by date descending
+        const sortedCalls = (phoneCalls || [])
+          .filter(c => c.actual_calls >= 25)
+          .sort((a, b) => new Date(b.call_date) - new Date(a.call_date))
+
+        // Start from today and work backwards
+        let currentDate = new Date(today)
+
+        // If today is weekend, move to last Friday
+        const isWeekday = (date) => {
+          const day = date.getDay()
+          return day >= 1 && day <= 5
+        }
+
+        if (!isWeekday(currentDate)) {
+          while (!isWeekday(currentDate)) {
+            currentDate.setDate(currentDate.getDate() - 1)
+          }
+        }
+
+        while (currentDate >= thirtyDaysAgo) {
+          const dateStr = currentDate.toISOString().split('T')[0]
+
+          if (isWeekday(currentDate)) {
+            // Check if there's a call with 25+ for this date
+            const hasEnoughCalls = sortedCalls.some(c =>
+              c.call_date.split('T')[0] === dateStr && c.actual_calls >= 25
+            )
+
+            if (hasEnoughCalls) {
+              streak++
+            } else if (streak > 0) {
+              // Streak broken
+              break
+            }
+          }
+
+          // Move to previous day
+          currentDate.setDate(currentDate.getDate() - 1)
+        }
+
+        setPhoneCallStreak(streak)
+      } catch (error) {
+        console.error('Error calculating phone call streak:', error)
+        setPhoneCallStreak(0)
+      }
 
       // Load today's reflection
       const reflections = await reflectionsAPI.getByUser(user.id)
