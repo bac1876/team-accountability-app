@@ -19,7 +19,9 @@
       "Bash(npm run dev:*)",
       "Bash(npx concurrently:*)",
       "WebFetch(domain:vercel.com)",
-      "WebFetch(domain:communitynwa.com)"
+      "WebFetch(domain:communitynwa.com)",
+      "Bash(npx vercel logs:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": []

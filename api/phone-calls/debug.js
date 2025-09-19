@@ -1,4 +1,4 @@
-import { query } from '../../../src/lib/database.js'
+import { query } from '../../src/lib/database.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

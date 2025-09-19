@@ -1,5 +1,5 @@
 // Test phone call API directly
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://communitynwa.com';
 
 async function testPhoneAPI() {
   console.log('Testing phone call API directly...\n');
