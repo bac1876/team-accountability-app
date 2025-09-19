@@ -18,7 +18,7 @@ import WeeklyGoalsSection from './WeeklyGoalsSection.jsx'
 import ReflectionsSection from './ReflectionsSection.jsx'
 
 const DashboardAPI = ({ user }) => {
-  const { activeTab, navigateToTab, navigateToCommitmentDate } = useNavigation()
+  const { activeTab, navigateToTab, navigateToCommitmentDate, selectedDate } = useNavigation()
 
   // State
   const [todayCommitment, setTodayCommitment] = useState('')
@@ -43,16 +43,19 @@ const DashboardAPI = ({ user }) => {
 
   const today = new Date()
   const todayString = today.toISOString().split('T')[0]
+
+  // Use selected date for week calculation, or today if not selected
+  const baseDate = selectedDate ? new Date(selectedDate + 'T00:00:00') : today
   // Start week on Monday (1) instead of Sunday (0)
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 })
-  const weekEnd = endOfWeek(today, { weekStartsOn: 1 })
+  const weekStart = startOfWeek(baseDate, { weekStartsOn: 1 })
+  const weekEnd = endOfWeek(baseDate, { weekStartsOn: 1 })
 
   // Load data from API
   useEffect(() => {
     if (user?.id) {
       loadUserData()
     }
-  }, [user?.id])
+  }, [user?.id, selectedDate]) // Reload when selected date changes
 
   const loadUserData = async () => {
     setLoading(true)
@@ -335,7 +338,11 @@ const DashboardAPI = ({ user }) => {
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map((day, index) => {
           const date = new Date(weekStart)
           date.setDate(weekStart.getDate() + index)
-          const dateString = date.toISOString().split('T')[0]
+          // Use local date formatting to avoid timezone issues
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, '0')
+          const dayStr = String(date.getDate()).padStart(2, '0')
+          const dateString = `${year}-${month}-${dayStr}`
           const commitment = recentCommitments.find(c => c.date === dateString)
           const isToday = dateString === todayString
 
