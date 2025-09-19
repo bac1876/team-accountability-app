@@ -47,8 +47,8 @@ export default async function handler(req, res) {
       try {
         // Use UPSERT to create or update
         const result = await query(
-          `INSERT INTO phone_calls (user_id, call_date, target_calls, actual_calls, notes, updated_at)
-           VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+          `INSERT INTO phone_calls (user_id, call_date, target_calls, actual_calls, notes, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
            ON CONFLICT (user_id, call_date)
            DO UPDATE SET
              target_calls = COALESCE($3, phone_calls.target_calls),
