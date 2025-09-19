@@ -21,7 +21,8 @@
       "WebFetch(domain:vercel.com)",
       "WebFetch(domain:communitynwa.com)",
       "Bash(npx vercel logs:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

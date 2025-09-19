@@ -8,13 +8,24 @@ export default async function handler(req, res) {
   try {
     const results = []
 
-    // Fix commitments table - add unique constraint
+    // Fix commitments table - handle duplicates first, then add constraint
     try {
+      // First, remove any duplicate commitments (keep the most recent one)
+      await query(`
+        DELETE FROM daily_commitments a USING daily_commitments b
+        WHERE a.id < b.id
+        AND a.user_id = b.user_id
+        AND a.commitment_date = b.commitment_date
+      `)
+      results.push('✓ Removed duplicate commitments')
+
+      // Drop existing constraint if it exists
       await query(`
         ALTER TABLE daily_commitments
         DROP CONSTRAINT IF EXISTS daily_commitments_user_id_commitment_date_key
       `)
 
+      // Add the unique constraint
       await query(`
         ALTER TABLE daily_commitments
         ADD CONSTRAINT daily_commitments_user_id_commitment_date_key
