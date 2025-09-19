@@ -59,7 +59,14 @@ export default async function handler(req, res) {
       date.setDate(startDate.getDate() + i)
       const dateStr = date.toISOString().split('T')[0]
 
-      const dayCall = calls.find(c => c.call_date.toISOString().split('T')[0] === dateStr)
+      // Format the date from database properly for comparison
+      const dayCall = calls.find(c => {
+        // Handle both Date objects and strings from database
+        const callDateStr = typeof c.call_date === 'string'
+          ? c.call_date.split('T')[0]
+          : c.call_date.toISOString().split('T')[0]
+        return callDateStr === dateStr
+      })
 
       const dayData = {
         date: dateStr,

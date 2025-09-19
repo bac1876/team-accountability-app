@@ -19,6 +19,7 @@ const PhoneCallTracking = ({ user }) => {
   const [loading, setLoading] = useState(false)
   const [hasSetGoal, setHasSetGoal] = useState(false)
   const [hasLoggedCalls, setHasLoggedCalls] = useState(false)
+  const [loadingStats, setLoadingStats] = useState(false)
 
   const today = new Date().toISOString().split('T')[0]
   const isToday = selectedDate === today
@@ -35,6 +36,7 @@ const PhoneCallTracking = ({ user }) => {
   }, [selectedDate, user.id])
 
   const loadStats = async () => {
+    setLoadingStats(true)
     try {
       // Get stats from database
       const weeklyData = await phoneCallsAPI.getWeeklyStats(user.id)
@@ -52,9 +54,13 @@ const PhoneCallTracking = ({ user }) => {
         setHasSetGoal(dailyData.target_calls > 0)
         setHasLoggedCalls(dailyData.actual_calls > 0)
       } else {
-        setDailyStats(null)
-        setHasSetGoal(false)
-        setHasLoggedCalls(false)
+        // Don't clear the goal state if we're just loading
+        // Only clear if we actually get a null response
+        if (!loadingStats) {
+          setDailyStats(null)
+          setHasSetGoal(false)
+          setHasLoggedCalls(false)
+        }
       }
 
       // Transform weekly data to expected format
@@ -74,11 +80,10 @@ const PhoneCallTracking = ({ user }) => {
       }
     } catch (error) {
       console.error('Error loading phone call stats:', error)
-      // No fallback - database only
-      setDailyStats(null)
-      setWeeklyStats(null)
-      setHasSetGoal(false)
-      setHasLoggedCalls(false)
+      // Don't clear states on error - keep existing data visible
+      // This prevents the flashing issue when API temporarily fails
+    } finally {
+      setLoadingStats(false)
     }
 
     // Clear input fields
@@ -99,9 +104,18 @@ const PhoneCallTracking = ({ user }) => {
         parseInt(targetCalls)
       )
 
+      // Immediately update the UI with the new goal
+      setDailyStats(prev => ({
+        ...prev,
+        targetCalls: parseInt(targetCalls),
+        actualCalls: prev?.actualCalls || 0,
+        notes: prev?.notes || ''
+      }))
       setTargetCalls('')
       setHasSetGoal(true)
-      loadStats()
+
+      // Then reload from database to ensure consistency
+      setTimeout(loadStats, 100)
 
       // Show success
       const successDiv = document.createElement('div')
@@ -132,10 +146,19 @@ const PhoneCallTracking = ({ user }) => {
         notes
       )
 
+      // Immediately update the UI with the new actual calls
+      setDailyStats(prev => ({
+        ...prev,
+        actualCalls: parseInt(actualCalls),
+        notes: notes,
+        completionRate: prev?.targetCalls ? Math.round((parseInt(actualCalls) / prev.targetCalls) * 100) : 0
+      }))
       setActualCalls('')
       setNotes('')
       setHasLoggedCalls(true)
-      loadStats()
+
+      // Then reload from database to ensure consistency
+      setTimeout(loadStats, 100)
 
       // Show success
       const successDiv = document.createElement('div')
