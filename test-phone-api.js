@@ -11,7 +11,7 @@ async function testPhoneAPI() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       email: 'brian@searchnwa.com',
-      password: 'password123'
+      password: 'Lbbc#2245'
     })
   });
 

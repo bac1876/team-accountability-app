@@ -15,7 +15,7 @@ async function testPhoneCallUI() {
   // Login as Brian
   console.log('Logging in as Brian...');
   await page.fill('input[name="email"]', 'brian@searchnwa.com');
-  await page.fill('input[name="password"]', 'password123');
+  await page.fill('input[name="password"]', 'Lbbc#2245');
   await page.click('button:has-text("Login")');
 
   // Wait for dashboard to load
