@@ -122,6 +122,18 @@ const PhoneCallTracking = ({ user }) => {
       setTimeout(() => successDiv.remove(), 3000)
     } catch (error) {
       console.error('Error setting goal:', error)
+      // Show error message
+      alert(`Error setting goal: ${error.message}`)
+      // Try localStorage fallback
+      phoneCallStore.addCommitment(
+        user.id,
+        selectedDate,
+        parseInt(targetCalls),
+        ''
+      )
+      setTargetCalls('')
+      setHasSetGoal(true)
+      loadStats()
     } finally {
       setLoading(false)
     }
@@ -161,6 +173,19 @@ const PhoneCallTracking = ({ user }) => {
       setTimeout(() => successDiv.remove(), 3000)
     } catch (error) {
       console.error('Error logging calls:', error)
+      // Show error message
+      alert(`Error logging calls: ${error.message}`)
+      // Try localStorage fallback
+      phoneCallStore.logActualCalls(
+        user.id,
+        selectedDate,
+        parseInt(actualCalls),
+        notes
+      )
+      setActualCalls('')
+      setNotes('')
+      setHasLoggedCalls(true)
+      loadStats()
     } finally {
       setLoading(false)
     }
