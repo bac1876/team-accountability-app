@@ -17,7 +17,9 @@
       "Bash(cd:*)",
       "Bash(timeout:*)",
       "Bash(npm run dev:*)",
-      "Bash(npx concurrently:*)"
+      "Bash(npx concurrently:*)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:communitynwa.com)"
     ],
     "deny": [],
     "ask": []
