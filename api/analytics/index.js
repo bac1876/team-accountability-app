@@ -1,5 +1,5 @@
 // API endpoint for team analytics
-import { analyticsQueries } from '../lib/database.js'
+import { analyticsQueries } from '../../src/lib/database.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

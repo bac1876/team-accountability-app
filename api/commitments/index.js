@@ -1,6 +1,5 @@
 // API endpoint for daily commitments management
-import { commitmentQueries } from '../lib/database.js'
-import { sql } from '@vercel/postgres'
+import { commitmentQueries } from '../../src/lib/database.js'
 
 export default async function handler(req, res) {
   try {
@@ -8,102 +7,53 @@ export default async function handler(req, res) {
       case 'GET':
         // Get commitments for a user
         const { userId, date, history } = req.query
-
+        
         if (!userId) {
           return res.status(400).json({ error: 'User ID is required' })
         }
 
         if (history === 'true') {
           // Get commitment history
-          const result = await sql`
-            SELECT * FROM daily_commitments
-            WHERE user_id = ${userId}
-            ORDER BY commitment_date DESC
-          `
-          res.status(200).json(result.rows)
+          const commitments = await commitmentQueries.getByUser(userId)
+          res.status(200).json(commitments)
         } else if (date) {
           // Get commitment for specific date
-          const result = await sql`
-            SELECT * FROM daily_commitments
-            WHERE user_id = ${userId} AND commitment_date = ${date}
-          `
-          res.status(200).json(result.rows[0] || null)
+          const commitment = await commitmentQueries.getByUserAndDate(userId, date)
+          res.status(200).json(commitment || null)
         } else {
           // Get today's commitment
           const today = new Date().toISOString().split('T')[0]
-          const result = await sql`
-            SELECT * FROM daily_commitments
-            WHERE user_id = ${userId} AND commitment_date = ${today}
-          `
-          res.status(200).json(result.rows[0] || null)
+          const commitment = await commitmentQueries.getByUserAndDate(userId, today)
+          res.status(200).json(commitment || null)
         }
         break
 
       case 'POST':
-        // Always create new commitment (allowing multiple per day)
+        // Create or update commitment
         const { userId: postUserId, date: postDate, commitmentText, status = 'pending' } = req.body
-
-        console.log('Received commitment data:', { userId: postUserId, date: postDate, commitmentText, status })
-
+        
         if (!postUserId || !postDate || !commitmentText) {
-          return res.status(400).json({
-            error: 'User ID, date, and commitment text are required',
-            received: { userId: postUserId, date: postDate, commitmentText: commitmentText ? 'provided' : 'missing' }
-          })
+          return res.status(400).json({ error: 'User ID, date, and commitment text are required' })
         }
 
-        // Always create new commitment - using direct SQL
-        try {
-          // Use sql`` template literal which is the recommended way
-          const result = await sql`
-            INSERT INTO daily_commitments (user_id, commitment_date, commitment_text, status)
-            VALUES (${postUserId}, ${postDate}, ${commitmentText}, ${status})
-            RETURNING *
-          `
-
-          console.log('Commitment created successfully:', result.rows[0])
-          res.status(200).json(result.rows[0])
-        } catch (dbError) {
-          console.error('Database error creating commitment:', dbError)
-          res.status(500).json({
-            error: 'Database error',
-            details: dbError.message,
-            userId: postUserId,
-            date: postDate
-          })
-        }
+        const commitment = await commitmentQueries.upsert(postUserId, postDate, commitmentText, status)
+        res.status(200).json(commitment)
         break
 
       case 'PUT':
-        // Update commitment by ID
-        const { commitmentId, commitmentText: putText, status: putStatus } = req.body
-
-        if (!commitmentId) {
-          return res.status(400).json({ error: 'Commitment ID is required' })
+        // Update commitment status
+        const { userId: putUserId, date: putDate, status: putStatus } = req.body
+        
+        if (!putUserId || !putDate || !putStatus) {
+          return res.status(400).json({ error: 'User ID, date, and status are required' })
         }
 
-        const updatedCommitment = await commitmentQueries.updateById(commitmentId, putText, putStatus)
+        const updatedCommitment = await commitmentQueries.updateStatus(putUserId, putDate, putStatus)
         if (!updatedCommitment) {
           return res.status(404).json({ error: 'Commitment not found' })
         }
-
+        
         res.status(200).json(updatedCommitment)
-        break
-
-      case 'DELETE':
-        // Delete commitment
-        const { commitmentId: deleteCommitmentId } = req.query
-
-        if (!deleteCommitmentId) {
-          return res.status(400).json({ error: 'Commitment ID is required' })
-        }
-
-        await sql`
-          DELETE FROM daily_commitments
-          WHERE id = ${deleteCommitmentId}
-        `
-
-        res.status(200).json({ success: true })
         break
 
       default:

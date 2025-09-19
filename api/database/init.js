@@ -1,5 +1,5 @@
 // API endpoint to initialize the database with schema and default data
-import { initializeDatabase } from '../lib/database.js'
+import { initializeDatabase } from '../../src/lib/database.js'
 
 export default async function handler(req, res) {
   // Only allow POST requests
