@@ -7,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Phone, Target, CheckCircle, TrendingUp, Calendar, ChevronLeft, ChevronRight, Plus, Save } from 'lucide-react'
-import { phoneCallStore } from '../utils/dataStore.js'
 import { phoneCallsAPI } from '../lib/api-client.js'
 
 const PhoneCallTracking = ({ user }) => {
@@ -75,13 +74,11 @@ const PhoneCallTracking = ({ user }) => {
       }
     } catch (error) {
       console.error('Error loading phone call stats:', error)
-      // Fallback to localStorage if API fails
-      const daily = phoneCallStore.getDailyStats(user.id, selectedDate)
-      const weekly = phoneCallStore.getWeeklyStats(user.id)
-      setDailyStats(daily)
-      setWeeklyStats(weekly)
-      setHasSetGoal(daily && daily.targetCalls > 0)
-      setHasLoggedCalls(daily && daily.actualCalls > 0)
+      // No fallback - database only
+      setDailyStats(null)
+      setWeeklyStats(null)
+      setHasSetGoal(false)
+      setHasLoggedCalls(false)
     }
 
     // Clear input fields
@@ -95,19 +92,11 @@ const PhoneCallTracking = ({ user }) => {
 
     setLoading(true)
     try {
-      // Save to database
+      // Save to database only
       await phoneCallsAPI.setGoal(
         user.id,
         selectedDate,
         parseInt(targetCalls)
-      )
-
-      // Also save to localStorage for offline support
-      phoneCallStore.addCommitment(
-        user.id,
-        selectedDate,
-        parseInt(targetCalls),
-        ''
       )
 
       setTargetCalls('')
@@ -124,16 +113,6 @@ const PhoneCallTracking = ({ user }) => {
       console.error('Error setting goal:', error)
       // Show error message
       alert(`Error setting goal: ${error.message}`)
-      // Try localStorage fallback
-      phoneCallStore.addCommitment(
-        user.id,
-        selectedDate,
-        parseInt(targetCalls),
-        ''
-      )
-      setTargetCalls('')
-      setHasSetGoal(true)
-      loadStats()
     } finally {
       setLoading(false)
     }
@@ -144,16 +123,8 @@ const PhoneCallTracking = ({ user }) => {
 
     setLoading(true)
     try {
-      // Save to database
+      // Save to database only
       await phoneCallsAPI.logCalls(
-        user.id,
-        selectedDate,
-        parseInt(actualCalls),
-        notes
-      )
-
-      // Also save to localStorage for offline support
-      phoneCallStore.logActualCalls(
         user.id,
         selectedDate,
         parseInt(actualCalls),
@@ -175,17 +146,6 @@ const PhoneCallTracking = ({ user }) => {
       console.error('Error logging calls:', error)
       // Show error message
       alert(`Error logging calls: ${error.message}`)
-      // Try localStorage fallback
-      phoneCallStore.logActualCalls(
-        user.id,
-        selectedDate,
-        parseInt(actualCalls),
-        notes
-      )
-      setActualCalls('')
-      setNotes('')
-      setHasLoggedCalls(true)
-      loadStats()
     } finally {
       setLoading(false)
     }

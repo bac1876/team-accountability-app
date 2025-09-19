@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.j
 import { Label } from '@/components/ui/label.jsx'
 import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone, Edit2, Save, Trash2, Flame, TrendingUp, XCircle } from 'lucide-react'
 import { commitmentsAPI, goalsAPI, reflectionsAPI, phoneCallsAPI } from '../lib/api-client.js'
-import { streakStore, phoneCallStore } from '../utils/dataStore.js'
+import { streakStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
 import CommitmentsSection from './CommitmentsSection.jsx'
 import WeeklyGoalsSection from './WeeklyGoalsSection.jsx'
@@ -60,46 +60,6 @@ const DashboardAPI = ({ user }) => {
   const loadUserData = async () => {
     setLoading(true)
     try {
-      // Migrate localStorage phone data to database on first load
-      try {
-        const localPhoneKey = `phone_calls_${user.id}`
-        const localData = localStorage.getItem(localPhoneKey)
-
-        if (localData) {
-          const phoneData = JSON.parse(localData)
-
-          // Format data for migration
-          const formattedData = []
-          Object.keys(phoneData).forEach(date => {
-            const entry = phoneData[date]
-            if (entry) {
-              formattedData.push({
-                date: date,
-                targetCalls: entry.targetCalls || 0,
-                actualCalls: entry.actualCalls || 0,
-                notes: entry.notes || ''
-              })
-            }
-          })
-
-          if (formattedData.length > 0) {
-            // Call migration API
-            await fetch('/api/phone-calls/migrate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                userId: user.id,
-                phoneCallData: formattedData
-              })
-            })
-
-            console.log(`Migrated ${formattedData.length} phone call entries from localStorage to database`)
-          }
-        }
-      } catch (migrationError) {
-        console.log('Phone data migration attempted:', migrationError)
-      }
-
       // Load commitments
       const commitments = await commitmentsAPI.getByUser(user.id)
       if (commitments && Array.isArray(commitments)) {
