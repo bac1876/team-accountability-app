@@ -326,18 +326,17 @@ const CommitmentsSection = ({ user }) => {
                   commit.status === 'completed' ? 'bg-green-50' : 'bg-gray-50'
                 }`}
               >
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={() => updateCommitmentStatus(commit)}
-                  className="p-0 h-auto hover:bg-transparent"
+                  className="p-1 hover:bg-gray-200 rounded-full transition-colors cursor-pointer"
+                  aria-label={commit.status === 'completed' ? 'Mark as incomplete' : 'Mark as complete'}
                 >
                   {commit.status === 'completed' ? (
                     <CheckCircle className="h-6 w-6 text-green-500" />
                   ) : (
-                    <Circle className="h-6 w-6 text-gray-400" />
+                    <Circle className="h-6 w-6 text-gray-400 hover:text-gray-600" />
                   )}
-                </Button>
+                </button>
 
                 <div className="flex-1">
                   {editingCommitment === commit.id ? (

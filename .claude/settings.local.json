@@ -22,7 +22,8 @@
       "WebFetch(domain:communitynwa.com)",
       "Bash(npx vercel logs:*)",
       "Bash(sed:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Read(//c/Users/Owner/**)"
     ],
     "deny": [],
     "ask": []
