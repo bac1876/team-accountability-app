@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Phone, Target, CheckCircle, TrendingUp, Calendar, ChevronLeft, ChevronRight, Plus, Save } from 'lucide-react'
 import { phoneCallStore } from '../utils/dataStore.js'
+import { phoneCallsAPI } from '../lib/api-client.js'
 
 const PhoneCallTracking = ({ user }) => {
   const [targetCalls, setTargetCalls] = useState('')
@@ -34,16 +35,54 @@ const PhoneCallTracking = ({ user }) => {
     loadStats()
   }, [selectedDate, user.id])
 
-  const loadStats = () => {
-    const daily = phoneCallStore.getDailyStats(user.id, selectedDate)
-    const weekly = phoneCallStore.getWeeklyStats(user.id)
+  const loadStats = async () => {
+    try {
+      // Get stats from database
+      const weeklyData = await phoneCallsAPI.getWeeklyStats(user.id)
 
-    setDailyStats(daily)
-    setWeeklyStats(weekly)
+      // Find today's data
+      const dailyData = weeklyData?.days?.find(d => d.date === selectedDate)
 
-    // Check if goal/calls already exist for this date
-    setHasSetGoal(daily && daily.targetCalls > 0)
-    setHasLoggedCalls(daily && daily.actualCalls > 0)
+      if (dailyData) {
+        setDailyStats({
+          targetCalls: dailyData.target_calls,
+          actualCalls: dailyData.actual_calls,
+          notes: dailyData.notes || '',
+          completionRate: dailyData.completion_rate
+        })
+        setHasSetGoal(dailyData.target_calls > 0)
+        setHasLoggedCalls(dailyData.actual_calls > 0)
+      } else {
+        setDailyStats(null)
+        setHasSetGoal(false)
+        setHasLoggedCalls(false)
+      }
+
+      // Transform weekly data to expected format
+      if (weeklyData) {
+        setWeeklyStats({
+          days: weeklyData.days.map(d => ({
+            date: d.date,
+            targetCalls: d.target_calls,
+            actualCalls: d.actual_calls,
+            completionRate: d.completion_rate,
+            notes: d.notes
+          })),
+          totalTarget: weeklyData.week.total_target,
+          totalActual: weeklyData.week.total_actual,
+          weeklyCompletionRate: weeklyData.week.completion_rate
+        })
+      }
+    } catch (error) {
+      console.error('Error loading phone call stats:', error)
+      // Fallback to localStorage if API fails
+      const daily = phoneCallStore.getDailyStats(user.id, selectedDate)
+      const weekly = phoneCallStore.getWeeklyStats(user.id)
+      setDailyStats(daily)
+      setWeeklyStats(weekly)
+      setHasSetGoal(daily && daily.targetCalls > 0)
+      setHasLoggedCalls(daily && daily.actualCalls > 0)
+    }
 
     // Clear input fields
     setTargetCalls('')
@@ -56,7 +95,15 @@ const PhoneCallTracking = ({ user }) => {
 
     setLoading(true)
     try {
-      await phoneCallStore.addCommitment(
+      // Save to database
+      await phoneCallsAPI.setGoal(
+        user.id,
+        selectedDate,
+        parseInt(targetCalls)
+      )
+
+      // Also save to localStorage for offline support
+      phoneCallStore.addCommitment(
         user.id,
         selectedDate,
         parseInt(targetCalls),
@@ -85,7 +132,16 @@ const PhoneCallTracking = ({ user }) => {
 
     setLoading(true)
     try {
-      await phoneCallStore.logActualCalls(
+      // Save to database
+      await phoneCallsAPI.logCalls(
+        user.id,
+        selectedDate,
+        parseInt(actualCalls),
+        notes
+      )
+
+      // Also save to localStorage for offline support
+      phoneCallStore.logActualCalls(
         user.id,
         selectedDate,
         parseInt(actualCalls),
