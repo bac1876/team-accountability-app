@@ -72,11 +72,19 @@ const DashboardAPI = ({ user }) => {
         }
 
         // Get commitments for current week (Mon-Fri)
+        // Generate date strings for the week to avoid timezone issues
+        const weekDates = []
+        for (let i = 0; i < 5; i++) {
+          const date = new Date(weekStart)
+          date.setDate(weekStart.getDate() + i)
+          const year = date.getFullYear()
+          const month = String(date.getMonth() + 1).padStart(2, '0')
+          const day = String(date.getDate()).padStart(2, '0')
+          weekDates.push(`${year}-${month}-${day}`)
+        }
+
         const weekCommitments = commitments
-          .filter(c => {
-            const date = new Date(c.commitment_date + 'T00:00:00') // Ensure local timezone
-            return date >= weekStart && date <= weekEnd
-          })
+          .filter(c => weekDates.includes(c.commitment_date))
           .map(c => ({
             id: c.id,
             text: c.commitment_text,
@@ -89,24 +97,20 @@ const DashboardAPI = ({ user }) => {
 
         // Debug logging
         console.log('Week Overview Debug:')
-        console.log('Week Start:', weekStart.toISOString())
-        console.log('Week End:', weekEnd.toISOString())
+        console.log('Week dates:', weekDates)
         console.log('Today:', todayString)
         console.log('All commitments loaded:', commitments.length)
-        console.log('Week commitments filtered:', weekCommitments)
+        if (commitments.length > 0) {
+          console.log('All commitment dates:', commitments.map(c => c.commitment_date))
+        }
+        console.log('Week commitments filtered:', weekCommitments.length)
 
         // Log each day of the week and what commitment it has
         const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-        for (let i = 0; i < 5; i++) {
-          const date = new Date(weekStart)
-          date.setDate(weekStart.getDate() + i)
-          const year = date.getFullYear()
-          const month = String(date.getMonth() + 1).padStart(2, '0')
-          const dayStr = String(date.getDate()).padStart(2, '0')
-          const dateString = `${year}-${month}-${dayStr}`
+        weekDates.forEach((dateString, i) => {
           const commitment = weekCommitments.find(c => c.date === dateString)
           console.log(`${days[i]} ${dateString}:`, commitment ? `${commitment.status} - "${commitment.text}"` : 'No commitment')
-        }
+        })
 
         // Calculate commitment streak
         const streak = streakStore.calculateCommitmentStreak(user.id, commitments)
