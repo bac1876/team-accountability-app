@@ -84,7 +84,7 @@ const DashboardAPI = ({ user }) => {
         }
 
         const weekCommitments = commitments
-          .filter(c => weekDates.includes(c.commitment_date))
+          .filter(c => weekDates.includes(c.commitment_date.split('T')[0]))
           .map(c => ({
             id: c.id,
             text: c.commitment_text,
@@ -368,7 +368,7 @@ const DashboardAPI = ({ user }) => {
           const month = String(date.getMonth() + 1).padStart(2, '0')
           const dayStr = String(date.getDate()).padStart(2, '0')
           const dateString = `${year}-${month}-${dayStr}`
-          const commitment = recentCommitments.find(c => c.date === dateString)
+          const commitment = recentCommitments.find(c => c.date.split('T')[0] === dateString)
           const isToday = dateString === todayString
 
           const isPast = dateString < todayString
