@@ -107,7 +107,15 @@ const CommitmentsSection = ({ user }) => {
     if (!editText.trim()) return
 
     try {
-      const commitment = commitments.find(c => c.id === commitmentId)
+      // Find commitment in either today's or recent commitments
+      const commitment = commitments.find(c => c.id === commitmentId) ||
+                        recentCommitments.find(c => c.id === commitmentId)
+
+      if (!commitment) {
+        alert('Commitment not found')
+        return
+      }
+
       await commitmentsAPI.updateById(commitmentId, editText.trim(), commitment.status)
       setEditingCommitment(null)
       setEditText('')
