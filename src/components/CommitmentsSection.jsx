@@ -409,7 +409,7 @@ const CommitmentsSection = ({ user }) => {
                   )}
                 </div>
 
-                {editingCommitment !== commit.id && (
+                {editingCommitment !== commit.id ? (
                   <div className="flex gap-1">
                     <Button
                       size="sm"
@@ -430,7 +430,7 @@ const CommitmentsSection = ({ user }) => {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                )}
+                ) : null}
               </div>
             ))}
 
@@ -441,7 +441,7 @@ const CommitmentsSection = ({ user }) => {
                   <div className="border-t pt-4 mt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Commitments</h4>
                   </div>
-                )}
+                ) : null}
                 {recentCommitments
                   .filter(recent => !commitments.find(today => today.id === recent.id)) // Don't duplicate today's commitments
                   .map((commit) => (
@@ -506,7 +506,7 @@ const CommitmentsSection = ({ user }) => {
                       )}
                     </div>
 
-                    {editingCommitment !== commit.id && (
+                    {editingCommitment !== commit.id ? (
                       <div className="flex gap-1">
                         <Button
                           size="sm"

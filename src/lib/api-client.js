@@ -152,7 +152,7 @@ export const commitmentsAPI = {
 // Goals APIs
 export const goalsAPI = {
   async getByUser(userId) {
-    return apiCall(`/goals/${userId}`)
+    return apiCall(`/goals?userId=${userId}`)
   },
 
   async create(userId, goalText, targetDate = null) {
