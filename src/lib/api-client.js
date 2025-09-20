@@ -109,7 +109,7 @@ export const usersAPI = {
 // Commitments APIs
 export const commitmentsAPI = {
   async getByUser(userId) {
-    return apiCall(`/commitments?userId=${userId}&history=true`)
+    return apiCall(`/commitments?userId=${userId}`)
   },
 
   async getByUserAndDate(userId, date) {
@@ -126,7 +126,7 @@ export const commitmentsAPI = {
   async updateById(commitmentId, commitmentText, status) {
     return apiCall('/commitments', {
       method: 'PUT',
-      body: JSON.stringify({ commitmentId, commitmentText, status }),
+      body: JSON.stringify({ id: commitmentId, commitmentText, status }),
     })
   },
 
@@ -142,8 +142,9 @@ export const commitmentsAPI = {
   },
 
   async delete(commitmentId) {
-    return apiCall(`/commitments?commitmentId=${commitmentId}`, {
+    return apiCall('/commitments', {
       method: 'DELETE',
+      body: JSON.stringify({ id: commitmentId }),
     })
   }
 }
