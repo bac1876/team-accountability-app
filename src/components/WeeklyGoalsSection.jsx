@@ -256,24 +256,25 @@ const WeeklyGoalsSection = ({ user }) => {
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-2">
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => {
                             setEditingGoal(goal.id)
                             setEditText(goal.goal_text)
                             setEditProgress(goal.progress || 0)
                           }}
+                          className="h-8 w-8 p-0 border-gray-300 hover:bg-gray-100"
                           title="Edit goal"
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="h-4 w-4 text-gray-600" />
                         </Button>
                         <Button
                           size="sm"
-                          variant="ghost"
+                          variant="outline"
                           onClick={() => deleteGoal(goal.id)}
-                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                          className="h-8 w-8 p-0 border-red-300 text-red-500 hover:bg-red-50 hover:border-red-400"
                           title="Delete goal"
                         >
                           <Trash2 className="h-4 w-4" />
