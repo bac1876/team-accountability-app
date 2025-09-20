@@ -441,7 +441,7 @@ const CommitmentsSection = ({ user }) => {
                   <div className="border-t pt-4 mt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Commitments</h4>
                   </div>
-                ) : null}
+                )}
                 {recentCommitments
                   .filter(recent => !commitments.find(today => today.id === recent.id)) // Don't duplicate today's commitments
                   .map((commit) => (
