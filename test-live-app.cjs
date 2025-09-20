@@ -31,7 +31,7 @@ const { chromium } = require('playwright');
 
     // Login with Brian's credentials
     console.log('2. Logging in as Brian...');
-    await page.fill('input[type="text"]', 'ba1876');
+    await page.fill('input[type="text"]', 'brian@searchnwa.com');
     await page.fill('input[type="password"]', 'Lbbc#2245');
     await page.click('button:has-text("Sign In")');
     await page.waitForTimeout(3000);

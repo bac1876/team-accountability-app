@@ -13,6 +13,7 @@ const CommitmentsSection = ({ user }) => {
   const { selectedDate: contextDate, setSelectedDate: setContextDate } = useNavigation()
   const [todayCommitment, setTodayCommitment] = useState('')
   const [commitments, setCommitments] = useState([])
+  const [recentCommitments, setRecentCommitments] = useState([])
   const [editingCommitment, setEditingCommitment] = useState(null)
   const [editText, setEditText] = useState('')
   const [loading, setLoading] = useState(false)
@@ -41,6 +42,21 @@ const CommitmentsSection = ({ user }) => {
       const dayCommitments = Array.isArray(response) ? response : (response ? [response] : [])
       setCommitments(dayCommitments)
       setHasCommitment(dayCommitments.length > 0)
+
+      // Get recent commitments for editing (last 7 days)
+      const allCommitments = await commitmentsAPI.getByUser(user.id)
+      if (allCommitments && Array.isArray(allCommitments)) {
+        const recent = allCommitments
+          .filter(c => c.commitment_date) // Ensure commitment_date exists
+          .sort((a, b) => new Date(b.commitment_date) - new Date(a.commitment_date))
+          .slice(0, 10) // Show last 10 commitments
+        setRecentCommitments(recent)
+      }
+
+      // Also log for debugging
+      console.log('Loaded commitments for date:', selectedDate)
+      console.log('Commitments found:', dayCommitments.length)
+      console.log('Recent commitments loaded:', allCommitments?.length || 0)
     } catch (error) {
       console.error('Error loading commitments:', error)
     }
@@ -74,8 +90,16 @@ const CommitmentsSection = ({ user }) => {
     try {
       await commitmentsAPI.updateById(commitment.id, commitment.commitment_text, newStatus)
       await loadCommitments()
+
+      // Show success message
+      const toast = document.createElement('div')
+      toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
+      toast.textContent = `Commitment marked as ${newStatus}!`
+      document.body.appendChild(toast)
+      setTimeout(() => toast.remove(), 2000)
     } catch (error) {
       console.error('Error updating commitment status:', error)
+      alert('Failed to update commitment status')
     }
   }
 
@@ -310,7 +334,7 @@ const CommitmentsSection = ({ user }) => {
       )}
 
       {/* Commitments List */}
-      {commitments.length > 0 && (
+      {(commitments.length > 0 || recentCommitments.length > 0) && (
         <Card>
           <CardHeader>
             <CardTitle>Your Commitments</CardTitle>
@@ -319,6 +343,7 @@ const CommitmentsSection = ({ user }) => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
+            {/* Today's commitments first */}
             {commitments.map((commit) => (
               <div
                 key={commit.id}
@@ -400,12 +425,111 @@ const CommitmentsSection = ({ user }) => {
                 )}
               </div>
             ))}
+
+            {/* Recent commitments for editing */}
+            {recentCommitments.length > 0 && (
+              <>
+                {commitments.length > 0 && (
+                  <div className="border-t pt-4 mt-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Commitments</h4>
+                  </div>
+                )}
+                {recentCommitments
+                  .filter(recent => !commitments.find(today => today.id === recent.id)) // Don't duplicate today's commitments
+                  .map((commit) => (
+                  <div
+                    key={commit.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
+                      commit.status === 'completed' ? 'bg-green-50' : 'bg-gray-50'
+                    }`}
+                  >
+                    <button
+                      onClick={() => updateCommitmentStatus(commit)}
+                      className="p-1 hover:bg-gray-200 rounded-full transition-colors cursor-pointer"
+                      aria-label={commit.status === 'completed' ? 'Mark as incomplete' : 'Mark as complete'}
+                    >
+                      {commit.status === 'completed' ? (
+                        <CheckCircle className="h-6 w-6 text-green-500" />
+                      ) : (
+                        <Circle className="h-6 w-6 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+
+                    <div className="flex-1">
+                      {editingCommitment === commit.id ? (
+                        <div className="flex gap-2">
+                          <Textarea
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            className="flex-1"
+                            rows={2}
+                            autoFocus
+                          />
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              size="sm"
+                              onClick={() => updateCommitmentText(commit.id)}
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingCommitment(null)
+                                setEditText('')
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className={`${
+                            commit.status === 'completed' ? 'line-through text-gray-500' : 'text-gray-900'
+                          }`}>
+                            {commit.commitment_text}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {format(new Date(commit.commitment_date), 'MMM d, yyyy')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {editingCommitment !== commit.id && (
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingCommitment(commit.id)
+                            setEditText(commit.commitment_text)
+                          }}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deleteCommitment(commit.id)}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
           </CardContent>
         </Card>
       )}
 
       {/* Empty State */}
-      {commitments.length === 0 && (
+      {commitments.length === 0 && recentCommitments.length === 0 && (
         <Card className="text-center py-12">
           <CardContent>
             <Circle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
