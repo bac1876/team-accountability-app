@@ -265,6 +265,7 @@ const WeeklyGoalsSection = ({ user }) => {
                             setEditText(goal.goal_text)
                             setEditProgress(goal.progress || 0)
                           }}
+                          title="Edit goal"
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
@@ -272,7 +273,8 @@ const WeeklyGoalsSection = ({ user }) => {
                           size="sm"
                           variant="ghost"
                           onClick={() => deleteGoal(goal.id)}
-                          className="text-red-500 hover:text-red-600"
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                          title="Delete goal"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
