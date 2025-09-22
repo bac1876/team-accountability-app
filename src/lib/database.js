@@ -77,8 +77,9 @@ export const userQueries = {
 export const commitmentQueries = {
   // Get commitments for a user on a specific date
   async getByUserAndDate(userId, date) {
+    // Use DATE casting to compare only the date portion, ignoring time and timezone
     const result = await query(
-      'SELECT * FROM daily_commitments WHERE user_id = $1 AND commitment_date = $2',
+      'SELECT * FROM daily_commitments WHERE user_id = $1 AND DATE(commitment_date) = DATE($2)',
       [userId, date]
     )
     return result.rows[0]
@@ -179,8 +180,9 @@ export const goalQueries = {
 export const reflectionQueries = {
   // Get reflection for user on specific date
   async getByUserAndDate(userId, date) {
+    // Use DATE casting to compare only the date portion, ignoring time and timezone
     const result = await query(
-      'SELECT * FROM reflections WHERE user_id = $1 AND reflection_date = $2',
+      'SELECT * FROM reflections WHERE user_id = $1 AND DATE(reflection_date) = DATE($2)',
       [userId, date]
     )
     return result.rows[0]
