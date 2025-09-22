@@ -9,7 +9,7 @@ async function testStreakUpdate() {
     await page.goto('https://communitynwa.com/login', { waitUntil: 'networkidle' })
 
     console.log('2. Logging in as Brian...')
-    await page.fill('input[type="email"]', 'ba1876@gmail.com')
+    await page.fill('input[type="email"]', 'brian@searchnwa.com')
     await page.fill('input[type="password"]', 'Lbbc#2245')
     await page.click('button[type="submit"]')
 

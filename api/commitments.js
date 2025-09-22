@@ -14,9 +14,10 @@ export default async function handler(req, res) {
       let commitments
       if (date) {
         // Get commitments for specific date
+        // Use DATE() casting to compare only the date portion, ignoring time and timezone
         commitments = await query(
           `SELECT * FROM daily_commitments
-           WHERE user_id = $1 AND commitment_date = $2
+           WHERE user_id = $1 AND DATE(commitment_date) = DATE($2)
            ORDER BY created_at DESC`,
           [userId, date]
         )

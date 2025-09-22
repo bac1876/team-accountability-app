@@ -9,7 +9,7 @@ async function debugStreak() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'ba1876@gmail.com',
+        email: 'brian@searchnwa.com',
         password: 'Lbbc#2245'
       })
     })

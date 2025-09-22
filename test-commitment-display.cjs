@@ -9,7 +9,7 @@ async function testCommitmentDisplay() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'ba1876@gmail.com',
+        email: 'brian@searchnwa.com',
         password: 'Lbbc#2245'
       })
     })
@@ -45,7 +45,7 @@ async function testCommitmentDisplay() {
       const commitment = await response.json()
       const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(date + 'T00:00:00').getDay()]
 
-      if (commitment) {
+      if (commitment && commitment.commitment_text) {
         console.log(`  ${date} (${dayOfWeek}): ✓ Found - "${commitment.commitment_text.substring(0, 30)}..." (${commitment.status})`)
       } else {
         console.log(`  ${date} (${dayOfWeek}): ✗ No commitment found`)
