@@ -26,9 +26,11 @@ const PhoneCallTracking = ({ user }) => {
 
   // Helper functions for weekday logic
   const isWeekday = (dateStr) => {
-    const date = new Date(dateStr)
-    const day = date.getDay()
-    return day >= 1 && day <= 5 // Monday = 1, Friday = 5
+    // Parse date components to avoid timezone issues
+    const [year, month, day] = dateStr.split('-').map(Number)
+    const date = new Date(year, month - 1, day, 12, 0, 0)
+    const dayOfWeek = date.getDay()
+    return dayOfWeek >= 1 && dayOfWeek <= 5 // Monday = 1, Friday = 5
   }
 
   useEffect(() => {
@@ -176,14 +178,23 @@ const PhoneCallTracking = ({ user }) => {
   }
 
   const changeDate = (days) => {
-    const date = new Date(selectedDate)
+    // Parse date components to avoid timezone issues
+    const [year, month, day] = selectedDate.split('-').map(Number)
+    const date = new Date(year, month - 1, day, 12, 0, 0)
     date.setDate(date.getDate() + days)
-    setSelectedDate(date.toISOString().split('T')[0])
+
+    // Format back to YYYY-MM-DD
+    const yearStr = date.getFullYear()
+    const monthStr = String(date.getMonth() + 1).padStart(2, '0')
+    const dayStr = String(date.getDate()).padStart(2, '0')
+    setSelectedDate(`${yearStr}-${monthStr}-${dayStr}`)
   }
 
   const formatDate = (dateStr) => {
+    // Parse date components to avoid timezone issues
     const [year, month, day] = dateStr.split('-').map(Number)
-    const date = new Date(year, month - 1, day)
+    // Create date using local time zone explicitly
+    const date = new Date(year, month - 1, day, 12, 0, 0)
 
     if (dateStr === today) return 'Today'
 
@@ -235,12 +246,16 @@ const PhoneCallTracking = ({ user }) => {
               <div className="text-center">
                 <div className="text-3xl font-bold mb-1">{formatDate(selectedDate)}</div>
                 <div className="text-blue-100 text-sm">
-                  {new Date(selectedDate).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  {(() => {
+                    const [year, month, day] = selectedDate.split('-').map(Number)
+                    const date = new Date(year, month - 1, day, 12, 0, 0)
+                    return date.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                  })()}
                 </div>
                 {!isWeekday(selectedDate) && (
                   <Badge className="mt-2 bg-yellow-500 text-white">Weekend</Badge>
