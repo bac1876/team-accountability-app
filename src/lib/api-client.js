@@ -108,8 +108,8 @@ export const usersAPI = {
 
 // Commitments APIs
 export const commitmentsAPI = {
-  async getByUser(userId) {
-    return apiCall(`/commitments?userId=${userId}`)
+  async getByUser(userId, isAdmin = false) {
+    return apiCall(`/commitments?userId=${userId}&isAdmin=${isAdmin}`)
   },
 
   async getByUserAndDate(userId, date) {

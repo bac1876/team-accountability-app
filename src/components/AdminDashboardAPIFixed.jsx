@@ -116,7 +116,8 @@ const AdminDashboardAPIFixed = ({ user }) => {
           // Try to get user's commitments for completion rate
           let completionRate = 0
           try {
-            const userCommitments = await commitmentsAPI.getByUser(member.id) || []
+            // Admin view - get 6 months of commitments
+            const userCommitments = await commitmentsAPI.getByUser(member.id, true) || []
             const recentCommitments = userCommitments.filter(c => {
               try {
                 const date = new Date(c.commitment_date)
@@ -195,7 +196,7 @@ const AdminDashboardAPIFixed = ({ user }) => {
   const loadUserDetails = async (userId) => {
     try {
       const [commitments, goals, reflections] = await Promise.all([
-        commitmentsAPI.getByUser(userId).catch(() => []),
+        commitmentsAPI.getByUser(userId, true).catch(() => []),  // Admin view - 6 months
         goalsAPI.getByUser(userId).catch(() => []),
         reflectionsAPI.getByUser(userId).catch(() => [])
       ])

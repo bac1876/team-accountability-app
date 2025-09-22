@@ -72,7 +72,8 @@ const AdminDashboardAPI = ({ user }) => {
         const lastReflection = userReflections?.[0]
 
         // Calculate completion rate
-        const userCommitments = await commitmentsAPI.getByUser(member.id)
+        // Admin view - get 6 months of commitments
+        const userCommitments = await commitmentsAPI.getByUser(member.id, true)
         const recentCommitments = userCommitments?.filter(c => {
           const date = new Date(c.commitment_date)
           const diff = (today - date) / (1000 * 60 * 60 * 24)
@@ -125,7 +126,7 @@ const AdminDashboardAPI = ({ user }) => {
     try {
       // Get detailed user data
       const [commitments, goals, reflections] = await Promise.all([
-        commitmentsAPI.getByUser(userId),
+        commitmentsAPI.getByUser(userId, true),  // Admin view - 6 months
         goalsAPI.getByUser(userId),
         reflectionsAPI.getByUser(userId)
       ])

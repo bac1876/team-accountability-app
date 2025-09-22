@@ -43,8 +43,9 @@ const CommitmentsSection = ({ user }) => {
       setCommitments(dayCommitments)
       setHasCommitment(dayCommitments.length > 0)
 
-      // Get recent commitments for editing (last 7 days)
-      const allCommitments = await commitmentsAPI.getByUser(user.id)
+      // Get recent commitments for editing (last 7 days for users, 6 months for admins)
+      const isAdmin = user.role === 'admin'
+      const allCommitments = await commitmentsAPI.getByUser(user.id, isAdmin)
       if (allCommitments && Array.isArray(allCommitments)) {
         const recent = allCommitments
           .filter(c => c.commitment_date) // Ensure commitment_date exists

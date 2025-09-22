@@ -60,8 +60,9 @@ const DashboardAPI = ({ user }) => {
   const loadUserData = async () => {
     setLoading(true)
     try {
-      // Load commitments
-      const commitments = await commitmentsAPI.getByUser(user.id)
+      // Load commitments - regular users see 7 days, admins see 6 months
+      const isAdmin = user.role === 'admin'
+      const commitments = await commitmentsAPI.getByUser(user.id, isAdmin)
       if (commitments && Array.isArray(commitments)) {
         setAllCommitments(commitments)  // Store all commitments for streak calculation
         // Find today's commitment

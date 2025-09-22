@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   const { method } = req
 
   if (method === 'GET') {
-    const { userId, date } = req.query
+    const { userId, date, isAdmin } = req.query
 
     if (!userId) {
       return res.status(400).json({ error: 'User ID required' })
@@ -21,12 +21,31 @@ export default async function handler(req, res) {
           [userId, date]
         )
       } else {
-        // Get all commitments for user
+        // Apply date filtering based on user role
+        const today = new Date()
+        let dateFilter = ''
+        let queryParams = [userId]
+
+        if (isAdmin === 'true') {
+          // Admin users can see up to 6 months of data
+          const sixMonthsAgo = new Date()
+          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+          dateFilter = ' AND commitment_date >= $2'
+          queryParams.push(sixMonthsAgo.toISOString().split('T')[0])
+        } else {
+          // Regular users see only last 7 days
+          const sevenDaysAgo = new Date()
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+          dateFilter = ' AND commitment_date >= $2'
+          queryParams.push(sevenDaysAgo.toISOString().split('T')[0])
+        }
+
+        // Get commitments with date filter
         commitments = await query(
           `SELECT * FROM daily_commitments
-           WHERE user_id = $1
+           WHERE user_id = $1${dateFilter}
            ORDER BY commitment_date DESC, created_at DESC`,
-          [userId]
+          queryParams
         )
       }
 
