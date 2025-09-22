@@ -44,20 +44,51 @@ export default async function handler(req, res) {
   }
 
   if (method === 'PUT') {
-    const { id, progress } = req.body
+    // Accept either id or goalId for backwards compatibility
+    const { id, goalId, goalText, progress } = req.body
+    const goalIdToUse = goalId || id
 
-    if (!id || progress === undefined) {
-      return res.status(400).json({ error: 'Goal ID and progress required' })
+    if (!goalIdToUse) {
+      return res.status(400).json({ error: 'Goal ID required' })
     }
 
     try {
+      // Build dynamic update query based on provided fields
+      const updates = []
+      const values = []
+      let paramCount = 1
+
+      if (goalText !== undefined) {
+        updates.push(`goal_text = $${paramCount}`)
+        values.push(goalText)
+        paramCount++
+      }
+
+      if (progress !== undefined) {
+        updates.push(`progress = $${paramCount}`)
+        values.push(progress)
+        paramCount++
+      }
+
+      if (updates.length === 0) {
+        return res.status(400).json({ error: 'No fields to update' })
+      }
+
+      updates.push('updated_at = CURRENT_TIMESTAMP')
+      values.push(goalIdToUse)
+
       const result = await query(
         `UPDATE goals
-         SET progress = $1, updated_at = CURRENT_TIMESTAMP
-         WHERE id = $2
+         SET ${updates.join(', ')}
+         WHERE id = $${paramCount}
          RETURNING *`,
-        [progress, id]
+        values
       )
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Goal not found' })
+      }
+
       return res.status(200).json(result.rows[0])
     } catch (error) {
       console.error('Database error:', error)
@@ -66,14 +97,20 @@ export default async function handler(req, res) {
   }
 
   if (method === 'DELETE') {
-    const { id } = req.body
+    // Check for goalId in query params (as frontend sends it)
+    const { goalId } = req.query
 
-    if (!id) {
-      return res.status(400).json({ error: 'Goal ID required' })
+    if (!goalId) {
+      return res.status(400).json({ error: 'Goal ID required in query parameters' })
     }
 
     try {
-      await query('DELETE FROM goals WHERE id = $1', [id])
+      const result = await query('DELETE FROM goals WHERE id = $1 RETURNING id', [goalId])
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Goal not found' })
+      }
+
       return res.status(200).json({ success: true })
     } catch (error) {
       console.error('Database error:', error)
