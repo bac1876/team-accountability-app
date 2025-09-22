@@ -288,11 +288,37 @@ const DashboardAPI = ({ user }) => {
   // Toggle commitment status
   const toggleCommitmentStatus = async (commitmentId, currentStatus) => {
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed'
+
+    // Optimistically update the UI
+    setCommitments(prev => prev.map(c =>
+      c.id === commitmentId ? { ...c, status: newStatus } : c
+    ))
+
     try {
+      // Update the backend
       await commitmentsAPI.updateById(commitmentId, undefined, newStatus)
-      await loadUserData()
+
+      // Immediately recalculate the streak with the updated commitments
+      const updatedCommitments = commitments.map(c =>
+        c.id === commitmentId ? { ...c, status: newStatus } : c
+      )
+
+      // Recalculate streak with updated data
+      const newStreak = streakStore.calculateCommitmentStreak(user.id, updatedCommitments)
+      setCommitmentStreak(newStreak)
+
+      // Reload all data to ensure consistency
+      // Add a small delay to ensure backend has processed the update
+      setTimeout(async () => {
+        await loadUserData()
+      }, 100)
+
     } catch (error) {
       console.error('Error updating commitment status:', error)
+      // Revert optimistic update on error
+      setCommitments(prev => prev.map(c =>
+        c.id === commitmentId ? { ...c, status: currentStatus } : c
+      ))
     }
   }
 
