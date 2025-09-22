@@ -730,11 +730,9 @@ export const streakStore = {
     let streak = 0
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const todayStr = today.toISOString().split('T')[0]
 
     // Start from today and work backwards
     let currentDate = new Date(today)
-    let expectingCommitment = true
 
     // If today is weekend, move to last Friday
     if (!streakStore.isWeekday(currentDate.toISOString().split('T')[0])) {
@@ -743,26 +741,28 @@ export const streakStore = {
       }
     }
 
+    // Track if we've found any commitment yet
+    let foundFirstCommitment = false
+
     while (currentDate >= new Date('2024-01-01')) { // Don't go too far back
       const dateStr = currentDate.toISOString().split('T')[0]
 
       if (streakStore.isWeekday(dateStr)) {
         // Check if there's a completed commitment for this date
-        // Extract date portion from commitment_date (format: "2025-09-18T00:00:00.000Z")
-        const hasCompleted = sortedCommitments.some(c => c.commitment_date.split('T')[0] === dateStr)
+        const hasCompleted = sortedCommitments.some(c => {
+          const commitDateStr = c.commitment_date.split('T')[0]
+          return commitDateStr === dateStr
+        })
 
         if (hasCompleted) {
           streak++
+          foundFirstCommitment = true
         } else {
-          // If today has no completed commitment yet, that's OK - check yesterday
-          // For past days, if no completed commitment, check if we should continue
-          if (dateStr === todayStr) {
-            // Today - no completed commitment yet is OK, continue checking
-          } else if (streak > 0) {
-            // We had a streak but now it's broken
+          // If we've found at least one commitment and now there's a gap, stop
+          if (foundFirstCommitment) {
             break
           }
-          // If streak is still 0, keep looking for the first completed commitment
+          // Otherwise keep looking for the first commitment
         }
       }
 
