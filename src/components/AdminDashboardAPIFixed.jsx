@@ -487,13 +487,13 @@ const AdminDashboardAPIFixed = ({ user }) => {
                                       <div key={index} className="p-3 bg-slate-800/50 rounded-lg border border-slate-700">
                                         <div className="flex items-start justify-between">
                                           <div className="flex-1">
-                                            <p className="text-sm font-medium text-white">{goal.text}</p>
+                                            <p className="text-sm font-medium text-white">{goal.goal_text}</p>
                                             <p className="text-xs text-slate-400 mt-1">
-                                              Created: {format(new Date(goal.createdAt), 'MMM d, yyyy')}
+                                              Created: {format(new Date(goal.created_at), 'MMM d, yyyy')}
                                             </p>
                                           </div>
                                           <div className="ml-4">
-                                            {getStatusBadge(goal.status)}
+                                            {goal.progress >= 100 ? getStatusBadge('completed') : getStatusBadge('pending')}
                                           </div>
                                         </div>
                                       </div>
