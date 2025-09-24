@@ -744,10 +744,11 @@ export const streakStore = {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // Start from today and work backwards
+    // Start from yesterday (or last weekday if today is Monday/weekend)
     let currentDate = new Date(today)
+    currentDate.setDate(currentDate.getDate() - 1) // Start from yesterday
 
-    // If today is weekend, move to last Friday
+    // If we're now on a weekend, move to last Friday
     if (!streakStore.isWeekday(currentDate.toISOString().split('T')[0])) {
       while (!streakStore.isWeekday(currentDate.toISOString().split('T')[0])) {
         currentDate.setDate(currentDate.getDate() - 1)
@@ -758,7 +759,7 @@ export const streakStore = {
     let foundFirstCommitment = false
     const todayStr = today.toISOString().split('T')[0]
     console.log('Today is:', todayStr)
-    console.log('Starting streak calculation from:', currentDate.toISOString().split('T')[0])
+    console.log('Starting streak calculation from yesterday:', currentDate.toISOString().split('T')[0])
 
     // Create a set of completed dates for faster lookup
     const completedDates = new Set(sortedCommitments.map(c => c.commitment_date.split('T')[0]))
