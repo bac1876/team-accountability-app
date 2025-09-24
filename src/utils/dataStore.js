@@ -767,6 +767,7 @@ export const streakStore = {
 
     while (currentDate >= new Date('2025-01-01')) { // Don't go too far back
       const dateStr = currentDate.toISOString().split('T')[0]
+      console.log(`Checking date: ${dateStr}`)
 
       if (streakStore.isWeekday(dateStr)) {
         // Check if there's a completed commitment for this date
@@ -790,7 +791,9 @@ export const streakStore = {
       }
 
       // Move to previous day
+      console.log(`Moving from ${dateStr} to previous day...`)
       currentDate.setDate(currentDate.getDate() - 1)
+      console.log(`Now at: ${currentDate.toISOString().split('T')[0]}`)
     }
 
     console.log('Final streak:', streak)
