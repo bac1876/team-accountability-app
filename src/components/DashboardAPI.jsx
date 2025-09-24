@@ -135,20 +135,29 @@ const DashboardAPI = ({ user }) => {
           const response = await fetch(`/api/streak?userId=${user.id}`)
           if (response.ok) {
             const data = await response.json()
+            console.log('=== STREAK API RESPONSE ===')
+            console.log('Streak value from API:', data.streak)
+            console.log('Debug info from API:', data.debug)
             setCommitmentStreak(data.streak)
-            console.log('Streak API response:', data)
           } else {
             // Fallback to local calculation
+            console.log('API failed, using local calculation')
             const streak = streakStore.calculateCommitmentStreak(user.id, commitments)
             setCommitmentStreak(streak)
           }
         } catch (error) {
           console.error('Error fetching streak:', error)
           // Fallback to local calculation
+          console.log('=== LOCAL STREAK CALCULATION ===')
           console.log('Calculating streak locally for user:', user.id)
-          console.log('Commitments passed to streak calculation:', commitments.length)
+          console.log('Number of commitments:', commitments.length)
+          console.log('First 5 commitments:', commitments.slice(0, 5).map(c => ({
+            date: c.commitment_date,
+            status: c.status,
+            text: c.commitment_text?.substring(0, 30)
+          })))
           const streak = streakStore.calculateCommitmentStreak(user.id, commitments)
-          console.log('Calculated streak:', streak)
+          console.log('Final calculated streak:', streak)
           setCommitmentStreak(streak)
         }
       }

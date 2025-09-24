@@ -724,7 +724,10 @@ export const streakStore = {
     }
 
     console.log('calculateCommitmentStreak: Processing', allCommitments.length, 'commitments for user', userId)
-    console.log('Sample commitment:', allCommitments[0])
+    console.log('All commitments dates:', allCommitments.map(c => ({
+      date: c.commitment_date?.split('T')[0],
+      status: c.status
+    })))
 
     // Sort commitments by date descending
     // Note: commitments are already filtered by user from the API
@@ -733,6 +736,7 @@ export const streakStore = {
       .sort((a, b) => new Date(b.commitment_date) - new Date(a.commitment_date))
 
     console.log('Completed commitments found:', sortedCommitments.length)
+    console.log('Completed dates:', sortedCommitments.map(c => c.commitment_date?.split('T')[0]))
 
     if (sortedCommitments.length === 0) return 0
 
@@ -752,31 +756,36 @@ export const streakStore = {
 
     // Track if we've found any commitment yet
     let foundFirstCommitment = false
+    const todayStr = today.toISOString().split('T')[0]
+    console.log('Today is:', todayStr)
     console.log('Starting streak calculation from:', currentDate.toISOString().split('T')[0])
+
+    // Create a set of completed dates for faster lookup
+    const completedDates = new Set(sortedCommitments.map(c => c.commitment_date.split('T')[0]))
+    console.log('Set of completed dates:', Array.from(completedDates))
 
     while (currentDate >= new Date('2025-01-01')) { // Don't go too far back
       const dateStr = currentDate.toISOString().split('T')[0]
 
       if (streakStore.isWeekday(dateStr)) {
         // Check if there's a completed commitment for this date
-        const hasCompleted = sortedCommitments.some(c => {
-          const commitDateStr = c.commitment_date.split('T')[0]
-          return commitDateStr === dateStr
-        })
+        const hasCompleted = completedDates.has(dateStr)
 
         if (hasCompleted) {
           streak++
           foundFirstCommitment = true
-          console.log(`${dateStr}: ✓ Completed (streak: ${streak})`)
+          console.log(`${dateStr}: ✓ Completed (streak now: ${streak})`)
         } else {
           // If we've found at least one commitment and now there's a gap, stop
           if (foundFirstCommitment) {
-            console.log(`${dateStr}: ✗ No completion (streak broken)`)
+            console.log(`${dateStr}: ✗ No completion (streak broken at ${streak} days)`)
             break
           }
           // Otherwise keep looking for the first commitment
-          console.log(`${dateStr}: - No commitment yet (still searching)`)
+          console.log(`${dateStr}: - No commitment yet (still searching for start of streak)`)
         }
+      } else {
+        console.log(`${dateStr}: [Weekend - skipping]`)
       }
 
       // Move to previous day
