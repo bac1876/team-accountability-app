@@ -85,11 +85,17 @@ const DashboardAPI = ({ user }) => {
         }
 
         const weekCommitments = commitments
-          .filter(c => weekDates.includes(c.commitment_date.split('T')[0]))
+          .filter(c => {
+            // Extract just the date part (YYYY-MM-DD) from the commitment date
+            const commitmentDateStr = c.commitment_date.split('T')[0]
+            const isInWeek = weekDates.includes(commitmentDateStr)
+            console.log(`Checking commitment date ${commitmentDateStr}:`, isInWeek ? 'IN WEEK' : 'not in week')
+            return isInWeek
+          })
           .map(c => ({
             id: c.id,
             text: c.commitment_text,
-            date: c.commitment_date,
+            date: c.commitment_date.split('T')[0], // Store just the date part for easier matching
             status: c.status
           }))
           .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -100,6 +106,9 @@ const DashboardAPI = ({ user }) => {
         console.log('Week Overview Debug:')
         console.log('Week dates:', weekDates)
         console.log('Today:', todayString)
+        console.log('Week start:', weekStart.toISOString())
+        console.log('All commitments:', commitments.map(c => c.commitment_date.split('T')[0]))
+        console.log('Filtered week commitments:', weekCommitments)
         console.log('All commitments loaded:', commitments.length)
         if (commitments.length > 0) {
           console.log('All commitment dates:', commitments.map(c => c.commitment_date))
@@ -128,7 +137,10 @@ const DashboardAPI = ({ user }) => {
         } catch (error) {
           console.error('Error fetching streak:', error)
           // Fallback to local calculation
+          console.log('Calculating streak locally for user:', user.id)
+          console.log('Commitments passed to streak calculation:', commitments.length)
           const streak = streakStore.calculateCommitmentStreak(user.id, commitments)
+          console.log('Calculated streak:', streak)
           setCommitmentStreak(streak)
         }
       }
@@ -468,7 +480,7 @@ const DashboardAPI = ({ user }) => {
           const month = String(date.getMonth() + 1).padStart(2, '0')
           const dayStr = String(date.getDate()).padStart(2, '0')
           const dateString = `${year}-${month}-${dayStr}`
-          const commitment = recentCommitments.find(c => c.date.split('T')[0] === dateString)
+          const commitment = recentCommitments.find(c => c.date === dateString)
           const isToday = dateString === todayString
 
           const isPast = dateString < todayString
