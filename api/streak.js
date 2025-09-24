@@ -51,10 +51,11 @@ export async function calculateCommitmentStreak(userId) {
       return 0
     }
 
-    // Calculate streak starting from today
+    // Calculate streak starting from yesterday (not today, since today may not be complete)
     let streak = 0
     const today = new Date().toISOString().split('T')[0]
-    let currentDate = isWeekday(today) ? today : getPreviousWeekday(today)
+    // Always start from yesterday or last weekday
+    let currentDate = getPreviousWeekday(today)
 
     // Count consecutive completed weekdays
     while (completedDates.has(currentDate)) {
