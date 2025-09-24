@@ -26,7 +26,8 @@
       "Read(//c/Users/Owner/**)",
       "Bash(npx vercel list:*)",
       "Bash(npx vercel:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": [],
     "ask": []

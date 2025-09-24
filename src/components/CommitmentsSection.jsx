@@ -140,11 +140,14 @@ const CommitmentsSection = ({ user }) => {
   }
 
   const changeDate = (days) => {
-    const date = new Date(selectedDate)
+    // Use UTC to avoid timezone issues when parsing dates
+    const [year, month, day] = selectedDate.split('-').map(Number)
+    const date = new Date(year, month - 1, day) // month is 0-indexed
     date.setDate(date.getDate() + days)
     const newDate = date.toISOString().split('T')[0]
     setSelectedDate(newDate)
     setContextDate(newDate)  // Update context as well
+    console.log('Date changed from', selectedDate, 'to', newDate) // Debug log
   }
 
   const formatDateDisplay = (dateStr) => {

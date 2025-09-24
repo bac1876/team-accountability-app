@@ -42,10 +42,11 @@ async function testCommitmentDisplay() {
         continue
       }
 
-      const commitment = await response.json()
+      const commitments = await response.json()
       const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(date + 'T00:00:00').getDay()]
 
-      if (commitment && commitment.commitment_text) {
+      if (Array.isArray(commitments) && commitments.length > 0) {
+        const commitment = commitments[0]
         console.log(`  ${date} (${dayOfWeek}): ✓ Found - "${commitment.commitment_text.substring(0, 30)}..." (${commitment.status})`)
       } else {
         console.log(`  ${date} (${dayOfWeek}): ✗ No commitment found`)

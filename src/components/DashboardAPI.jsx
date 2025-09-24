@@ -113,9 +113,24 @@ const DashboardAPI = ({ user }) => {
           console.log(`${days[i]} ${dateString}:`, commitment ? `${commitment.status} - "${commitment.text}"` : 'No commitment')
         })
 
-        // Calculate commitment streak
-        const streak = streakStore.calculateCommitmentStreak(user.id, commitments)
-        setCommitmentStreak(streak)
+        // Calculate commitment streak using the API endpoint
+        try {
+          const response = await fetch(`/api/streak?userId=${user.id}`)
+          if (response.ok) {
+            const data = await response.json()
+            setCommitmentStreak(data.streak)
+            console.log('Streak API response:', data)
+          } else {
+            // Fallback to local calculation
+            const streak = streakStore.calculateCommitmentStreak(user.id, commitments)
+            setCommitmentStreak(streak)
+          }
+        } catch (error) {
+          console.error('Error fetching streak:', error)
+          // Fallback to local calculation
+          const streak = streakStore.calculateCommitmentStreak(user.id, commitments)
+          setCommitmentStreak(streak)
+        }
       }
 
       // Load goals
