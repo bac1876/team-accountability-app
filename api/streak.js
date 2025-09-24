@@ -1,4 +1,4 @@
-import { query } from '../lib/database'
+import { query } from '../src/lib/database.js'
 
 // Helper function to check if a date is a weekday
 function isWeekday(dateStr) {
