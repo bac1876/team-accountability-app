@@ -84,12 +84,20 @@ const DashboardAPI = ({ user }) => {
           weekDates.push(`${year}-${month}-${day}`)
         }
 
+        console.log('Week calculation debug:')
+        console.log('weekStart:', weekStart.toISOString())
+        console.log('weekDates generated:', weekDates)
+        console.log('Raw commitments from API:', commitments.slice(0, 3).map(c => ({
+          date: c.commitment_date,
+          status: c.status
+        })))
+
         const weekCommitments = commitments
           .filter(c => {
             // Extract just the date part (YYYY-MM-DD) from the commitment date
             const commitmentDateStr = c.commitment_date.split('T')[0]
             const isInWeek = weekDates.includes(commitmentDateStr)
-            console.log(`Checking commitment date ${commitmentDateStr}:`, isInWeek ? 'IN WEEK' : 'not in week')
+            console.log(`Checking commitment date ${commitmentDateStr}:`, isInWeek ? 'IN WEEK' : 'not in week', 'weekDates:', weekDates)
             return isInWeek
           })
           .map(c => ({

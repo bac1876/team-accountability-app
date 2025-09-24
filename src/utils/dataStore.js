@@ -718,12 +718,21 @@ export const streakStore = {
 
   // Calculate commitment streak (excluding weekends)
   calculateCommitmentStreak: (userId, allCommitments) => {
-    if (!allCommitments || allCommitments.length === 0) return 0
+    if (!allCommitments || allCommitments.length === 0) {
+      console.log('calculateCommitmentStreak: No commitments provided')
+      return 0
+    }
+
+    console.log('calculateCommitmentStreak: Processing', allCommitments.length, 'commitments for user', userId)
+    console.log('Sample commitment:', allCommitments[0])
 
     // Sort commitments by date descending
+    // Note: commitments are already filtered by user from the API
     const sortedCommitments = [...allCommitments]
-      .filter(c => c.user_id === userId && c.status === 'completed')
+      .filter(c => c.status === 'completed')
       .sort((a, b) => new Date(b.commitment_date) - new Date(a.commitment_date))
+
+    console.log('Completed commitments found:', sortedCommitments.length)
 
     if (sortedCommitments.length === 0) return 0
 
@@ -743,8 +752,9 @@ export const streakStore = {
 
     // Track if we've found any commitment yet
     let foundFirstCommitment = false
+    console.log('Starting streak calculation from:', currentDate.toISOString().split('T')[0])
 
-    while (currentDate >= new Date('2024-01-01')) { // Don't go too far back
+    while (currentDate >= new Date('2025-01-01')) { // Don't go too far back
       const dateStr = currentDate.toISOString().split('T')[0]
 
       if (streakStore.isWeekday(dateStr)) {
@@ -757,12 +767,15 @@ export const streakStore = {
         if (hasCompleted) {
           streak++
           foundFirstCommitment = true
+          console.log(`${dateStr}: ✓ Completed (streak: ${streak})`)
         } else {
           // If we've found at least one commitment and now there's a gap, stop
           if (foundFirstCommitment) {
+            console.log(`${dateStr}: ✗ No completion (streak broken)`)
             break
           }
           // Otherwise keep looking for the first commitment
+          console.log(`${dateStr}: - No commitment yet (still searching)`)
         }
       }
 
@@ -770,6 +783,7 @@ export const streakStore = {
       currentDate.setDate(currentDate.getDate() - 1)
     }
 
+    console.log('Final streak:', streak)
     return streak
   },
 
@@ -794,7 +808,7 @@ export const streakStore = {
       }
     }
 
-    while (currentDate >= new Date('2024-01-01')) { // Don't go too far back
+    while (currentDate >= new Date('2025-01-01')) { // Don't go too far back
       const dateStr = currentDate.toISOString().split('T')[0]
 
       if (streakStore.isWeekday(dateStr)) {
