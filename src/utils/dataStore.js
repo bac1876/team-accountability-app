@@ -765,35 +765,39 @@ export const streakStore = {
     const completedDates = new Set(sortedCommitments.map(c => c.commitment_date.split('T')[0]))
     console.log('Set of completed dates:', Array.from(completedDates))
 
+    // Helper to get previous weekday
+    const getPreviousWeekday = (date) => {
+      const newDate = new Date(date)
+      newDate.setDate(newDate.getDate() - 1)
+      // Skip weekends
+      while (!streakStore.isWeekday(newDate.toISOString().split('T')[0])) {
+        newDate.setDate(newDate.getDate() - 1)
+      }
+      return newDate
+    }
+
     while (currentDate >= new Date('2025-01-01')) { // Don't go too far back
       const dateStr = currentDate.toISOString().split('T')[0]
-      console.log(`Checking date: ${dateStr}`)
 
-      if (streakStore.isWeekday(dateStr)) {
-        // Check if there's a completed commitment for this date
-        const hasCompleted = completedDates.has(dateStr)
+      // Check if there's a completed commitment for this date
+      const hasCompleted = completedDates.has(dateStr)
 
-        if (hasCompleted) {
-          streak++
-          foundFirstCommitment = true
-          console.log(`${dateStr}: ✓ Completed (streak now: ${streak})`)
-        } else {
-          // If we've found at least one commitment and now there's a gap, stop
-          if (foundFirstCommitment) {
-            console.log(`${dateStr}: ✗ No completion (streak broken at ${streak} days)`)
-            break
-          }
-          // Otherwise keep looking for the first commitment
-          console.log(`${dateStr}: - No commitment yet (still searching for start of streak)`)
-        }
+      if (hasCompleted) {
+        streak++
+        foundFirstCommitment = true
+        console.log(`${dateStr}: ✓ Completed (streak now: ${streak})`)
       } else {
-        console.log(`${dateStr}: [Weekend - skipping]`)
+        // If we've found at least one commitment and now there's a gap, stop
+        if (foundFirstCommitment) {
+          console.log(`${dateStr}: ✗ No completion (streak broken at ${streak} days)`)
+          break
+        }
+        // Otherwise keep looking for the first commitment
+        console.log(`${dateStr}: - No commitment yet (still searching for start of streak)`)
       }
 
-      // Move to previous day
-      console.log(`Moving from ${dateStr} to previous day...`)
-      currentDate.setDate(currentDate.getDate() - 1)
-      console.log(`Now at: ${currentDate.toISOString().split('T')[0]}`)
+      // Move to previous weekday
+      currentDate = getPreviousWeekday(currentDate)
     }
 
     console.log('Final streak:', streak)
