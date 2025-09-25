@@ -713,45 +713,77 @@ const DashboardAPI = ({ user }) => {
         <TabsContent value="dashboard" className="space-y-4">
           {/* Streak Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Commitment Streak */}
-            <Card className="bg-gradient-to-br from-orange-500/20 to-red-600/20 border-orange-500/30 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5 animate-pulse" />
-              <CardHeader className="relative">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Flame className={`h-6 w-6 ${commitmentStreak > 0 ? 'text-orange-500 animate-pulse' : 'text-gray-500'}`} />
-                    Commitment Streak
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {commitmentStreak >= 60 && (
-                      <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 px-3 py-1 font-bold shadow-lg animate-pulse">
-                        🏆 PLATINUM
-                      </Badge>
-                    )}
-                    {commitmentStreak >= 30 && commitmentStreak < 60 && (
-                      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 px-3 py-1 font-bold shadow-lg">
-                        🥇 GOLD
-                      </Badge>
-                    )}
-                    {commitmentStreak >= 10 && commitmentStreak < 30 && (
-                      <Badge className="bg-gradient-to-r from-gray-400 to-slate-300 text-gray-800 border-0 px-3 py-1 font-bold shadow-lg">
-                        🥈 SILVER
-                      </Badge>
-                    )}
-                    {commitmentStreak >= 5 && commitmentStreak < 10 && (
-                      <Badge className="bg-gradient-to-r from-amber-700 to-amber-600 text-white border-0 px-3 py-1 font-bold shadow-lg">
-                        🥉 BRONZE
-                      </Badge>
-                    )}
-                    <div className="flex flex-col items-center">
-                      <Badge className={`text-2xl px-4 py-2 font-bold ${commitmentStreak > 0 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-xl' : 'bg-gray-700 text-gray-400'}`}>
-                        {commitmentStreak}
-                      </Badge>
-                      <span className="text-xs text-slate-400 mt-1">{commitmentStreak === 1 ? 'Day' : 'Days'}</span>
+            {/* Commitment Streak - Enhanced 3D */}
+            <div className="relative group transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
+              {/* Glow effect behind card */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-red-600 rounded-xl blur-2xl opacity-40 group-hover:opacity-60 animate-pulse"></div>
+
+              <Card className="relative bg-gradient-to-br from-orange-600 via-orange-700 to-red-700 border-2 border-orange-400/50 shadow-2xl overflow-hidden">
+                {/* Glossy overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/10" />
+
+                {/* Animated background pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-red-500/20 animate-pulse" />
+                </div>
+
+                <CardHeader className="relative z-10">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-white flex items-center gap-3">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-white/20 blur-xl rounded-full"></div>
+                        <Flame className={`relative h-8 w-8 ${commitmentStreak > 0 ? 'text-white drop-shadow-2xl animate-pulse' : 'text-gray-400'}`} />
+                      </div>
+                      <span className="font-black text-xl drop-shadow-lg">Commitment Streak</span>
+                    </CardTitle>
+                    <div className="flex items-center gap-3">
+                      {commitmentStreak >= 60 && (
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-purple-400 blur-lg animate-pulse"></div>
+                          <Badge className="relative bg-gradient-to-r from-purple-600 to-pink-600 text-white border-2 border-purple-400 px-4 py-2 text-sm font-black shadow-2xl">
+                            🏆 PLATINUM
+                          </Badge>
+                        </div>
+                      )}
+                      {commitmentStreak >= 30 && commitmentStreak < 60 && (
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-yellow-400 blur-lg"></div>
+                          <Badge className="relative bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-2 border-yellow-400 px-4 py-2 text-sm font-black shadow-2xl">
+                            🥇 GOLD
+                          </Badge>
+                        </div>
+                      )}
+                      {commitmentStreak >= 10 && commitmentStreak < 30 && (
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gray-300 blur-lg"></div>
+                          <Badge className="relative bg-gradient-to-r from-gray-400 to-slate-300 text-gray-900 border-2 border-gray-300 px-4 py-2 text-sm font-black shadow-2xl">
+                            🥈 SILVER
+                          </Badge>
+                        </div>
+                      )}
+                      {commitmentStreak >= 5 && commitmentStreak < 10 && (
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-amber-600 blur-lg"></div>
+                          <Badge className="relative bg-gradient-to-r from-amber-700 to-amber-600 text-white border-2 border-amber-500 px-4 py-2 text-sm font-black shadow-2xl">
+                            🥉 BRONZE
+                          </Badge>
+                        </div>
+                      )}
+                      <div className="relative">
+                        <div className="absolute -inset-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl blur-xl opacity-60"></div>
+                        <div className="relative flex flex-col items-center bg-gradient-to-b from-white/20 to-black/20 rounded-xl px-6 py-3 backdrop-blur-sm border-2 border-white/30">
+                          <span className={`text-4xl font-black ${commitmentStreak > 0 ? 'text-white drop-shadow-2xl' : 'text-gray-400'}`}>
+                            {commitmentStreak}
+                          </span>
+                          <span className="text-xs font-bold text-white/90 uppercase tracking-wider">{commitmentStreak === 1 ? 'Day' : 'Days'}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardHeader>
+                </CardHeader>
+
+                {/* Bottom shadow for depth */}
+                <div className="absolute -bottom-2 left-4 right-4 h-4 bg-black/30 rounded-full blur-xl"></div>
               <CardContent className="relative">
                 <p className="text-slate-300 font-medium">
                   {commitmentStreak >= 60
@@ -803,45 +835,77 @@ const DashboardAPI = ({ user }) => {
               </CardContent>
             </Card>
 
-            {/* Phone Call Streak */}
-            <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 border-blue-500/30 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-cyan-500/5 animate-pulse" />
-              <CardHeader className="relative">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Phone className={`h-6 w-6 ${phoneCallStreak > 0 ? 'text-blue-500 animate-pulse' : 'text-gray-500'}`} />
-                    Phone Call Streak
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    {phoneCallStreak >= 60 && (
-                      <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 px-3 py-1 font-bold shadow-lg animate-pulse">
-                        🏆 PLATINUM
-                      </Badge>
-                    )}
-                    {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
-                      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 px-3 py-1 font-bold shadow-lg">
-                        🥇 GOLD
-                      </Badge>
-                    )}
-                    {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
-                      <Badge className="bg-gradient-to-r from-gray-400 to-slate-300 text-gray-800 border-0 px-3 py-1 font-bold shadow-lg">
-                        🥈 SILVER
-                      </Badge>
-                    )}
-                    {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
-                      <Badge className="bg-gradient-to-r from-amber-700 to-amber-600 text-white border-0 px-3 py-1 font-bold shadow-lg">
-                        🥉 BRONZE
-                      </Badge>
-                    )}
-                    <div className="flex flex-col items-center">
-                      <Badge className={`text-2xl px-4 py-2 font-bold ${phoneCallStreak > 0 ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-xl' : 'bg-gray-700 text-gray-400'}`}>
-                        {phoneCallStreak}
-                      </Badge>
-                      <span className="text-xs text-slate-400 mt-1">{phoneCallStreak === 1 ? 'Day' : 'Days'}</span>
+            {/* Phone Call Streak - Enhanced 3D */}
+            <div className="relative group transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
+              {/* Glow effect behind card */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl blur-2xl opacity-40 group-hover:opacity-60 animate-pulse"></div>
+
+              <Card className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-cyan-700 border-2 border-blue-400/50 shadow-2xl overflow-hidden">
+                {/* Glossy overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/10" />
+
+                {/* Animated background pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 animate-pulse" />
+                </div>
+
+                <CardHeader className="relative z-10">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-white flex items-center gap-3">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-white/20 blur-xl rounded-full"></div>
+                        <Phone className={`relative h-8 w-8 ${phoneCallStreak > 0 ? 'text-white drop-shadow-2xl animate-pulse' : 'text-gray-400'}`} />
+                      </div>
+                      <span className="font-black text-xl drop-shadow-lg">Phone Call Streak</span>
+                    </CardTitle>
+                    <div className="flex items-center gap-3">
+                      {phoneCallStreak >= 60 && (
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-purple-400 blur-lg animate-pulse"></div>
+                          <Badge className="relative bg-gradient-to-r from-purple-600 to-pink-600 text-white border-2 border-purple-400 px-4 py-2 text-sm font-black shadow-2xl">
+                            🏆 PLATINUM
+                          </Badge>
+                        </div>
+                      )}
+                      {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-yellow-400 blur-lg"></div>
+                          <Badge className="relative bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-2 border-yellow-400 px-4 py-2 text-sm font-black shadow-2xl">
+                            🥇 GOLD
+                          </Badge>
+                        </div>
+                      )}
+                      {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gray-300 blur-lg"></div>
+                          <Badge className="relative bg-gradient-to-r from-gray-400 to-slate-300 text-gray-900 border-2 border-gray-300 px-4 py-2 text-sm font-black shadow-2xl">
+                            🥈 SILVER
+                          </Badge>
+                        </div>
+                      )}
+                      {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-amber-600 blur-lg"></div>
+                          <Badge className="relative bg-gradient-to-r from-amber-700 to-amber-600 text-white border-2 border-amber-500 px-4 py-2 text-sm font-black shadow-2xl">
+                            🥉 BRONZE
+                          </Badge>
+                        </div>
+                      )}
+                      <div className="relative">
+                        <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl blur-xl opacity-60"></div>
+                        <div className="relative flex flex-col items-center bg-gradient-to-b from-white/20 to-black/20 rounded-xl px-6 py-3 backdrop-blur-sm border-2 border-white/30">
+                          <span className={`text-4xl font-black ${phoneCallStreak > 0 ? 'text-white drop-shadow-2xl' : 'text-gray-400'}`}>
+                            {phoneCallStreak}
+                          </span>
+                          <span className="text-xs font-bold text-white/90 uppercase tracking-wider">{phoneCallStreak === 1 ? 'Day' : 'Days'}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardHeader>
+                </CardHeader>
+
+                {/* Bottom shadow for depth */}
+                <div className="absolute -bottom-2 left-4 right-4 h-4 bg-black/30 rounded-full blur-xl"></div>
               <CardContent className="relative">
                 <p className="text-slate-300 font-medium">
                   {phoneCallStreak >= 60
