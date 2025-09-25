@@ -27,7 +27,9 @@
       "Bash(npx vercel list:*)",
       "Bash(npx vercel:*)",
       "Bash(git pull:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "WebFetch(domain:accountability-three-kappa.vercel.app)",
+      "WebFetch(domain:team-accountability-app.vercel.app)"
     ],
     "deny": [],
     "ask": []

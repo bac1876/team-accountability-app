@@ -518,6 +518,9 @@ const DashboardAPI = ({ user }) => {
             return callDateStr === dateString
           })
 
+          const hasCallGoal = dayPhoneCall && dayPhoneCall.target_calls > 0
+          const callGoalMet = hasCallGoal && dayPhoneCall.actual_calls >= dayPhoneCall.target_calls
+
           return (
             <Card
               key={day}
@@ -525,42 +528,69 @@ const DashboardAPI = ({ user }) => {
               onClick={() => navigateToCommitmentDate(dateString)}
             >
               <CardContent className="p-3 md:p-4">
-                <div className="flex flex-col items-center space-y-2">
-                  {commitment?.status === 'completed' ? (
-                    <CheckCircle className="h-6 w-6 text-green-400" />
-                  ) : commitment && commitment.status === 'pending' && !isPast ? (
-                    <Clock className="h-6 w-6 text-yellow-400" />
-                  ) : isPast && !commitment ? (
-                    <XCircle className="h-6 w-6 text-red-400" />
-                  ) : isPast && commitment?.status === 'pending' ? (
-                    <XCircle className="h-6 w-6 text-red-400" />
-                  ) : (
-                    <Circle className="h-6 w-6 text-slate-500" />
-                  )}
+                <div className="flex flex-col space-y-3">
+                  {/* Day and Date Header */}
                   <div className="text-center">
                     <p className="text-xs font-medium text-slate-400">{day}</p>
-                    <p className="text-sm font-bold text-white">{date.getDate()}</p>
-
-                    {/* Phone Call Display */}
-                    {dayPhoneCall && (dayPhoneCall.target_calls > 0 || dayPhoneCall.actual_calls > 0) && (
-                      <div className="mt-2 flex items-center gap-1 text-xs">
-                        <Phone className="h-3 w-3 text-blue-400" />
-                        <span className={`font-medium ${
-                          dayPhoneCall.actual_calls >= dayPhoneCall.target_calls
-                            ? 'text-green-400'
-                            : dayPhoneCall.actual_calls > 0
-                            ? 'text-yellow-400'
-                            : 'text-slate-400'
-                        }`}>
-                          {dayPhoneCall.actual_calls || 0}/{dayPhoneCall.target_calls || 0}
-                        </span>
-                      </div>
-                    )}
-
+                    <p className="text-lg font-bold text-white">{date.getDate()}</p>
                     {isToday && (
                       <Badge variant="secondary" className="mt-1 text-xs">Today</Badge>
                     )}
                   </div>
+
+                  {/* Commitment Status */}
+                  <div className="flex items-center justify-between gap-2 px-1">
+                    <div className="flex items-center gap-1">
+                      {commitment?.status === 'completed' ? (
+                        <CheckCircle className="h-4 w-4 text-green-400" />
+                      ) : commitment && commitment.status === 'pending' && !isPast ? (
+                        <Circle className="h-4 w-4 text-yellow-400" />
+                      ) : isPast && !commitment ? (
+                        <XCircle className="h-4 w-4 text-red-400" />
+                      ) : isPast && commitment?.status === 'pending' ? (
+                        <XCircle className="h-4 w-4 text-red-400" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-slate-500" />
+                      )}
+                      <span className="text-xs text-slate-400">Commit</span>
+                    </div>
+                  </div>
+
+                  {/* Phone Call Tracking */}
+                  {(hasCallGoal || (isToday && !isPast)) && (
+                    <div className="border-t border-slate-700/50 pt-2">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between gap-1 px-1">
+                          <Phone className="h-3 w-3 text-blue-400" />
+                          <span className={`text-xs font-medium ${
+                            callGoalMet
+                              ? 'text-green-400'
+                              : dayPhoneCall?.actual_calls > 0
+                              ? 'text-yellow-400'
+                              : 'text-slate-400'
+                          }`}>
+                            {dayPhoneCall?.actual_calls || 0}/{dayPhoneCall?.target_calls || 0}
+                          </span>
+                        </div>
+                        {callGoalMet && (
+                          <div className="flex items-center justify-center gap-1">
+                            <Check className="h-3 w-3 text-green-400" />
+                            <span className="text-xs text-green-400">Goal Met!</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Overall Day Success Indicator */}
+                  {commitment?.status === 'completed' && callGoalMet && (
+                    <div className="border-t border-slate-700/50 pt-2">
+                      <div className="flex items-center justify-center gap-1">
+                        <Flame className="h-4 w-4 text-orange-400" />
+                        <span className="text-xs font-bold text-orange-400">Perfect Day!</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
