@@ -15,6 +15,9 @@ async function apiCall(endpoint, options = {}) {
   const url = `${API_BASE_URL}/api${endpoint}`
 
   console.log('Making API call to:', url)
+  if (options.body) {
+    console.log('Request body:', options.body)
+  }
 
   try {
     const response = await fetch(url, {
@@ -26,13 +29,17 @@ async function apiCall(endpoint, options = {}) {
       credentials: 'include', // Include cookies for session management
     })
 
+    console.log('Response status:', response.status)
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Request failed' }))
       console.error('API response error:', error)
       throw new Error(error.error || `HTTP ${response.status}`)
     }
 
-    return await response.json()
+    const data = await response.json()
+    console.log('API response data:', data)
+    return data
   } catch (error) {
     console.error(`API call failed for ${endpoint}:`, error)
     // If fetch itself failed, it might be a network or CORS issue
