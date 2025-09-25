@@ -133,9 +133,9 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
       // Only reload after a longer delay to avoid race conditions
       setTimeout(() => loadStats(), 2000)
 
-      // Notify parent of data change
+      // Notify parent of data change with slight delay to ensure DB is updated
       if (onDataChange) {
-        onDataChange()
+        setTimeout(() => onDataChange(), 500)
       }
 
       // Show success
@@ -197,9 +197,9 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
       // Only reload after a longer delay to avoid race conditions
       setTimeout(() => loadStats(), 2000)
 
-      // Notify parent of data change
+      // Notify parent of data change with slight delay to ensure DB is updated
       if (onDataChange) {
-        onDataChange()
+        setTimeout(() => onDataChange(), 500)
       }
 
       // Show success

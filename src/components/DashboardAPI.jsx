@@ -192,9 +192,14 @@ const DashboardAPI = ({ user }) => {
         )
 
         // Filter phone calls for current week
+        const weekStartStr = weekStart.toISOString().split('T')[0]
+        const weekEndStr = weekEnd.toISOString().split('T')[0]
+
         const weekPhoneCalls = (phoneCalls || []).filter(call => {
-          const callDate = new Date(call.call_date)
-          return callDate >= weekStart && callDate <= weekEnd
+          const callDateStr = typeof call.call_date === 'string'
+            ? call.call_date.split('T')[0]
+            : call.call_date.toISOString().split('T')[0]
+          return callDateStr >= weekStartStr && callDateStr <= weekEndStr
         })
         setWeeklyPhoneCalls(weekPhoneCalls)
 
