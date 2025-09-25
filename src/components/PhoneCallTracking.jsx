@@ -8,12 +8,14 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Phone, Target, CheckCircle, TrendingUp, Calendar, ChevronLeft, ChevronRight, Plus, Save } from 'lucide-react'
 import { phoneCallsAPI } from '../lib/api-client.js'
+import { useNavigation } from '../context/NavigationContext.jsx'
 
-const PhoneCallTracking = ({ user }) => {
+const PhoneCallTracking = ({ user, onDataChange }) => {
+  const { selectedDate: navSelectedDate } = useNavigation()
   const [targetCalls, setTargetCalls] = useState('')
   const [actualCalls, setActualCalls] = useState('')
   const [notes, setNotes] = useState('')
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(navSelectedDate || new Date().toISOString().split('T')[0])
   const [dailyStats, setDailyStats] = useState(null)
   const [weeklyStats, setWeeklyStats] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -32,6 +34,13 @@ const PhoneCallTracking = ({ user }) => {
     const dayOfWeek = date.getDay()
     return dayOfWeek >= 1 && dayOfWeek <= 5 // Monday = 1, Friday = 5
   }
+
+  // Sync with navigation date when it changes
+  useEffect(() => {
+    if (navSelectedDate) {
+      setSelectedDate(navSelectedDate)
+    }
+  }, [navSelectedDate])
 
   useEffect(() => {
     loadStats()
@@ -120,6 +129,11 @@ const PhoneCallTracking = ({ user }) => {
       // Then reload from database to ensure consistency
       setTimeout(loadStats, 100)
 
+      // Notify parent of data change
+      if (onDataChange) {
+        onDataChange()
+      }
+
       // Show success
       const successDiv = document.createElement('div')
       successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50'
@@ -145,7 +159,7 @@ const PhoneCallTracking = ({ user }) => {
         user.id,
         selectedDate,
         parseInt(actualCalls),
-        dailyStats?.target || null,
+        dailyStats?.targetCalls || null,
         notes
       )
 
@@ -162,6 +176,11 @@ const PhoneCallTracking = ({ user }) => {
 
       // Then reload from database to ensure consistency
       setTimeout(loadStats, 100)
+
+      // Notify parent of data change
+      if (onDataChange) {
+        onDataChange()
+      }
 
       // Show success
       const successDiv = document.createElement('div')

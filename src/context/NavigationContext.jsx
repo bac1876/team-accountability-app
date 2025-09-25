@@ -19,13 +19,20 @@ export const NavigationProvider = ({ children }) => {
     setActiveTab('commitment')
   }
 
+  const navigateToPhoneCallsDate = (date) => {
+    console.log('Navigating to phone calls for date:', date)
+    setSelectedDate(date)
+    setActiveTab('phone-calls')
+  }
+
   return (
     <NavigationContext.Provider value={{
       activeTab,
       navigateToTab,
       selectedDate,
       setSelectedDate,
-      navigateToCommitmentDate
+      navigateToCommitmentDate,
+      navigateToPhoneCallsDate
     }}>
       {children}
     </NavigationContext.Provider>

@@ -18,7 +18,7 @@ import WeeklyGoalsSection from './WeeklyGoalsSection.jsx'
 import ReflectionsSection from './ReflectionsSection.jsx'
 
 const DashboardAPI = ({ user }) => {
-  const { activeTab, navigateToTab, navigateToCommitmentDate, selectedDate } = useNavigation()
+  const { activeTab, navigateToTab, navigateToCommitmentDate, navigateToPhoneCallsDate, selectedDate } = useNavigation()
 
   // State
   const [todayCommitment, setTodayCommitment] = useState('')
@@ -529,12 +529,11 @@ const DashboardAPI = ({ user }) => {
           return (
             <Card
               key={day}
-              className={`bg-slate-800/50 border-slate-700/50 cursor-pointer hover:bg-slate-700/50 transition-all ${
+              className={`bg-slate-800/50 border-slate-700/50 transition-all ${
                 isToday ? 'ring-2 ring-blue-500/50' :
                 bothComplete ? 'bg-gradient-to-br from-green-900/20 to-blue-900/20 border-green-500/30' :
                 partialComplete ? 'bg-slate-800/70' : ''
               }`}
-              onClick={() => navigateToCommitmentDate(dateString)}
             >
               <CardContent className="p-3 md:p-4">
                 <div className="flex flex-col space-y-2">
@@ -549,8 +548,14 @@ const DashboardAPI = ({ user }) => {
 
                   {/* Two Equal Primary Sections */}
                   <div className="space-y-3">
-                    {/* Commitment Section */}
-                    <div className="bg-slate-700/30 rounded-md p-2">
+                    {/* Commitment Section - Clickable */}
+                    <div
+                      className="bg-slate-700/30 rounded-md p-2 cursor-pointer hover:bg-slate-700/50 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigateToCommitmentDate(dateString)
+                      }}
+                    >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-semibold text-slate-300">Commitment</span>
                         {commitmentCompleted ? (
@@ -574,8 +579,14 @@ const DashboardAPI = ({ user }) => {
                       )}
                     </div>
 
-                    {/* Phone Calls Section */}
-                    <div className="bg-slate-700/30 rounded-md p-2">
+                    {/* Phone Calls Section - Clickable */}
+                    <div
+                      className="bg-slate-700/30 rounded-md p-2 cursor-pointer hover:bg-slate-700/50 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigateToPhoneCallsDate(dateString)
+                      }}
+                    >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-semibold text-slate-300 flex items-center gap-1">
                           <Phone className="h-3 w-3" />
@@ -905,7 +916,7 @@ const DashboardAPI = ({ user }) => {
 
         {/* Phone Calls Tab */}
         <TabsContent value="phone-calls" className="space-y-4">
-          <PhoneCallTracking user={user} />
+          <PhoneCallTracking user={user} onDataChange={loadUserData} />
         </TabsContent>
       </Tabs>
     </div>
