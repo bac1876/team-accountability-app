@@ -108,6 +108,16 @@ export default async function handler(req, res) {
     })
   } catch (error) {
     console.error('Error fetching phone call stats:', error)
-    return res.status(500).json({ error: 'Failed to fetch phone call statistics' })
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.query.userId,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate
+    })
+    return res.status(500).json({
+      error: 'Failed to fetch phone call statistics',
+      details: error.message
+    })
   }
 }
