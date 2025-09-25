@@ -9,7 +9,7 @@ import { Slider } from '@/components/ui/slider.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
 import { Label } from '@/components/ui/label.jsx'
-import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone, Edit2, Save, Trash2, Flame, TrendingUp, XCircle } from 'lucide-react'
+import { CheckCircle, Circle, Clock, Target, MessageSquare, X, Check, Phone, Edit2, Save, Trash2, Flame, TrendingUp, XCircle, Star } from 'lucide-react'
 import { commitmentsAPI, goalsAPI, reflectionsAPI, phoneCallsAPI } from '../lib/api-client.js'
 import { streakStore } from '../utils/dataStore.js'
 import PhoneCallTracking from './PhoneCallTracking.jsx'
@@ -739,56 +739,64 @@ const DashboardAPI = ({ user }) => {
                     <div className="flex items-center gap-3">
                       {commitmentStreak >= 60 && (
                         <div className="relative group/badge">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
-                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-purple-500/50">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shadow-lg">
-                              <span className="text-lg">🏆</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-purple-300 uppercase tracking-wider">Tier</span>
-                              <span className="text-sm font-black text-white">PLATINUM</span>
+                          {/* 3D Platinum Star */}
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 blur-xl opacity-60 animate-pulse"></div>
+                            <div className="relative flex flex-col items-center gap-1 px-3 py-2">
+                              <div className="relative">
+                                <Star className="h-12 w-12 text-purple-500 fill-purple-500 drop-shadow-2xl transform rotate-0 transition-transform group-hover/badge:rotate-12" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-400 via-pink-400 to-purple-600 mix-blend-overlay rounded-full blur-md"></div>
+                                <Star className="absolute top-0 left-0 h-12 w-12 text-white/30 fill-white/20" />
+                              </div>
+                              <span className="text-xs font-black text-white drop-shadow-lg">PLATINUM</span>
                             </div>
                           </div>
                         </div>
                       )}
                       {commitmentStreak >= 30 && commitmentStreak < 60 && (
                         <div className="relative group/badge">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-600 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
-                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-yellow-500/50">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-400 shadow-lg">
-                              <span className="text-lg">🥇</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-yellow-300 uppercase tracking-wider">Tier</span>
-                              <span className="text-sm font-black text-white">GOLD</span>
+                          {/* 3D Gold Star */}
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-amber-500 blur-xl opacity-60 animate-pulse"></div>
+                            <div className="relative flex flex-col items-center gap-1 px-3 py-2">
+                              <div className="relative">
+                                <Star className="h-12 w-12 text-yellow-500 fill-yellow-500 drop-shadow-2xl transform rotate-0 transition-transform group-hover/badge:rotate-12" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 mix-blend-overlay rounded-full blur-md"></div>
+                                <Star className="absolute top-0 left-0 h-12 w-12 text-white/30 fill-white/20" />
+                              </div>
+                              <span className="text-xs font-black text-white drop-shadow-lg">GOLD</span>
                             </div>
                           </div>
                         </div>
                       )}
                       {commitmentStreak >= 10 && commitmentStreak < 30 && (
                         <div className="relative group/badge">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-gray-500 via-slate-400 to-gray-500 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
-                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-gray-400/50">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-slate-400 shadow-lg">
-                              <span className="text-lg">🥈</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-gray-300 uppercase tracking-wider">Tier</span>
-                              <span className="text-sm font-black text-white">SILVER</span>
+                          {/* 3D Silver Star */}
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-gray-400 to-slate-400 blur-xl opacity-60 animate-pulse"></div>
+                            <div className="relative flex flex-col items-center gap-1 px-3 py-2">
+                              <div className="relative">
+                                <Star className="h-12 w-12 text-gray-400 fill-gray-400 drop-shadow-2xl transform rotate-0 transition-transform group-hover/badge:rotate-12" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-gray-300 via-slate-300 to-gray-500 mix-blend-overlay rounded-full blur-md"></div>
+                                <Star className="absolute top-0 left-0 h-12 w-12 text-white/30 fill-white/20" />
+                              </div>
+                              <span className="text-xs font-black text-white drop-shadow-lg">SILVER</span>
                             </div>
                           </div>
                         </div>
                       )}
                       {commitmentStreak >= 5 && commitmentStreak < 10 && (
                         <div className="relative group/badge">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
-                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-amber-600/50">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
-                              <span className="text-lg">🥉</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-amber-300 uppercase tracking-wider">Tier</span>
-                              <span className="text-sm font-black text-white">BRONZE</span>
+                          {/* 3D Bronze Star */}
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-600 blur-xl opacity-60 animate-pulse"></div>
+                            <div className="relative flex flex-col items-center gap-1 px-3 py-2">
+                              <div className="relative">
+                                <Star className="h-12 w-12 text-amber-600 fill-amber-600 drop-shadow-2xl transform rotate-0 transition-transform group-hover/badge:rotate-12" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-amber-400 via-orange-400 to-amber-700 mix-blend-overlay rounded-full blur-md"></div>
+                                <Star className="absolute top-0 left-0 h-12 w-12 text-white/30 fill-white/20" />
+                              </div>
+                              <span className="text-xs font-black text-white drop-shadow-lg">BRONZE</span>
                             </div>
                           </div>
                         </div>
@@ -885,56 +893,64 @@ const DashboardAPI = ({ user }) => {
                     <div className="flex items-center gap-3">
                       {phoneCallStreak >= 60 && (
                         <div className="relative group/badge">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
-                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-purple-500/50">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shadow-lg">
-                              <span className="text-lg">🏆</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-purple-300 uppercase tracking-wider">Tier</span>
-                              <span className="text-sm font-black text-white">PLATINUM</span>
+                          {/* 3D Platinum Star */}
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 blur-xl opacity-60 animate-pulse"></div>
+                            <div className="relative flex flex-col items-center gap-1 px-3 py-2">
+                              <div className="relative">
+                                <Star className="h-12 w-12 text-purple-500 fill-purple-500 drop-shadow-2xl transform rotate-0 transition-transform group-hover/badge:rotate-12" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-400 via-pink-400 to-purple-600 mix-blend-overlay rounded-full blur-md"></div>
+                                <Star className="absolute top-0 left-0 h-12 w-12 text-white/30 fill-white/20" />
+                              </div>
+                              <span className="text-xs font-black text-white drop-shadow-lg">PLATINUM</span>
                             </div>
                           </div>
                         </div>
                       )}
                       {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
                         <div className="relative group/badge">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-600 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
-                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-yellow-500/50">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-400 shadow-lg">
-                              <span className="text-lg">🥇</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-yellow-300 uppercase tracking-wider">Tier</span>
-                              <span className="text-sm font-black text-white">GOLD</span>
+                          {/* 3D Gold Star */}
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500 to-amber-500 blur-xl opacity-60 animate-pulse"></div>
+                            <div className="relative flex flex-col items-center gap-1 px-3 py-2">
+                              <div className="relative">
+                                <Star className="h-12 w-12 text-yellow-500 fill-yellow-500 drop-shadow-2xl transform rotate-0 transition-transform group-hover/badge:rotate-12" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 mix-blend-overlay rounded-full blur-md"></div>
+                                <Star className="absolute top-0 left-0 h-12 w-12 text-white/30 fill-white/20" />
+                              </div>
+                              <span className="text-xs font-black text-white drop-shadow-lg">GOLD</span>
                             </div>
                           </div>
                         </div>
                       )}
                       {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
                         <div className="relative group/badge">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-gray-500 via-slate-400 to-gray-500 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
-                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-gray-400/50">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-slate-400 shadow-lg">
-                              <span className="text-lg">🥈</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-gray-300 uppercase tracking-wider">Tier</span>
-                              <span className="text-sm font-black text-white">SILVER</span>
+                          {/* 3D Silver Star */}
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-gray-400 to-slate-400 blur-xl opacity-60 animate-pulse"></div>
+                            <div className="relative flex flex-col items-center gap-1 px-3 py-2">
+                              <div className="relative">
+                                <Star className="h-12 w-12 text-gray-400 fill-gray-400 drop-shadow-2xl transform rotate-0 transition-transform group-hover/badge:rotate-12" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-gray-300 via-slate-300 to-gray-500 mix-blend-overlay rounded-full blur-md"></div>
+                                <Star className="absolute top-0 left-0 h-12 w-12 text-white/30 fill-white/20" />
+                              </div>
+                              <span className="text-xs font-black text-white drop-shadow-lg">SILVER</span>
                             </div>
                           </div>
                         </div>
                       )}
                       {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
                         <div className="relative group/badge">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
-                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-amber-600/50">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
-                              <span className="text-lg">🥉</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-amber-300 uppercase tracking-wider">Tier</span>
-                              <span className="text-sm font-black text-white">BRONZE</span>
+                          {/* 3D Bronze Star */}
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-600 blur-xl opacity-60 animate-pulse"></div>
+                            <div className="relative flex flex-col items-center gap-1 px-3 py-2">
+                              <div className="relative">
+                                <Star className="h-12 w-12 text-amber-600 fill-amber-600 drop-shadow-2xl transform rotate-0 transition-transform group-hover/badge:rotate-12" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-amber-400 via-orange-400 to-amber-700 mix-blend-overlay rounded-full blur-md"></div>
+                                <Star className="absolute top-0 left-0 h-12 w-12 text-white/30 fill-white/20" />
+                              </div>
+                              <span className="text-xs font-black text-white drop-shadow-lg">BRONZE</span>
                             </div>
                           </div>
                         </div>
