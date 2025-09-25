@@ -40,6 +40,7 @@ const DashboardAPI = ({ user }) => {
   const [commitmentStreak, setCommitmentStreak] = useState(0)
   const [phoneCallStreak, setPhoneCallStreak] = useState(0)
   const [allCommitments, setAllCommitments] = useState([])
+  const [weeklyPhoneCalls, setWeeklyPhoneCalls] = useState([])
 
   const today = new Date()
   const todayString = today.toISOString().split('T')[0]
@@ -189,6 +190,13 @@ const DashboardAPI = ({ user }) => {
           user.id,
           thirtyDaysAgo.toISOString().split('T')[0]
         )
+
+        // Filter phone calls for current week
+        const weekPhoneCalls = (phoneCalls || []).filter(call => {
+          const callDate = new Date(call.call_date)
+          return callDate >= weekStart && callDate <= weekEnd
+        })
+        setWeeklyPhoneCalls(weekPhoneCalls)
 
         // Calculate streak (25+ calls on weekdays)
         let streak = 0
@@ -502,6 +510,14 @@ const DashboardAPI = ({ user }) => {
 
           const isPast = dateString < todayString
 
+          // Find phone call data for this day
+          const dayPhoneCall = weeklyPhoneCalls.find(call => {
+            const callDateStr = typeof call.call_date === 'string'
+              ? call.call_date.split('T')[0]
+              : call.call_date.toISOString().split('T')[0]
+            return callDateStr === dateString
+          })
+
           return (
             <Card
               key={day}
@@ -524,6 +540,23 @@ const DashboardAPI = ({ user }) => {
                   <div className="text-center">
                     <p className="text-xs font-medium text-slate-400">{day}</p>
                     <p className="text-sm font-bold text-white">{date.getDate()}</p>
+
+                    {/* Phone Call Display */}
+                    {dayPhoneCall && (dayPhoneCall.target_calls > 0 || dayPhoneCall.actual_calls > 0) && (
+                      <div className="mt-2 flex items-center gap-1 text-xs">
+                        <Phone className="h-3 w-3 text-blue-400" />
+                        <span className={`font-medium ${
+                          dayPhoneCall.actual_calls >= dayPhoneCall.target_calls
+                            ? 'text-green-400'
+                            : dayPhoneCall.actual_calls > 0
+                            ? 'text-yellow-400'
+                            : 'text-slate-400'
+                        }`}>
+                          {dayPhoneCall.actual_calls || 0}/{dayPhoneCall.target_calls || 0}
+                        </span>
+                      </div>
+                    )}
+
                     {isToday && (
                       <Badge variant="secondary" className="mt-1 text-xs">Today</Badge>
                     )}
@@ -715,7 +748,7 @@ const DashboardAPI = ({ user }) => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-slate-700/30 rounded-lg">
                   <p className="text-2xl font-bold text-white">{recentCommitments.filter(c => c.status === 'completed').length}</p>
                   <p className="text-sm text-slate-400">Commitments Done</p>
@@ -726,13 +759,71 @@ const DashboardAPI = ({ user }) => {
                 </div>
                 <div className="text-center p-4 bg-slate-700/30 rounded-lg">
                   <p className="text-2xl font-bold text-white">
+                    {(() => {
+                      const totalCalls = weeklyPhoneCalls.reduce((sum, call) =>
+                        sum + (call.actual_calls || 0), 0
+                      )
+                      return totalCalls
+                    })()}
+                  </p>
+                  <p className="text-sm text-slate-400">Phone Calls Made</p>
+                </div>
+                <div className="text-center p-4 bg-slate-700/30 rounded-lg">
+                  <p className="text-2xl font-bold text-white">
                     {recentCommitments.length > 0
                       ? Math.round((recentCommitments.filter(c => c.status === 'completed').length / recentCommitments.length) * 100)
                       : 0}%
                   </p>
-                  <p className="text-sm text-slate-400">Success Rate</p>
+                  <p className="text-sm text-slate-400">Commitment Rate</p>
                 </div>
               </div>
+
+              {/* Phone Call Week Summary */}
+              {weeklyPhoneCalls.length > 0 && (
+                <div className="mt-4 p-4 bg-slate-700/30 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-blue-400" />
+                      <span className="text-sm font-medium text-white">Phone Call Summary</span>
+                    </div>
+                    <span className="text-xs text-slate-400">This Week</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-lg font-bold text-blue-400">
+                        {weeklyPhoneCalls.reduce((sum, call) =>
+                          sum + (call.target_calls || 0), 0
+                        )}
+                      </p>
+                      <p className="text-xs text-slate-400">Target</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-green-400">
+                        {weeklyPhoneCalls.reduce((sum, call) =>
+                          sum + (call.actual_calls || 0), 0
+                        )}
+                      </p>
+                      <p className="text-xs text-slate-400">Actual</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-white">
+                        {(() => {
+                          const totalTarget = weeklyPhoneCalls.reduce((sum, call) =>
+                            sum + (call.target_calls || 0), 0
+                          )
+                          const totalActual = weeklyPhoneCalls.reduce((sum, call) =>
+                            sum + (call.actual_calls || 0), 0
+                          )
+                          return totalTarget > 0
+                            ? Math.round((totalActual / totalTarget) * 100) + '%'
+                            : '0%'
+                        })()}
+                      </p>
+                      <p className="text-xs text-slate-400">Completion</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
