@@ -110,7 +110,6 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
 
     setLoading(true)
     try {
-      console.log('Setting goal:', { userId: user.id, date: selectedDate, target: parseInt(targetCalls) })
 
       // Save to database only
       const result = await phoneCallsAPI.setGoal(
@@ -119,7 +118,6 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
         parseInt(targetCalls)
       )
 
-      console.log('Goal set result:', result)
 
       // Immediately update the UI with the new goal
       setDailyStats(prev => ({

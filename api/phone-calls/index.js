@@ -32,7 +32,6 @@ export default async function handler(req, res) {
         const result = await query(sql, params)
         return res.status(200).json(result.rows || [])
       } catch (error) {
-        console.error('Error fetching phone calls:', error)
         return res.status(500).json({ error: 'Failed to fetch phone calls' })
       }
 
@@ -40,7 +39,6 @@ export default async function handler(req, res) {
       // Create or update phone call record
       const { user_id, call_date, target_calls, actual_calls, notes } = req.body
 
-      console.log('POST /api/phone-calls received:', { user_id, call_date, target_calls, actual_calls, notes })
 
       if (!user_id || !call_date) {
         return res.status(400).json({ error: 'User ID and date are required' })
@@ -65,10 +63,8 @@ export default async function handler(req, res) {
            notes || null]
         )
 
-        console.log('Phone call saved/updated:', result.rows[0])
         return res.status(200).json(result.rows[0])
       } catch (error) {
-        console.error('Error saving phone call:', error)
         return res.status(500).json({ error: 'Failed to save phone call' })
       }
 
