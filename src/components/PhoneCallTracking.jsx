@@ -55,15 +55,16 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
       // Find today's data
       const dailyData = weeklyData?.days?.find(d => d.date === selectedDate)
 
-      if (dailyData) {
+      if (dailyData && dailyData.has_data) {
         setDailyStats({
           targetCalls: dailyData.target_calls,
           actualCalls: dailyData.actual_calls,
           notes: dailyData.notes || '',
           completionRate: dailyData.completion_rate
         })
-        setHasSetGoal(dailyData.target_calls > 0)
-        setHasLoggedCalls(dailyData.actual_calls > 0)
+        // Check if goal has been set (not null and greater than or equal to 0)
+        setHasSetGoal(dailyData.target_calls !== null && dailyData.target_calls !== undefined && dailyData.target_calls >= 0)
+        setHasLoggedCalls(dailyData.actual_calls !== null && dailyData.actual_calls !== undefined && dailyData.actual_calls >= 0)
       } else {
         // Don't clear the goal state if we're just loading
         // Only clear if we actually get a null response
@@ -126,8 +127,9 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
       setTargetCalls('')
       setHasSetGoal(true)
 
-      // Then reload from database to ensure consistency
-      setTimeout(loadStats, 100)
+      // Don't immediately reload - let the UI state persist
+      // Only reload after a longer delay to avoid race conditions
+      setTimeout(() => loadStats(), 2000)
 
       // Notify parent of data change
       if (onDataChange) {
@@ -174,8 +176,9 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
       setNotes('')
       setHasLoggedCalls(true)
 
-      // Then reload from database to ensure consistency
-      setTimeout(loadStats, 100)
+      // Don't immediately reload - let the UI state persist
+      // Only reload after a longer delay to avoid race conditions
+      setTimeout(() => loadStats(), 2000)
 
       // Notify parent of data change
       if (onDataChange) {
