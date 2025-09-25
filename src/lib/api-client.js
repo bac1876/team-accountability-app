@@ -227,9 +227,7 @@ export const phoneCallsAPI = {
       body: JSON.stringify({
         user_id: userId,
         call_date: date,
-        target_calls: targetCalls,
-        actual_calls: null,
-        notes: ''
+        target_calls: targetCalls
       }),
     })
   },

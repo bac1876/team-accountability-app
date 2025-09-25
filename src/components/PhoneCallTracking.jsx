@@ -110,12 +110,16 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
 
     setLoading(true)
     try {
+      console.log('Setting goal:', { userId: user.id, date: selectedDate, target: parseInt(targetCalls) })
+
       // Save to database only
-      await phoneCallsAPI.setGoal(
+      const result = await phoneCallsAPI.setGoal(
         user.id,
         selectedDate,
         parseInt(targetCalls)
       )
+
+      console.log('Goal set result:', result)
 
       // Immediately update the UI with the new goal
       setDailyStats(prev => ({
@@ -144,6 +148,11 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
       setTimeout(() => successDiv.remove(), 3000)
     } catch (error) {
       console.error('Error setting goal:', error)
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      })
       // Show error message
       alert(`Error setting goal: ${error.message}`)
     } finally {
@@ -156,14 +165,24 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
 
     setLoading(true)
     try {
+      console.log('Logging calls:', {
+        userId: user.id,
+        date: selectedDate,
+        actual: parseInt(actualCalls),
+        target: dailyStats?.targetCalls || null,
+        notes: notes
+      })
+
       // Save to database only - include target_calls if it exists
-      await phoneCallsAPI.logCalls(
+      const result = await phoneCallsAPI.logCalls(
         user.id,
         selectedDate,
         parseInt(actualCalls),
         dailyStats?.targetCalls || null,
         notes
       )
+
+      console.log('Log calls result:', result)
 
       // Immediately update the UI with the new actual calls
       setDailyStats(prev => ({
