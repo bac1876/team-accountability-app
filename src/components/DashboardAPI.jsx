@@ -497,7 +497,7 @@ const DashboardAPI = ({ user }) => {
             Welcome back, {user?.name}!
           </h1>
           <div className="flex items-center gap-3">
-            {/* Commitment Streak Badge - 3D Effect */}
+            {/* Commitment Streak Badge - 3D Stars */}
             {commitmentStreak > 0 && (
               <div className="relative group transform transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 rounded-full blur-xl opacity-50 group-hover:opacity-75 animate-pulse"></div>
@@ -505,17 +505,34 @@ const DashboardAPI = ({ user }) => {
                   <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 rounded-full"></div>
                   <Flame className="relative h-6 w-6 text-white drop-shadow-lg animate-pulse z-10" />
                   <div className="relative flex items-center gap-2 z-10">
+                    {/* 3D Stars based on tier */}
                     {commitmentStreak >= 60 && (
-                      <span className="text-sm font-black text-white drop-shadow-lg">🏆 PLATINUM</span>
+                      <div className="relative">
+                        <Star className="h-7 w-7 text-purple-400 fill-purple-400 drop-shadow-2xl" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-300 via-purple-400 to-purple-600 mix-blend-overlay rounded-full blur-md"></div>
+                        <Star className="absolute top-0 left-0 h-7 w-7 text-white/30 fill-white/20" />
+                      </div>
                     )}
                     {commitmentStreak >= 30 && commitmentStreak < 60 && (
-                      <span className="text-sm font-black text-white drop-shadow-lg">🥇 GOLD</span>
+                      <div className="relative">
+                        <Star className="h-7 w-7 text-yellow-400 fill-yellow-400 drop-shadow-2xl" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-600 mix-blend-overlay rounded-full blur-md"></div>
+                        <Star className="absolute top-0 left-0 h-7 w-7 text-white/30 fill-white/20" />
+                      </div>
                     )}
                     {commitmentStreak >= 10 && commitmentStreak < 30 && (
-                      <span className="text-sm font-black text-white drop-shadow-lg">🥈 SILVER</span>
+                      <div className="relative">
+                        <Star className="h-7 w-7 text-gray-400 fill-gray-400 drop-shadow-2xl" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-gray-300 via-slate-300 to-gray-500 mix-blend-overlay rounded-full blur-md"></div>
+                        <Star className="absolute top-0 left-0 h-7 w-7 text-white/30 fill-white/20" />
+                      </div>
                     )}
                     {commitmentStreak >= 5 && commitmentStreak < 10 && (
-                      <span className="text-sm font-black text-white drop-shadow-lg">🥉 BRONZE</span>
+                      <div className="relative">
+                        <Star className="h-7 w-7 text-amber-600 fill-amber-600 drop-shadow-2xl" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-400 via-orange-400 to-amber-700 mix-blend-overlay rounded-full blur-md"></div>
+                        <Star className="absolute top-0 left-0 h-7 w-7 text-white/30 fill-white/20" />
+                      </div>
                     )}
                     <div className="flex flex-col items-center">
                       <span className="text-2xl font-black text-white drop-shadow-lg">{commitmentStreak}</span>
@@ -527,7 +544,7 @@ const DashboardAPI = ({ user }) => {
               </div>
             )}
 
-            {/* Phone Call Streak Badge - 3D Effect */}
+            {/* Phone Call Streak Badge - 3D Stars */}
             {phoneCallStreak > 0 && (
               <div className="relative group transform transition-all duration-300 hover:scale-110 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full blur-xl opacity-50 group-hover:opacity-75 animate-pulse"></div>
@@ -535,17 +552,34 @@ const DashboardAPI = ({ user }) => {
                   <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 rounded-full"></div>
                   <Phone className="relative h-6 w-6 text-white drop-shadow-lg animate-pulse z-10" />
                   <div className="relative flex items-center gap-2 z-10">
+                    {/* 3D Stars based on tier */}
                     {phoneCallStreak >= 60 && (
-                      <span className="text-sm font-black text-white drop-shadow-lg">🏆 PLATINUM</span>
+                      <div className="relative">
+                        <Star className="h-7 w-7 text-purple-400 fill-purple-400 drop-shadow-2xl" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-300 via-purple-400 to-purple-600 mix-blend-overlay rounded-full blur-md"></div>
+                        <Star className="absolute top-0 left-0 h-7 w-7 text-white/30 fill-white/20" />
+                      </div>
                     )}
                     {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
-                      <span className="text-sm font-black text-white drop-shadow-lg">🥇 GOLD</span>
+                      <div className="relative">
+                        <Star className="h-7 w-7 text-yellow-400 fill-yellow-400 drop-shadow-2xl" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-600 mix-blend-overlay rounded-full blur-md"></div>
+                        <Star className="absolute top-0 left-0 h-7 w-7 text-white/30 fill-white/20" />
+                      </div>
                     )}
                     {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
-                      <span className="text-sm font-black text-white drop-shadow-lg">🥈 SILVER</span>
+                      <div className="relative">
+                        <Star className="h-7 w-7 text-gray-400 fill-gray-400 drop-shadow-2xl" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-gray-300 via-slate-300 to-gray-500 mix-blend-overlay rounded-full blur-md"></div>
+                        <Star className="absolute top-0 left-0 h-7 w-7 text-white/30 fill-white/20" />
+                      </div>
                     )}
                     {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
-                      <span className="text-sm font-black text-white drop-shadow-lg">🥉 BRONZE</span>
+                      <div className="relative">
+                        <Star className="h-7 w-7 text-amber-600 fill-amber-600 drop-shadow-2xl" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-400 via-orange-400 to-amber-700 mix-blend-overlay rounded-full blur-md"></div>
+                        <Star className="absolute top-0 left-0 h-7 w-7 text-white/30 fill-white/20" />
+                      </div>
                     )}
                     <div className="flex flex-col items-center">
                       <span className="text-2xl font-black text-white drop-shadow-lg">{phoneCallStreak}</span>
