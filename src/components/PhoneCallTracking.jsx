@@ -367,10 +367,35 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
           </CardHeader>
           <CardContent className="space-y-4">
             {hasSetGoal && dailyStats ? (
-              <div className="text-center py-8 space-y-2">
-                <div className="text-4xl font-bold text-blue-600">{dailyStats.targetCalls}</div>
-                <div className="text-gray-600">calls goal set</div>
-                <Badge className="bg-green-100 text-green-700">Goal Set ✓</Badge>
+              <div className="space-y-4">
+                <div className="text-center py-4 space-y-2">
+                  <div className="text-4xl font-bold text-blue-600">{dailyStats.targetCalls}</div>
+                  <div className="text-gray-600">calls goal set</div>
+                  <Badge className="bg-green-100 text-green-700">Goal Set ✓</Badge>
+                </div>
+
+                {/* Edit button to update goal */}
+                <div className="border-t pt-4">
+                  <Label className="text-sm text-gray-600">Need to adjust your goal?</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      value={targetCalls || dailyStats.targetCalls}
+                      onChange={(e) => setTargetCalls(e.target.value)}
+                      placeholder={dailyStats.targetCalls.toString()}
+                      className="text-lg font-semibold"
+                    />
+                    <Button
+                      onClick={handleSetGoal}
+                      disabled={loading || !targetCalls}
+                      className="px-8 bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Update Goal
+                    </Button>
+                  </div>
+                </div>
               </div>
             ) : (
               <>
@@ -432,46 +457,85 @@ const PhoneCallTracking = ({ user, onDataChange }) => {
                 <Target className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                 <p>Set a goal first</p>
               </div>
-            ) : hasLoggedCalls && dailyStats ? (
-              <div className="text-center py-8 space-y-2">
-                <div className="text-4xl font-bold text-green-600">{dailyStats.actualCalls}</div>
-                <div className="text-gray-600">calls completed</div>
-                <Badge className="bg-green-100 text-green-700">Logged ✓</Badge>
-              </div>
             ) : (
               <>
-                <div>
-                  <Label>Calls Made</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      type="number"
-                      min="0"
-                      value={actualCalls}
-                      onChange={(e) => setActualCalls(e.target.value)}
-                      placeholder="8"
-                      className="text-lg font-semibold"
-                    />
-                    <Button
-                      onClick={handleLogCalls}
-                      disabled={loading || !actualCalls || !hasSetGoal}
-                      className="px-8 bg-green-600 hover:bg-green-700"
-                    >
-                      <Save className="h-4 w-4 mr-1" />
-                      Log Calls
-                    </Button>
-                  </div>
-                </div>
+                {hasLoggedCalls && dailyStats ? (
+                  <div className="space-y-4">
+                    <div className="text-center py-4 space-y-2">
+                      <div className="text-4xl font-bold text-green-600">{dailyStats.actualCalls}</div>
+                      <div className="text-gray-600">calls completed</div>
+                      <Badge className="bg-green-100 text-green-700">Logged ✓</Badge>
+                    </div>
 
-                <div>
-                  <Label>Notes (optional)</Label>
-                  <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="2 appointments set, 3 voicemails..."
-                    rows={2}
-                    className="mt-2"
-                  />
-                </div>
+                    {/* Edit button to update logged calls */}
+                    <div className="border-t pt-4">
+                      <Label className="text-sm text-gray-600">Need to update?</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={actualCalls || dailyStats.actualCalls}
+                          onChange={(e) => setActualCalls(e.target.value)}
+                          placeholder={dailyStats.actualCalls.toString()}
+                          className="text-lg font-semibold"
+                        />
+                        <Button
+                          onClick={handleLogCalls}
+                          disabled={loading || (!actualCalls && actualCalls !== '0')}
+                          className="px-8 bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Save className="h-4 w-4 mr-1" />
+                          Update
+                        </Button>
+                      </div>
+                      <div className="mt-3">
+                        <Label className="text-sm text-gray-600">Notes</Label>
+                        <Textarea
+                          value={notes || dailyStats.notes || ''}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder={dailyStats.notes || "Add notes about your calls..."}
+                          rows={2}
+                          className="mt-2"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <Label>Calls Made</Label>
+                      <div className="flex gap-2 mt-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          value={actualCalls}
+                          onChange={(e) => setActualCalls(e.target.value)}
+                          placeholder="8"
+                          className="text-lg font-semibold"
+                        />
+                        <Button
+                          onClick={handleLogCalls}
+                          disabled={loading || (!actualCalls && actualCalls !== '0') || !hasSetGoal}
+                          className="px-8 bg-green-600 hover:bg-green-700"
+                        >
+                          <Save className="h-4 w-4 mr-1" />
+                          Log Calls
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Notes (optional)</Label>
+                      <Textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="2 appointments set, 3 voicemails..."
+                        rows={2}
+                        className="mt-2"
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
           </CardContent>
