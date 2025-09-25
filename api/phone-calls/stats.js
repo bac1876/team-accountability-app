@@ -29,9 +29,9 @@ export default async function handler(req, res) {
     }
 
     if (!end) {
-      const startDate = new Date(start)
-      const friday = new Date(startDate)
-      friday.setDate(startDate.getDate() + 4) // Get Friday
+      const startDateObj = new Date(start)
+      const friday = new Date(startDateObj)
+      friday.setDate(startDateObj.getDate() + 4) // Get Friday
       end = friday.toISOString().split('T')[0]
     }
 
@@ -53,10 +53,10 @@ export default async function handler(req, res) {
     const dailyStats = []
 
     // Generate stats for each weekday
-    const startDate = new Date(start)
+    const weekStartDate = new Date(start)
     for (let i = 0; i < 5; i++) {
-      const date = new Date(startDate)
-      date.setDate(startDate.getDate() + i)
+      const date = new Date(weekStartDate)
+      date.setDate(weekStartDate.getDate() + i)
       const dateStr = date.toISOString().split('T')[0]
 
       // Format the date from database properly for comparison
