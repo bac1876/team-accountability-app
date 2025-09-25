@@ -492,9 +492,58 @@ const DashboardAPI = ({ user }) => {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-white">
-          Welcome back, {user?.name}!
-        </h1>
+        <div className="flex items-center gap-4 flex-wrap">
+          <h1 className="text-2xl md:text-3xl font-bold text-white">
+            Welcome back, {user?.name}!
+          </h1>
+          <div className="flex items-center gap-3">
+            {/* Commitment Streak Badge */}
+            {commitmentStreak > 0 && (
+              <div className="flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 px-4 py-2 rounded-full border border-orange-500/30">
+                <Flame className="h-5 w-5 text-orange-500 animate-pulse" />
+                <div className="flex items-center gap-2">
+                  {commitmentStreak >= 60 && (
+                    <span className="text-sm font-bold text-white">🏆 PLATINUM</span>
+                  )}
+                  {commitmentStreak >= 30 && commitmentStreak < 60 && (
+                    <span className="text-sm font-bold text-white">🥇 GOLD</span>
+                  )}
+                  {commitmentStreak >= 10 && commitmentStreak < 30 && (
+                    <span className="text-sm font-bold text-white">🥈 SILVER</span>
+                  )}
+                  {commitmentStreak >= 5 && commitmentStreak < 10 && (
+                    <span className="text-sm font-bold text-white">🥉 BRONZE</span>
+                  )}
+                  <span className="text-lg font-bold text-white">{commitmentStreak}</span>
+                  <span className="text-sm text-orange-300">streak</span>
+                </div>
+              </div>
+            )}
+
+            {/* Phone Call Streak Badge */}
+            {phoneCallStreak > 0 && (
+              <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 px-4 py-2 rounded-full border border-blue-500/30">
+                <Phone className="h-5 w-5 text-blue-500 animate-pulse" />
+                <div className="flex items-center gap-2">
+                  {phoneCallStreak >= 60 && (
+                    <span className="text-sm font-bold text-white">🏆 PLATINUM</span>
+                  )}
+                  {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
+                    <span className="text-sm font-bold text-white">🥇 GOLD</span>
+                  )}
+                  {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
+                    <span className="text-sm font-bold text-white">🥈 SILVER</span>
+                  )}
+                  {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
+                    <span className="text-sm font-bold text-white">🥉 BRONZE</span>
+                  )}
+                  <span className="text-lg font-bold text-white">{phoneCallStreak}</span>
+                  <span className="text-sm text-blue-300">calls</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
         <p className="text-sm md:text-base text-slate-400">
           Track your daily commitments and achieve your goals
         </p>
