@@ -46,17 +46,21 @@ export default async function handler(req, res) {
 
       try {
         // Use UPSERT to create or update
+        // Important: Use null for unset values, not 0
         const result = await query(
           `INSERT INTO phone_calls (user_id, call_date, target_calls, actual_calls, notes, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
            ON CONFLICT (user_id, call_date)
            DO UPDATE SET
-             target_calls = COALESCE($3, phone_calls.target_calls),
-             actual_calls = COALESCE($4, phone_calls.actual_calls),
-             notes = COALESCE($5, phone_calls.notes),
+             target_calls = CASE WHEN $3 IS NOT NULL THEN $3 ELSE phone_calls.target_calls END,
+             actual_calls = CASE WHEN $4 IS NOT NULL THEN $4 ELSE phone_calls.actual_calls END,
+             notes = CASE WHEN $5 IS NOT NULL THEN $5 ELSE phone_calls.notes END,
              updated_at = CURRENT_TIMESTAMP
            RETURNING *`,
-          [user_id, call_date, target_calls || 0, actual_calls || 0, notes || '']
+          [user_id, call_date,
+           target_calls !== undefined && target_calls !== null ? target_calls : null,
+           actual_calls !== undefined && actual_calls !== null ? actual_calls : null,
+           notes || null]
         )
 
         return res.status(200).json(result.rows[0])

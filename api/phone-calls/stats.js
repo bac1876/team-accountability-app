@@ -71,18 +71,24 @@ export default async function handler(req, res) {
       const dayData = {
         date: dateStr,
         day: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][i],
-        target_calls: dayCall?.target_calls || 0,
-        actual_calls: dayCall?.actual_calls || 0,
+        target_calls: dayCall?.target_calls ?? null,
+        actual_calls: dayCall?.actual_calls ?? null,
         notes: dayCall?.notes || '',
-        completion_rate: 0
+        completion_rate: 0,
+        has_data: !!dayCall
       }
 
-      if (dayData.target_calls > 0) {
+      if (dayData.target_calls > 0 && dayData.actual_calls !== null) {
         dayData.completion_rate = Math.round((dayData.actual_calls / dayData.target_calls) * 100)
       }
 
-      totalTarget += dayData.target_calls
-      totalActual += dayData.actual_calls
+      // Only add to totals if there's actual data
+      if (dayData.target_calls !== null) {
+        totalTarget += dayData.target_calls
+      }
+      if (dayData.actual_calls !== null) {
+        totalActual += dayData.actual_calls
+      }
       dailyStats.push(dayData)
     }
 

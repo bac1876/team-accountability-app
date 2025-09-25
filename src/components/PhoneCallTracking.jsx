@@ -70,10 +70,11 @@ const PhoneCallTracking = ({ user }) => {
         setWeeklyStats({
           days: weeklyData.days.map(d => ({
             date: d.date,
-            targetCalls: d.target_calls,
-            actualCalls: d.actual_calls,
+            targetCalls: d.target_calls ?? 0,
+            actualCalls: d.actual_calls ?? 0,
             completionRate: d.completion_rate,
-            notes: d.notes
+            notes: d.notes,
+            hasData: d.has_data
           })),
           totalTarget: weeklyData.week.total_target,
           totalActual: weeklyData.week.total_actual,
@@ -536,26 +537,31 @@ const PhoneCallTracking = ({ user }) => {
 
               {/* Daily Breakdown */}
               <div className="space-y-2">
-                {weeklyStats.days.map((day, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center justify-between p-3 rounded-lg ${
-                      day.date === selectedDate ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
-                    }`}
-                  >
-                    <span className="font-medium">{formatDate(day.date)}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-gray-600">
-                        {day.actualCalls} / {day.targetCalls}
-                      </span>
-                      <Badge
-                        className={`${getProgressBg(day.completionRate)} ${getProgressColor(day.completionRate)} border-0`}
-                      >
-                        {day.completionRate}%
-                      </Badge>
+                {weeklyStats.days.map((day, index) => {
+                  // Only show days that have data
+                  if (!day.hasData) return null
+
+                  return (
+                    <div
+                      key={index}
+                      className={`flex items-center justify-between p-3 rounded-lg ${
+                        day.date === selectedDate ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
+                      }`}
+                    >
+                      <span className="font-medium">{formatDate(day.date)}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-gray-600">
+                          {day.actualCalls} / {day.targetCalls}
+                        </span>
+                        <Badge
+                          className={`${getProgressBg(day.completionRate)} ${getProgressColor(day.completionRate)} border-0`}
+                        >
+                          {day.completionRate}%
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </CardContent>
