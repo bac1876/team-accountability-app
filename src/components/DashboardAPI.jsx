@@ -866,6 +866,7 @@ const DashboardAPI = ({ user }) => {
                 </div>
               </CardContent>
             </Card>
+            </div>
 
             {/* Phone Call Streak - Enhanced 3D */}
             <div className="relative group transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
@@ -1020,6 +1021,7 @@ const DashboardAPI = ({ user }) => {
                 </div>
               </CardContent>
             </Card>
+            </div>
           </div>
 
           {/* Quick Stats */}
