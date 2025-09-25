@@ -520,74 +520,104 @@ const DashboardAPI = ({ user }) => {
 
           const hasCallGoal = dayPhoneCall && dayPhoneCall.target_calls > 0
           const callGoalMet = hasCallGoal && dayPhoneCall.actual_calls >= dayPhoneCall.target_calls
+          const commitmentCompleted = commitment?.status === 'completed'
+
+          // Determine overall card status
+          const bothComplete = commitmentCompleted && callGoalMet
+          const partialComplete = commitmentCompleted || callGoalMet
 
           return (
             <Card
               key={day}
-              className={`bg-slate-800/50 border-slate-700/50 cursor-pointer hover:bg-slate-700/50 transition-all ${isToday ? 'ring-2 ring-blue-500/50' : ''}`}
+              className={`bg-slate-800/50 border-slate-700/50 cursor-pointer hover:bg-slate-700/50 transition-all ${
+                isToday ? 'ring-2 ring-blue-500/50' :
+                bothComplete ? 'bg-gradient-to-br from-green-900/20 to-blue-900/20 border-green-500/30' :
+                partialComplete ? 'bg-slate-800/70' : ''
+              }`}
               onClick={() => navigateToCommitmentDate(dateString)}
             >
               <CardContent className="p-3 md:p-4">
-                <div className="flex flex-col space-y-3">
+                <div className="flex flex-col space-y-2">
                   {/* Day and Date Header */}
-                  <div className="text-center">
+                  <div className="text-center border-b border-slate-700/50 pb-2">
                     <p className="text-xs font-medium text-slate-400">{day}</p>
-                    <p className="text-lg font-bold text-white">{date.getDate()}</p>
+                    <p className="text-xl font-bold text-white">{date.getDate()}</p>
                     {isToday && (
                       <Badge variant="secondary" className="mt-1 text-xs">Today</Badge>
                     )}
                   </div>
 
-                  {/* Commitment Status */}
-                  <div className="flex items-center justify-between gap-2 px-1">
-                    <div className="flex items-center gap-1">
-                      {commitment?.status === 'completed' ? (
-                        <CheckCircle className="h-4 w-4 text-green-400" />
-                      ) : commitment && commitment.status === 'pending' && !isPast ? (
-                        <Circle className="h-4 w-4 text-yellow-400" />
-                      ) : isPast && !commitment ? (
-                        <XCircle className="h-4 w-4 text-red-400" />
-                      ) : isPast && commitment?.status === 'pending' ? (
-                        <XCircle className="h-4 w-4 text-red-400" />
+                  {/* Two Equal Primary Sections */}
+                  <div className="space-y-3">
+                    {/* Commitment Section */}
+                    <div className="bg-slate-700/30 rounded-md p-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-slate-300">Commitment</span>
+                        {commitmentCompleted ? (
+                          <CheckCircle className="h-5 w-5 text-green-400" />
+                        ) : commitment && commitment.status === 'pending' && !isPast ? (
+                          <Circle className="h-5 w-5 text-yellow-400" />
+                        ) : isPast && !commitment ? (
+                          <XCircle className="h-5 w-5 text-red-400" />
+                        ) : isPast && commitment?.status === 'pending' ? (
+                          <XCircle className="h-5 w-5 text-red-400" />
+                        ) : (
+                          <Circle className="h-5 w-5 text-slate-500" />
+                        )}
+                      </div>
+                      {commitment ? (
+                        <p className="text-xs text-slate-400 truncate" title={commitment.text}>
+                          {commitment.text ? commitment.text.substring(0, 20) + '...' : 'Set'}
+                        </p>
                       ) : (
-                        <Circle className="h-4 w-4 text-slate-500" />
+                        <p className="text-xs text-slate-500 italic">No commitment</p>
                       )}
-                      <span className="text-xs text-slate-400">Commit</span>
                     </div>
-                  </div>
 
-                  {/* Phone Call Tracking */}
-                  {(hasCallGoal || (isToday && !isPast)) && (
-                    <div className="border-t border-slate-700/50 pt-2">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center justify-between gap-1 px-1">
-                          <Phone className="h-3 w-3 text-blue-400" />
-                          <span className={`text-xs font-medium ${
-                            callGoalMet
-                              ? 'text-green-400'
-                              : dayPhoneCall?.actual_calls > 0
-                              ? 'text-yellow-400'
-                              : 'text-slate-400'
-                          }`}>
-                            {dayPhoneCall?.actual_calls || 0}/{dayPhoneCall?.target_calls || 0}
-                          </span>
-                        </div>
+                    {/* Phone Calls Section */}
+                    <div className="bg-slate-700/30 rounded-md p-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-slate-300 flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          Calls
+                        </span>
+                        {callGoalMet ? (
+                          <CheckCircle className="h-5 w-5 text-green-400" />
+                        ) : hasCallGoal && dayPhoneCall.actual_calls > 0 ? (
+                          <Clock className="h-5 w-5 text-yellow-400" />
+                        ) : hasCallGoal && isPast ? (
+                          <XCircle className="h-5 w-5 text-red-400" />
+                        ) : hasCallGoal ? (
+                          <Circle className="h-5 w-5 text-slate-500" />
+                        ) : (
+                          <Circle className="h-5 w-5 text-slate-600" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-sm font-bold ${
+                          callGoalMet ? 'text-green-400' :
+                          dayPhoneCall?.actual_calls > 0 ? 'text-yellow-400' :
+                          'text-slate-400'
+                        }`}>
+                          {dayPhoneCall?.actual_calls || 0} / {dayPhoneCall?.target_calls || 0}
+                        </span>
                         {callGoalMet && (
-                          <div className="flex items-center justify-center gap-1">
-                            <Check className="h-3 w-3 text-green-400" />
-                            <span className="text-xs text-green-400">Goal Met!</span>
-                          </div>
+                          <Badge className="text-xs px-1 py-0 bg-green-500/20 text-green-300 border-green-500/30">
+                            ✓
+                          </Badge>
                         )}
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Overall Day Success Indicator */}
-                  {commitment?.status === 'completed' && callGoalMet && (
-                    <div className="border-t border-slate-700/50 pt-2">
+                  {/* Success Indicator */}
+                  {bothComplete && (
+                    <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 rounded-md p-2">
                       <div className="flex items-center justify-center gap-1">
-                        <Flame className="h-4 w-4 text-orange-400" />
-                        <span className="text-xs font-bold text-orange-400">Perfect Day!</span>
+                        <Flame className="h-4 w-4 text-orange-400 animate-pulse" />
+                        <span className="text-xs font-bold bg-gradient-to-r from-orange-400 to-yellow-400 text-transparent bg-clip-text">
+                          PERFECT DAY!
+                        </span>
                       </div>
                     </div>
                   )}
