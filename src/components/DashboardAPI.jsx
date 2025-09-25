@@ -497,48 +497,62 @@ const DashboardAPI = ({ user }) => {
             Welcome back, {user?.name}!
           </h1>
           <div className="flex items-center gap-3">
-            {/* Commitment Streak Badge */}
+            {/* Commitment Streak Badge - 3D Effect */}
             {commitmentStreak > 0 && (
-              <div className="flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 px-4 py-2 rounded-full border border-orange-500/30">
-                <Flame className="h-5 w-5 text-orange-500 animate-pulse" />
-                <div className="flex items-center gap-2">
-                  {commitmentStreak >= 60 && (
-                    <span className="text-sm font-bold text-white">🏆 PLATINUM</span>
-                  )}
-                  {commitmentStreak >= 30 && commitmentStreak < 60 && (
-                    <span className="text-sm font-bold text-white">🥇 GOLD</span>
-                  )}
-                  {commitmentStreak >= 10 && commitmentStreak < 30 && (
-                    <span className="text-sm font-bold text-white">🥈 SILVER</span>
-                  )}
-                  {commitmentStreak >= 5 && commitmentStreak < 10 && (
-                    <span className="text-sm font-bold text-white">🥉 BRONZE</span>
-                  )}
-                  <span className="text-lg font-bold text-white">{commitmentStreak}</span>
-                  <span className="text-sm text-orange-300">streak</span>
+              <div className="relative group transform transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 rounded-full blur-xl opacity-50 group-hover:opacity-75 animate-pulse"></div>
+                <div className="relative flex items-center gap-2 bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 px-5 py-3 rounded-full shadow-2xl border-2 border-orange-400/50 backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 rounded-full"></div>
+                  <Flame className="relative h-6 w-6 text-white drop-shadow-lg animate-pulse z-10" />
+                  <div className="relative flex items-center gap-2 z-10">
+                    {commitmentStreak >= 60 && (
+                      <span className="text-sm font-black text-white drop-shadow-lg">🏆 PLATINUM</span>
+                    )}
+                    {commitmentStreak >= 30 && commitmentStreak < 60 && (
+                      <span className="text-sm font-black text-white drop-shadow-lg">🥇 GOLD</span>
+                    )}
+                    {commitmentStreak >= 10 && commitmentStreak < 30 && (
+                      <span className="text-sm font-black text-white drop-shadow-lg">🥈 SILVER</span>
+                    )}
+                    {commitmentStreak >= 5 && commitmentStreak < 10 && (
+                      <span className="text-sm font-black text-white drop-shadow-lg">🥉 BRONZE</span>
+                    )}
+                    <div className="flex flex-col items-center">
+                      <span className="text-2xl font-black text-white drop-shadow-lg">{commitmentStreak}</span>
+                      <span className="text-xs font-bold text-orange-100 -mt-1">STREAK</span>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-3/4 h-2 bg-black/20 rounded-full blur-sm"></div>
                 </div>
               </div>
             )}
 
-            {/* Phone Call Streak Badge */}
+            {/* Phone Call Streak Badge - 3D Effect */}
             {phoneCallStreak > 0 && (
-              <div className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 px-4 py-2 rounded-full border border-blue-500/30">
-                <Phone className="h-5 w-5 text-blue-500 animate-pulse" />
-                <div className="flex items-center gap-2">
-                  {phoneCallStreak >= 60 && (
-                    <span className="text-sm font-bold text-white">🏆 PLATINUM</span>
-                  )}
-                  {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
-                    <span className="text-sm font-bold text-white">🥇 GOLD</span>
-                  )}
-                  {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
-                    <span className="text-sm font-bold text-white">🥈 SILVER</span>
-                  )}
-                  {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
-                    <span className="text-sm font-bold text-white">🥉 BRONZE</span>
-                  )}
-                  <span className="text-lg font-bold text-white">{phoneCallStreak}</span>
-                  <span className="text-sm text-blue-300">calls</span>
+              <div className="relative group transform transition-all duration-300 hover:scale-110 hover:-translate-y-1">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full blur-xl opacity-50 group-hover:opacity-75 animate-pulse"></div>
+                <div className="relative flex items-center gap-2 bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 px-5 py-3 rounded-full shadow-2xl border-2 border-blue-400/50 backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-white/20 rounded-full"></div>
+                  <Phone className="relative h-6 w-6 text-white drop-shadow-lg animate-pulse z-10" />
+                  <div className="relative flex items-center gap-2 z-10">
+                    {phoneCallStreak >= 60 && (
+                      <span className="text-sm font-black text-white drop-shadow-lg">🏆 PLATINUM</span>
+                    )}
+                    {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
+                      <span className="text-sm font-black text-white drop-shadow-lg">🥇 GOLD</span>
+                    )}
+                    {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
+                      <span className="text-sm font-black text-white drop-shadow-lg">🥈 SILVER</span>
+                    )}
+                    {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
+                      <span className="text-sm font-black text-white drop-shadow-lg">🥉 BRONZE</span>
+                    )}
+                    <div className="flex flex-col items-center">
+                      <span className="text-2xl font-black text-white drop-shadow-lg">{phoneCallStreak}</span>
+                      <span className="text-xs font-bold text-blue-100 -mt-1">CALLS</span>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-3/4 h-2 bg-black/20 rounded-full blur-sm"></div>
                 </div>
               </div>
             )}
