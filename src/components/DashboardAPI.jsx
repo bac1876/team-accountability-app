@@ -738,35 +738,59 @@ const DashboardAPI = ({ user }) => {
                     </CardTitle>
                     <div className="flex items-center gap-3">
                       {commitmentStreak >= 60 && (
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-purple-400 blur-lg animate-pulse"></div>
-                          <Badge className="relative bg-gradient-to-r from-purple-600 to-pink-600 text-white border-2 border-purple-400 px-4 py-2 text-sm font-black shadow-2xl">
-                            🏆 PLATINUM
-                          </Badge>
+                        <div className="relative group/badge">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
+                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-purple-500/50">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shadow-lg">
+                              <span className="text-lg">🏆</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-purple-300 uppercase tracking-wider">Tier</span>
+                              <span className="text-sm font-black text-white">PLATINUM</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                       {commitmentStreak >= 30 && commitmentStreak < 60 && (
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-yellow-400 blur-lg"></div>
-                          <Badge className="relative bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-2 border-yellow-400 px-4 py-2 text-sm font-black shadow-2xl">
-                            🥇 GOLD
-                          </Badge>
+                        <div className="relative group/badge">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-600 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
+                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-yellow-500/50">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-400 shadow-lg">
+                              <span className="text-lg">🥇</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-yellow-300 uppercase tracking-wider">Tier</span>
+                              <span className="text-sm font-black text-white">GOLD</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                       {commitmentStreak >= 10 && commitmentStreak < 30 && (
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-gray-300 blur-lg"></div>
-                          <Badge className="relative bg-gradient-to-r from-gray-400 to-slate-300 text-gray-900 border-2 border-gray-300 px-4 py-2 text-sm font-black shadow-2xl">
-                            🥈 SILVER
-                          </Badge>
+                        <div className="relative group/badge">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-gray-500 via-slate-400 to-gray-500 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
+                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-gray-400/50">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-slate-400 shadow-lg">
+                              <span className="text-lg">🥈</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-gray-300 uppercase tracking-wider">Tier</span>
+                              <span className="text-sm font-black text-white">SILVER</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                       {commitmentStreak >= 5 && commitmentStreak < 10 && (
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-amber-600 blur-lg"></div>
-                          <Badge className="relative bg-gradient-to-r from-amber-700 to-amber-600 text-white border-2 border-amber-500 px-4 py-2 text-sm font-black shadow-2xl">
-                            🥉 BRONZE
-                          </Badge>
+                        <div className="relative group/badge">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
+                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-amber-600/50">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
+                              <span className="text-lg">🥉</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-amber-300 uppercase tracking-wider">Tier</span>
+                              <span className="text-sm font-black text-white">BRONZE</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                       <div className="relative">
@@ -860,35 +884,59 @@ const DashboardAPI = ({ user }) => {
                     </CardTitle>
                     <div className="flex items-center gap-3">
                       {phoneCallStreak >= 60 && (
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-purple-400 blur-lg animate-pulse"></div>
-                          <Badge className="relative bg-gradient-to-r from-purple-600 to-pink-600 text-white border-2 border-purple-400 px-4 py-2 text-sm font-black shadow-2xl">
-                            🏆 PLATINUM
-                          </Badge>
+                        <div className="relative group/badge">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
+                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-purple-500/50">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shadow-lg">
+                              <span className="text-lg">🏆</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-purple-300 uppercase tracking-wider">Tier</span>
+                              <span className="text-sm font-black text-white">PLATINUM</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                       {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-yellow-400 blur-lg"></div>
-                          <Badge className="relative bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-2 border-yellow-400 px-4 py-2 text-sm font-black shadow-2xl">
-                            🥇 GOLD
-                          </Badge>
+                        <div className="relative group/badge">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-600 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
+                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-yellow-500/50">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-amber-400 shadow-lg">
+                              <span className="text-lg">🥇</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-yellow-300 uppercase tracking-wider">Tier</span>
+                              <span className="text-sm font-black text-white">GOLD</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                       {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-gray-300 blur-lg"></div>
-                          <Badge className="relative bg-gradient-to-r from-gray-400 to-slate-300 text-gray-900 border-2 border-gray-300 px-4 py-2 text-sm font-black shadow-2xl">
-                            🥈 SILVER
-                          </Badge>
+                        <div className="relative group/badge">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-gray-500 via-slate-400 to-gray-500 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
+                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-gray-400/50">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-slate-400 shadow-lg">
+                              <span className="text-lg">🥈</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-gray-300 uppercase tracking-wider">Tier</span>
+                              <span className="text-sm font-black text-white">SILVER</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                       {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-amber-600 blur-lg"></div>
-                          <Badge className="relative bg-gradient-to-r from-amber-700 to-amber-600 text-white border-2 border-amber-500 px-4 py-2 text-sm font-black shadow-2xl">
-                            🥉 BRONZE
-                          </Badge>
+                        <div className="relative group/badge">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-amber-700 via-orange-600 to-amber-700 rounded-lg blur opacity-70 group-hover/badge:opacity-100 animate-gradient-x"></div>
+                          <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-xl border border-amber-600/50">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
+                              <span className="text-lg">🥉</span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-amber-300 uppercase tracking-wider">Tier</span>
+                              <span className="text-sm font-black text-white">BRONZE</span>
+                            </div>
+                          </div>
                         </div>
                       )}
                       <div className="relative">
