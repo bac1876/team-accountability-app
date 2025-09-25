@@ -646,164 +646,180 @@ const DashboardAPI = ({ user }) => {
           {/* Streak Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Commitment Streak */}
-            <Card className="bg-gradient-to-br from-orange-500/20 to-red-600/20 border-orange-500/30">
-              <CardHeader>
+            <Card className="bg-gradient-to-br from-orange-500/20 to-red-600/20 border-orange-500/30 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5 animate-pulse" />
+              <CardHeader className="relative">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Flame className={`h-6 w-6 ${commitmentStreak > 0 ? 'text-orange-500' : 'text-gray-500'}`} />
+                    <Flame className={`h-6 w-6 ${commitmentStreak > 0 ? 'text-orange-500 animate-pulse' : 'text-gray-500'}`} />
                     Commitment Streak
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     {commitmentStreak >= 60 && (
-                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
-                        PLATINUM
+                      <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 px-3 py-1 font-bold shadow-lg animate-pulse">
+                        🏆 PLATINUM
                       </Badge>
                     )}
                     {commitmentStreak >= 30 && commitmentStreak < 60 && (
-                      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0">
-                        GOLD
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 px-3 py-1 font-bold shadow-lg">
+                        🥇 GOLD
                       </Badge>
                     )}
                     {commitmentStreak >= 10 && commitmentStreak < 30 && (
-                      <Badge className="bg-gradient-to-r from-gray-400 to-gray-300 text-gray-800 border-0">
-                        SILVER
+                      <Badge className="bg-gradient-to-r from-gray-400 to-slate-300 text-gray-800 border-0 px-3 py-1 font-bold shadow-lg">
+                        🥈 SILVER
                       </Badge>
                     )}
                     {commitmentStreak >= 5 && commitmentStreak < 10 && (
-                      <Badge className="bg-gradient-to-r from-amber-700 to-amber-600 text-white border-0">
-                        BRONZE
+                      <Badge className="bg-gradient-to-r from-amber-700 to-amber-600 text-white border-0 px-3 py-1 font-bold shadow-lg">
+                        🥉 BRONZE
                       </Badge>
                     )}
-                    <Badge className={`text-lg px-3 py-1 ${commitmentStreak > 0 ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' : 'bg-gray-700 text-gray-400'}`}>
-                      {commitmentStreak} {commitmentStreak === 1 ? 'Day' : 'Days'}
-                    </Badge>
+                    <div className="flex flex-col items-center">
+                      <Badge className={`text-2xl px-4 py-2 font-bold ${commitmentStreak > 0 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-xl' : 'bg-gray-700 text-gray-400'}`}>
+                        {commitmentStreak}
+                      </Badge>
+                      <span className="text-xs text-slate-400 mt-1">{commitmentStreak === 1 ? 'Day' : 'Days'}</span>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-slate-300">
+              <CardContent className="relative">
+                <p className="text-slate-300 font-medium">
                   {commitmentStreak >= 60
-                    ? `Legendary! ${commitmentStreak} days of dedication!`
+                    ? `🔥 LEGENDARY! ${commitmentStreak} days of pure dedication!`
                     : commitmentStreak >= 30
-                    ? `Outstanding! ${commitmentStreak} days of excellence!`
+                    ? `⭐ OUTSTANDING! ${commitmentStreak} days of excellence!`
                     : commitmentStreak >= 10
-                    ? `Impressive! ${commitmentStreak} days of consistency!`
+                    ? `💪 IMPRESSIVE! ${commitmentStreak} days of consistency!`
                     : commitmentStreak >= 5
-                    ? `Great start! ${commitmentStreak} days and building momentum!`
+                    ? `🚀 Great start! ${commitmentStreak} days and building momentum!`
                     : commitmentStreak > 0
-                    ? `Keep going! ${5 - commitmentStreak} more days to Bronze!`
-                    : 'Start your streak by completing today\'s commitment!'}
+                    ? `📈 Keep going! Only ${5 - commitmentStreak} more ${(5 - commitmentStreak) === 1 ? 'day' : 'days'} to Bronze!`
+                    : '🎯 Start your streak by completing today\'s commitment!'}
                 </p>
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs text-slate-400 mb-1">
-                    <span>Progress to next tier</span>
-                    <span>
+                <div className="mt-4 space-y-2">
+                  <div className="flex justify-between text-sm font-semibold mb-2">
+                    <span className="text-orange-400">Next Achievement</span>
+                    <span className="text-white">
                       {commitmentStreak >= 60
-                        ? 'Max tier achieved!'
+                        ? '🏆 MAX TIER ACHIEVED!'
                         : commitmentStreak >= 30
-                        ? `${60 - commitmentStreak} days to Platinum`
+                        ? `🏆 ${60 - commitmentStreak} days to PLATINUM`
                         : commitmentStreak >= 10
-                        ? `${30 - commitmentStreak} days to Gold`
+                        ? `🥇 ${30 - commitmentStreak} days to GOLD`
                         : commitmentStreak >= 5
-                        ? `${10 - commitmentStreak} days to Silver`
-                        : `${5 - commitmentStreak} days to Bronze`}
+                        ? `🥈 ${10 - commitmentStreak} days to SILVER`
+                        : `🥉 ${5 - commitmentStreak} days to BRONZE`}
                     </span>
                   </div>
-                  <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all"
-                      style={{
-                        width: `${
-                          commitmentStreak >= 60 ? 100 :
-                          commitmentStreak >= 30 ? ((commitmentStreak - 30) / 30) * 100 :
-                          commitmentStreak >= 10 ? ((commitmentStreak - 10) / 20) * 100 :
-                          commitmentStreak >= 5 ? ((commitmentStreak - 5) / 5) * 100 :
-                          (commitmentStreak / 5) * 100
-                        }%`
-                      }}
-                    />
+                  <div className="relative">
+                    <div className="flex-1 bg-slate-800 rounded-full h-3 overflow-hidden shadow-inner">
+                      <div
+                        className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-500 shadow-lg relative"
+                        style={{
+                          width: `${
+                            commitmentStreak >= 60 ? 100 :
+                            commitmentStreak >= 30 ? ((commitmentStreak - 30) / 30) * 100 :
+                            commitmentStreak >= 10 ? ((commitmentStreak - 10) / 20) * 100 :
+                            commitmentStreak >= 5 ? ((commitmentStreak - 5) / 5) * 100 :
+                            (commitmentStreak / 5) * 100
+                          }%`
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20 animate-pulse" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Phone Call Streak */}
-            <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 border-blue-500/30">
-              <CardHeader>
+            <Card className="bg-gradient-to-br from-blue-500/20 to-cyan-600/20 border-blue-500/30 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-cyan-500/5 animate-pulse" />
+              <CardHeader className="relative">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white flex items-center gap-2">
-                    <Phone className={`h-6 w-6 ${phoneCallStreak > 0 ? 'text-blue-500' : 'text-gray-500'}`} />
+                    <Phone className={`h-6 w-6 ${phoneCallStreak > 0 ? 'text-blue-500 animate-pulse' : 'text-gray-500'}`} />
                     Phone Call Streak
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     {phoneCallStreak >= 60 && (
-                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
-                        PLATINUM
+                      <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 px-3 py-1 font-bold shadow-lg animate-pulse">
+                        🏆 PLATINUM
                       </Badge>
                     )}
                     {phoneCallStreak >= 30 && phoneCallStreak < 60 && (
-                      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0">
-                        GOLD
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-amber-500 text-white border-0 px-3 py-1 font-bold shadow-lg">
+                        🥇 GOLD
                       </Badge>
                     )}
                     {phoneCallStreak >= 10 && phoneCallStreak < 30 && (
-                      <Badge className="bg-gradient-to-r from-gray-400 to-gray-300 text-gray-800 border-0">
-                        SILVER
+                      <Badge className="bg-gradient-to-r from-gray-400 to-slate-300 text-gray-800 border-0 px-3 py-1 font-bold shadow-lg">
+                        🥈 SILVER
                       </Badge>
                     )}
                     {phoneCallStreak >= 5 && phoneCallStreak < 10 && (
-                      <Badge className="bg-gradient-to-r from-amber-700 to-amber-600 text-white border-0">
-                        BRONZE
+                      <Badge className="bg-gradient-to-r from-amber-700 to-amber-600 text-white border-0 px-3 py-1 font-bold shadow-lg">
+                        🥉 BRONZE
                       </Badge>
                     )}
-                    <Badge className={`text-lg px-3 py-1 ${phoneCallStreak > 0 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-gray-700 text-gray-400'}`}>
-                      {phoneCallStreak} {phoneCallStreak === 1 ? 'Day' : 'Days'}
-                    </Badge>
+                    <div className="flex flex-col items-center">
+                      <Badge className={`text-2xl px-4 py-2 font-bold ${phoneCallStreak > 0 ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-xl' : 'bg-gray-700 text-gray-400'}`}>
+                        {phoneCallStreak}
+                      </Badge>
+                      <span className="text-xs text-slate-400 mt-1">{phoneCallStreak === 1 ? 'Day' : 'Days'}</span>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-slate-300">
+              <CardContent className="relative">
+                <p className="text-slate-300 font-medium">
                   {phoneCallStreak >= 60
-                    ? `Legendary outreach! ${phoneCallStreak} days of consistent calls!`
+                    ? `🔥 LEGENDARY OUTREACH! ${phoneCallStreak} days of calls!`
                     : phoneCallStreak >= 30
-                    ? `Outstanding performance! ${phoneCallStreak} days strong!`
+                    ? `⭐ OUTSTANDING! ${phoneCallStreak} days strong!`
                     : phoneCallStreak >= 10
-                    ? `Impressive consistency! ${phoneCallStreak} days of calls!`
+                    ? `💪 IMPRESSIVE! ${phoneCallStreak} days of consistency!`
                     : phoneCallStreak >= 5
-                    ? `Great momentum! ${phoneCallStreak} days and growing!`
+                    ? `🚀 Great momentum! ${phoneCallStreak} days and growing!`
                     : phoneCallStreak > 0
-                    ? `Keep going! ${5 - phoneCallStreak} more days to Bronze!`
-                    : 'Start your streak with consistent daily calls!'}
+                    ? `📈 Keep going! Only ${5 - phoneCallStreak} more ${(5 - phoneCallStreak) === 1 ? 'day' : 'days'} to Bronze!`
+                    : '🎯 Start your streak with consistent daily calls!'}
                 </p>
-                <div className="mt-3">
-                  <div className="flex justify-between text-xs text-slate-400 mb-1">
-                    <span>Progress to next tier</span>
-                    <span>
+                <div className="mt-4 space-y-2">
+                  <div className="flex justify-between text-sm font-semibold mb-2">
+                    <span className="text-blue-400">Next Achievement</span>
+                    <span className="text-white">
                       {phoneCallStreak >= 60
-                        ? 'Max tier achieved!'
+                        ? '🏆 MAX TIER ACHIEVED!'
                         : phoneCallStreak >= 30
-                        ? `${60 - phoneCallStreak} days to Platinum`
+                        ? `🏆 ${60 - phoneCallStreak} days to PLATINUM`
                         : phoneCallStreak >= 10
-                        ? `${30 - phoneCallStreak} days to Gold`
+                        ? `🥇 ${30 - phoneCallStreak} days to GOLD`
                         : phoneCallStreak >= 5
-                        ? `${10 - phoneCallStreak} days to Silver`
-                        : `${5 - phoneCallStreak} days to Bronze`}
+                        ? `🥈 ${10 - phoneCallStreak} days to SILVER`
+                        : `🥉 ${5 - phoneCallStreak} days to BRONZE`}
                     </span>
                   </div>
-                  <div className="flex-1 bg-slate-700 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all"
-                      style={{
-                        width: `${
-                          phoneCallStreak >= 60 ? 100 :
-                          phoneCallStreak >= 30 ? ((phoneCallStreak - 30) / 30) * 100 :
-                          phoneCallStreak >= 10 ? ((phoneCallStreak - 10) / 20) * 100 :
-                          phoneCallStreak >= 5 ? ((phoneCallStreak - 5) / 5) * 100 :
-                          (phoneCallStreak / 5) * 100
-                        }%`
-                      }}
-                    />
+                  <div className="relative">
+                    <div className="flex-1 bg-slate-800 rounded-full h-3 overflow-hidden shadow-inner">
+                      <div
+                        className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-500 shadow-lg relative"
+                        style={{
+                          width: `${
+                            phoneCallStreak >= 60 ? 100 :
+                            phoneCallStreak >= 30 ? ((phoneCallStreak - 30) / 30) * 100 :
+                            phoneCallStreak >= 10 ? ((phoneCallStreak - 10) / 20) * 100 :
+                            phoneCallStreak >= 5 ? ((phoneCallStreak - 5) / 5) * 100 :
+                            (phoneCallStreak / 5) * 100
+                          }%`
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/20 animate-pulse" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
