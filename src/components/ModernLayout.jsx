@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useNavigation } from '../context/NavigationContext'
-import { 
-  LayoutDashboard, Target, Phone, MessageSquare, Users, 
+import {
+  LayoutDashboard, Target, Phone, MessageSquare, Users,
   Settings, LogOut, Menu, X, ChevronDown, Bell, Search,
-  Calendar, CheckCircle, TrendingUp, Activity, Star
+  Calendar, CheckCircle, TrendingUp, Activity, Star, Home
 } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.jsx'
 import { Button } from '@/components/ui/button.jsx'
@@ -64,6 +64,13 @@ const ModernLayout = ({ user, onLogout, children }) => {
       label: 'Phone Calls',
       icon: Phone,
       tab: 'phone-calls',
+      path: '/',
+      badge: null
+    },
+    {
+      label: 'Transactions',
+      icon: Home,
+      tab: 'transactions',
       path: '/',
       badge: null
     },
