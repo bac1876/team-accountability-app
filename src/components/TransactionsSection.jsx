@@ -103,11 +103,13 @@ const TransactionsSection = ({ user }) => {
   const filterTransactionsByMonth = (status) => {
     return transactions.filter(t => {
       if (status === 'contracted' && t.contractDate) {
-        const contractDate = new Date(t.contractDate)
-        return contractDate.getMonth() === currentMonth && contractDate.getFullYear() === currentYear
+        // Parse date as local time to avoid timezone issues
+        const [year, month, day] = t.contractDate.split('-').map(Number)
+        return month - 1 === currentMonth && year === currentYear
       } else if (status === 'closed' && t.closeDate) {
-        const closeDate = new Date(t.closeDate)
-        return closeDate.getMonth() === currentMonth && closeDate.getFullYear() === currentYear
+        // Parse date as local time to avoid timezone issues
+        const [year, month, day] = t.closeDate.split('-').map(Number)
+        return month - 1 === currentMonth && year === currentYear
       }
       return false
     })
@@ -383,13 +385,21 @@ const TransactionCard = ({ transaction, editing, onEdit, onCancelEdit, onUpdate,
             <div>
               <p className="text-slate-400 text-xs">Contract Date</p>
               <p className="text-white">
-                {transaction.contractDate ? format(new Date(transaction.contractDate), 'MMM d, yyyy') : 'Not set'}
+                {transaction.contractDate ? (() => {
+                  const [year, month, day] = transaction.contractDate.split('-').map(Number)
+                  const localDate = new Date(year, month - 1, day)
+                  return format(localDate, 'MMM d, yyyy')
+                })() : 'Not set'}
               </p>
             </div>
             <div>
               <p className="text-slate-400 text-xs">Close Date</p>
               <p className="text-white">
-                {transaction.closeDate ? format(new Date(transaction.closeDate), 'MMM d, yyyy') : 'Not set'}
+                {transaction.closeDate ? (() => {
+                  const [year, month, day] = transaction.closeDate.split('-').map(Number)
+                  const localDate = new Date(year, month - 1, day)
+                  return format(localDate, 'MMM d, yyyy')
+                })() : 'Not set'}
               </p>
             </div>
           </div>
