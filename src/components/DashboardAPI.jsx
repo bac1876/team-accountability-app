@@ -16,6 +16,7 @@ import PhoneCallTracking from './PhoneCallTracking.jsx'
 import CommitmentsSection from './CommitmentsSection.jsx'
 import WeeklyGoalsSection from './WeeklyGoalsSection.jsx'
 import ReflectionsSection from './ReflectionsSection.jsx'
+import TransactionsSection from './TransactionsSection.jsx'
 
 const DashboardAPI = ({ user }) => {
   const { activeTab, navigateToTab, navigateToCommitmentDate, navigateToPhoneCallsDate, selectedDate } = useNavigation()
@@ -1165,6 +1166,11 @@ const DashboardAPI = ({ user }) => {
         {/* Phone Calls Tab */}
         <TabsContent value="phone-calls" className="space-y-4">
           <PhoneCallTracking user={user} onDataChange={loadUserData} />
+        </TabsContent>
+
+        {/* Transactions Tab */}
+        <TabsContent value="transactions" className="space-y-4">
+          <TransactionsSection user={user} />
         </TabsContent>
       </Tabs>
     </div>

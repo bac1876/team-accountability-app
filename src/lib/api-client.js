@@ -228,6 +228,58 @@ export const analyticsAPI = {
   }
 }
 
+// Transactions APIs
+export const transactionsAPI = {
+  async getByUser(userId) {
+    // Fallback to localStorage if API unavailable
+    try {
+      return await apiCall(`/transactions?userId=${userId}`)
+    } catch (error) {
+      console.log('API not available, using localStorage for transactions')
+      const { transactionsStore } = await import('../utils/dataStore.js')
+      return transactionsStore.getUserTransactions(userId)
+    }
+  },
+
+  async create(userId, address, purchasePrice, contractDate = null, closeDate = null) {
+    try {
+      return await apiCall('/transactions', {
+        method: 'POST',
+        body: JSON.stringify({ userId, address, purchasePrice, contractDate, closeDate }),
+      })
+    } catch (error) {
+      console.log('API not available, using localStorage for transactions')
+      const { transactionsStore } = await import('../utils/dataStore.js')
+      return transactionsStore.addTransaction(userId, { address, purchasePrice, contractDate, closeDate })
+    }
+  },
+
+  async update(transactionId, updates) {
+    try {
+      return await apiCall(`/transactions/${transactionId}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates),
+      })
+    } catch (error) {
+      console.log('API not available, using localStorage for transactions')
+      const { transactionsStore } = await import('../utils/dataStore.js')
+      return transactionsStore.updateTransaction(updates.userId, transactionId, updates)
+    }
+  },
+
+  async delete(userId, transactionId) {
+    try {
+      return await apiCall(`/transactions/${transactionId}`, {
+        method: 'DELETE',
+      })
+    } catch (error) {
+      console.log('API not available, using localStorage for transactions')
+      const { transactionsStore } = await import('../utils/dataStore.js')
+      return transactionsStore.deleteTransaction(userId, transactionId)
+    }
+  }
+}
+
 // Phone Calls APIs
 export const phoneCallsAPI = {
   async getByUser(userId, startDate = null, endDate = null) {

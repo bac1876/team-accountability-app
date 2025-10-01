@@ -29,7 +29,9 @@
       "Bash(git pull:*)",
       "Bash(sqlite3:*)",
       "WebFetch(domain:accountability-three-kappa.vercel.app)",
-      "WebFetch(domain:team-accountability-app.vercel.app)"
+      "WebFetch(domain:team-accountability-app.vercel.app)",
+      "Bash(git tag:*)",
+      "Bash(nslookup:*)"
     ],
     "deny": [],
     "ask": []
