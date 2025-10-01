@@ -47,10 +47,25 @@ async function apiCall(endpoint, options = {}) {
 // Authentication APIs
 export const authAPI = {
   async login(email, password) {
-    return apiCall('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
+    // Fallback to localStorage auth if API is not available
+    try {
+      return await apiCall('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      })
+    } catch (error) {
+      // If API fails, use localStorage authentication
+      console.log('API not available, using localStorage authentication')
+      const { userStore } = await import('../utils/dataStore.js')
+      const users = userStore.getAll()
+      const user = users.find(u => u.email === email || u.username === email)
+
+      if (user && user.password === password) {
+        return { success: true, user }
+      } else {
+        throw new Error('Invalid email or password')
+      }
+    }
   },
 
   async logout() {

@@ -15,6 +15,7 @@ import PhoneCallTracking from './PhoneCallTracking.jsx'
 // import DailyFocus from './DailyFocus.jsx'
 import DailyFocusSimple from './DailyFocusSimple.jsx'
 import AnalyticsDashboard from './AnalyticsDashboard.jsx'
+import TransactionsSection from './TransactionsSection.jsx'
 
 const Dashboard = ({ user }) => {
   const { activeTab, navigateToTab } = useNavigation()
@@ -501,11 +502,12 @@ const Dashboard = ({ user }) => {
         {/* Main Content Tabs - Mobile Responsive */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
           <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-            <TabsList className="flex w-max md:w-full md:grid md:grid-cols-6 bg-slate-800/30 backdrop-blur border border-slate-700/50 p-1 min-w-full">
+            <TabsList className="flex w-max md:w-full md:grid md:grid-cols-7 bg-slate-800/30 backdrop-blur border border-slate-700/50 p-1 min-w-full">
               <TabsTrigger value="commitment" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Today's Commitment</TabsTrigger>
               <TabsTrigger value="goals" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Weekly Goals</TabsTrigger>
               <TabsTrigger value="reflection" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Daily Reflection</TabsTrigger>
               <TabsTrigger value="calls" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Phone Calls</TabsTrigger>
+              <TabsTrigger value="transactions" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Transactions</TabsTrigger>
               <TabsTrigger value="focus" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Daily Focus</TabsTrigger>
               <TabsTrigger value="analytics" className="min-w-[120px] md:min-w-0 px-3 py-2 md:py-1.5 text-sm md:text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=inactive]:text-slate-300 data-[state=inactive]:hover:text-white transition-all">Analytics</TabsTrigger>
             </TabsList>
@@ -976,6 +978,11 @@ const Dashboard = ({ user }) => {
           {/* Phone Calls Tab */}
           <TabsContent value="calls">
             <PhoneCallTracking user={user} />
+          </TabsContent>
+
+          {/* Transactions Tab */}
+          <TabsContent value="transactions">
+            <TransactionsSection user={user} />
           </TabsContent>
 
           {/* Daily Focus Tab */}

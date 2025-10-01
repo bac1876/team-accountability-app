@@ -71,11 +71,26 @@ CREATE TABLE IF NOT EXISTS webhook_config (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Transactions table - stores monthly contracted and closed transactions
+CREATE TABLE IF NOT EXISTS transactions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    address TEXT NOT NULL,
+    purchase_price DECIMAL(12, 2) NOT NULL,
+    contract_date DATE,
+    close_date DATE,
+    status VARCHAR(20) DEFAULT 'contracted' CHECK (status IN ('contracted', 'closed', 'cancelled')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_daily_commitments_user_date ON daily_commitments(user_id, commitment_date);
 CREATE INDEX IF NOT EXISTS idx_weekly_goals_user_status ON weekly_goals(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_reflections_user_date ON reflections(user_id, reflection_date);
 CREATE INDEX IF NOT EXISTS idx_message_history_user_sent ON message_history(user_id, sent_at);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_contract ON transactions(user_id, contract_date);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_close ON transactions(user_id, close_date);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 

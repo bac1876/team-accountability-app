@@ -9,7 +9,8 @@ const STORAGE_KEYS = {
   REFLECTIONS: 'userReflections',
   USER_DATA: 'userData',
   PHONE_CALLS: 'phoneCallTracking',
-  DAILY_FOCUS: 'dailyFocus'
+  DAILY_FOCUS: 'dailyFocus',
+  TRANSACTIONS: 'transactions'
 }
 
 // User Management
@@ -704,6 +705,96 @@ export const initializeDefaultData = () => {
       { id: 23, username: 'thomas@searchnwa.com', password: 'pass123', role: 'member', name: 'Thomas Francis', email: 'thomas@searchnwa.com', phone: '+1-479-685-8771' }
     ]
     userStore.save(defaultUsers)
+  }
+}
+
+// Transactions Tracking
+export const transactionsStore = {
+  getAll: () => {
+    const transactions = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS)
+    return transactions ? JSON.parse(transactions) : []
+  },
+
+  save: (transactions) => {
+    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions))
+  },
+
+  getUserTransactions: (userId) => {
+    const transactions = transactionsStore.getAll()
+    return transactions
+      .filter(t => t.userId === userId)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  },
+
+  addTransaction: (userId, transactionData) => {
+    const transactions = transactionsStore.getAll()
+    const newTransaction = {
+      id: Math.max(...transactions.map(t => t.id), 0) + 1,
+      userId,
+      address: transactionData.address,
+      purchasePrice: transactionData.purchasePrice,
+      contractDate: transactionData.contractDate,
+      closeDate: transactionData.closeDate,
+      status: transactionData.status || 'contracted',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    transactions.push(newTransaction)
+    transactionsStore.save(transactions)
+    return newTransaction
+  },
+
+  updateTransaction: (userId, transactionId, updates) => {
+    const transactions = transactionsStore.getAll()
+    const transaction = transactions.find(t => t.id === transactionId && t.userId === userId)
+
+    if (transaction) {
+      Object.assign(transaction, updates)
+      transaction.updatedAt = new Date().toISOString()
+      transactionsStore.save(transactions)
+    }
+
+    return transaction
+  },
+
+  deleteTransaction: (userId, transactionId) => {
+    const transactions = transactionsStore.getAll()
+    const filteredTransactions = transactions.filter(t =>
+      !(t.id === transactionId && t.userId === userId)
+    )
+    transactionsStore.save(filteredTransactions)
+    return filteredTransactions
+  },
+
+  getMonthlyStats: (userId, year = null, month = null) => {
+    const now = new Date()
+    const targetYear = year || now.getFullYear()
+    const targetMonth = month !== null ? month : now.getMonth()
+
+    const transactions = transactionsStore.getUserTransactions(userId)
+
+    const contractedThisMonth = transactions.filter(t => {
+      if (!t.contractDate) return false
+      const contractDate = new Date(t.contractDate)
+      return contractDate.getFullYear() === targetYear &&
+             contractDate.getMonth() === targetMonth
+    })
+
+    const closedThisMonth = transactions.filter(t => {
+      if (!t.closeDate) return false
+      const closeDate = new Date(t.closeDate)
+      return closeDate.getFullYear() === targetYear &&
+             closeDate.getMonth() === targetMonth
+    })
+
+    return {
+      month: targetMonth + 1,
+      year: targetYear,
+      contracted: contractedThisMonth.length,
+      closed: closedThisMonth.length,
+      contractedTransactions: contractedThisMonth,
+      closedTransactions: closedThisMonth
+    }
   }
 }
 
